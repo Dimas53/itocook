@@ -1,0 +1,41 @@
+# IDEs and Editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node / Nuxt
+node_modules/
+.nuxt/
+.output/
+dist/
+.nitro/
+.cache/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+
+# Docker & Local Environments
+.env
+.env.*
+!.env.example
+docker/db_data/
+postgres_data/
