@@ -32,19 +32,21 @@
 <!--        :class="{ 'invert': isDarkStatus }"-->
       </div>
 
-      <div class="h-full  overflow-y-auto scrollbar-hide">
-        <slot />
+      <div class="flex flex-col h-full">
+        <div class="flex-1 overflow-y-auto scrollbar-hide">
+          <slot />
+        </div>
+        <BottomTabBar v-if="showTabBar" />
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-
+<script setup lang="ts">
 const route = useRoute()
 
-// Если на странице прописано definePageMeta({ darkStatus: true }), статус-бар станет черным.
+const hideTabBarRoutes = ['/onboarding', '/auth']
+const showTabBar = computed(() => !hideTabBarRoutes.includes(route.path))
+
 const isDarkStatus = computed(() => route.meta.darkStatus === true)
 </script>

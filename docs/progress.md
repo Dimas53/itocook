@@ -15,6 +15,8 @@
 - [x] Auth input interaction states — bg-white/40, focus:bg-white, focus:border-primary
 - [x] Nuxt config fixed — main.css uncommented, stale .nuxt cache cleared
 - [x] `onboarding.vue` — `absolute inset-0` → `h-full`, добавлен `lang="ts"`
+- [x] `components/BottomTabBar.vue` — 5 табов с Phosphor icons, активный/неактивный стиль
+- [x] `default.vue` — таббар встроен, скрывается на /onboarding и /auth
 
 ## Known issues
 - ~~**Tailwind config incomplete:** 5 missing color tokens — fixed~~
@@ -22,7 +24,7 @@
 - ~~**Auth screen uses hardcoded colors:** `bg-[#EDE8FF]` — fixed~~
 - ~~**Auth screen references wrong app name:** "ekilu" → "ItoCook" — fixed~~
 - ~~**Auth screen input radius wrong:** `rounded-2xl` → `rounded-xl` — fixed~~
-- **Layout safe areas missing:** `pt-[60px]` и `pb-[34px]` закомментированы в `default.vue` (Milestone 2)
+- **Layout safe areas:** `pt-[60px]` / `pb-[34px]` будут на каждой странице индивидуально (в `default.vue` ломают auth) (Milestone 2)
 - **`darkStatus` feature half-implemented:** computed свойство есть, класс `invert` закомментирован (Milestone 3)
 - **Index page is placeholder:** только редиректит на `/onboarding` (Milestone 4)
 - **Components directory missing:** нет BottomTabBar, RecipeCard, CategoryPill, MacroRing (Milestone 2)
@@ -39,10 +41,10 @@
 - [x] Fix nuxt.config — main.css uncommented, stale .nuxt cache cleared
 
 ### Milestone 2: Layout & Global Navigation
-- Fix `default.vue` — uncomment safe-area padding `pt-[60px]` and `pb-[34px]`
-- Create `components/` directory
-- Build `BottomTabBar.vue` — 5 tabs (Home, Meal Plan, AI Recipe, Journal, Learning) with Phosphor icons and active/inactive states
-- Wire tab bar into `default.vue` (show only on authenticated screens, hide on onboarding/auth)
+- Safe-area padding (`pt-[60px]` / `pb-[34px]`) — per-page, не глобально (auth/onboarding ломаются)
+- [x] Create `components/` directory
+- [x] Build `BottomTabBar.vue` — 5 tabs with Phosphor icons, active/inactive states
+- [x] Wire tab bar into `default.vue` (show only on authenticated screens, hide on onboarding/auth)
 
 ### Milestone 3: Core Authentication Flow
 - Clean up `auth.vue` — proper form validation, error states, loading state
@@ -60,3 +62,6 @@
 - Connect frontend to Directus SDK for user auth and recipe data
 - Build FastAPI endpoints for split calculation, notifications
 - Implement real data flow from Directus collections through to UI
+
+## Git log
+- `94fc7a4` — feat(onboarding): replace absolute layout with flex, add lang=ts

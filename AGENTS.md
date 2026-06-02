@@ -19,6 +19,8 @@
 - **Global styles:** `frontend/assets/css/main.css`
 - **Design refs:** `docs/design/`
 - **Progress log:** `docs/progress.md`
+- **UI Roadmap:** `docs/roadmap.md`
+- **Master Plan:** `docs/plan-main.md`
 - **Global skills:** `~/.config/opencode/skills/`
 
 ---
@@ -29,14 +31,16 @@
 1. Run `git log --oneline -5` — see what was actually done last.
 2. Read `docs/progress.md` — understand current state and next steps.
 3. Check if git log and progress.md are in sync — if not, update progress.md first before doing anything else.
-4. Read `docs/plan-main.md` — if working on architecture or new features.
-5. Read `docs/design.md` — before any UI/frontend work.
+4. Read `docs/roadmap.md` — to understand the high-level UI Phase context.
+5. Read `docs/plan-main.md` — if working on architecture or new features.
+6. Read `docs/design.md` — before any UI/frontend work.
 
 ### After EVERY response that changed a file or ran a command
 Immediately update `docs/progress.md`:
 - Move completed checklist items to **Current status**
 - Add new items to **Known issues** if discovered
 - Update **Next session** plan to reflect what's left
+- **Roadmap Check:** If a high-level Phase goal in `docs/roadmap.md` is fully complete (all checkboxes checked), mark it with ✅ and add the current date (e.g., `## Phase 1: UI-скелет ✅ 2026-06-02`).
 
 ### After every git commit
 Add to `docs/progress.md` under a `## Git log` section:
@@ -47,6 +51,7 @@ Verify `docs/progress.md` is complete enough that a different agent could contin
 - Current status reflects reality (not just what was planned)
 - Known issues lists everything broken or incomplete
 - Next session plan has concrete actionable steps, not vague goals
+- **Check `docs/roadmap.md`:** If the current Phase is done, mark it ✅ with the date. If the Phase is not done, verify the active checkbox list accurately reflects reality.
 
 ---
 
@@ -86,7 +91,7 @@ Examples:
 
 ### After every commit
 - Update `## Git log` in `docs/progress.md`:
-    - `<hash>` — commit message
+  - `<hash>` — commit message
 
 ---
 
