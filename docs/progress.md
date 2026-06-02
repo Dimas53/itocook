@@ -64,3 +64,4 @@
 - `ef1d539` — feat(auth): replace fake login with real Directus auth + signup proxy
 - `96cde43` — chore: update git log in progress.md
 - `b130126` — feat(docs): sync progress log, reorder roadmap phases, update AGENTS workflow
+- `7caac6a` — feat(schema): create 5 Directus collections + dynamic login redirect

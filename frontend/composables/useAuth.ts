@@ -54,7 +54,7 @@ export const useAuth = () => {
 
   async function isTodayCook(): Promise<boolean> {
     if (!user.value) return false
-    const today = new Date().toISOString().split('T')[0]
+    const today = new Date().toISOString().split('T')[0]!
     const params = new URLSearchParams({
       'filter[date][_eq]': today,
       'filter[cook][_eq]': user.value.id,
