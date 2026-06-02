@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute inset-0 bg-primary overflow-hidden flex flex-col">
+  <div class="h-full bg-primary overflow-hidden flex flex-col">
     <!-- Hero Zone (Top 50%) -->
     <div class="h-[50%] mt-10 flex items-center justify-center">
       <img src="/images/onboarding/chef-cook.png" alt="Chef" class="w-full h-full object-contain" />
@@ -46,6 +46,6 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { PhChefHat } from '@phosphor-icons/vue'
 </script>

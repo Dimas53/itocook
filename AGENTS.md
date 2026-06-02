@@ -67,6 +67,29 @@ Verify `docs/progress.md` is complete enough that a different agent could contin
 
 ---
 
+## Git Workflow
+
+### When to commit
+- After completing every Milestone or major feature (new page, new component)
+- Never commit broken or half-done code
+
+### Commit message format
+`<type>(<scope>): <what was done>`
+
+Types: feat, fix, docs, chore, refactor
+Scope: optional, e.g. auth, onboarding, layout, tailwind
+
+Examples:
+- feat(onboarding): replace absolute layout with flex, add lang=ts
+- feat(layout): add BottomTabBar with 5 tabs
+- fix(auth): correct input focus states
+
+### After every commit
+- Update `## Git log` in `docs/progress.md`:
+    - `<hash>` — commit message
+
+---
+
 ## What NOT to log in progress.md
 - Debug steps and experiments that didn't result in a file change
 - Intermediate thoughts or explanations
