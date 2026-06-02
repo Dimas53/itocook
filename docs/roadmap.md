@@ -42,20 +42,30 @@
 
 ---
 
+## Phase 3: Directus Schema Setup
+**Goal:** создать все коллекции через Directus MCP до начала вёрстки экранов. Schema-first подход.
 
-### Phase 2.1: Feature Screens
+- [ ] `cook_queue` collection (fields: date, cook user relation, dish name, status)
+- [ ] `orders` collection (fields: user relation, cook_queue relation, status)
+- [ ] `order_items` collection (fields: order relation, quantity)
+- [ ] `transactions` collection (fields: user relation, amount, type, description, date)
+- [ ] `balances` collection (fields: user relation, amount)
+
+---
+
+## Phase 4: Feature Screens
 **Goal:** Финальная вёрстка всех страниц приложения, адаптированная сразу под реальную структуру данных из базы.
 
 - [ ] Home screen — полноценная вёрстка (приветствие, поиск, категории, карточки)
 - [ ] Остальные экраны: Meal Plan, AI Recipe, Journal, Learning, Profile, Recipe Detail (`recipe/[id].vue`)
 - [ ] Вспомогательные компоненты: `RecipeCard.vue`, `CategoryPill.vue`, `MacroRing.vue`
 
-
 ---
 
-## Phase 3: Core бизнес-логика
+## Phase 5: Core бизнес-логика
 **Goal:** можно провести один полный рабочий день через приложение — от "кто готовит" до списания с баланса.
-
+> Schema setup: use Directus MCP to create all collections before writing frontend code.
+> Agent should read current schema first, then create: cook_queue, orders, order_items, transactions, balances.
 - [ ] "Я готовлю сегодня" — запись в `cook_queue`, уведомление всем
 - [ ] Выбор блюда — из истории или новое название
 - [ ] "Я обедаю" — запись в `order_items`, отмена до 24ч
@@ -66,7 +76,7 @@
 
 ---
 
-## Phase 4: FastAPI + уведомления
+## Phase 6: FastAPI + уведомления
 **Goal:** бизнес-логика вынесена в микросервис, уведомления работают автоматически.
 
 - [ ] FastAPI endpoint: расчёт суммы на участника
@@ -78,7 +88,7 @@
 
 ---
 
-## Phase 5: Дополнительные фичи
+## Phase 7: Дополнительные фичи
 **Goal:** приложение удобно использовать каждый день, есть финансовый контроль.
 
 - [ ] AI-ассистент (OpenRouter, `gemini-2.0-flash-lite`) — только кулинарные вопросы
@@ -92,7 +102,7 @@
 
 ---
 
-## Phase 6: MVP-запуск
+## Phase 8: MVP-запуск
 **Goal:** 10 коллег пользуются приложением неделю, собран фидбек.
 
 - [ ] Тест-неделя с реальными пользователями

@@ -32,8 +32,10 @@
 2. Read `docs/progress.md` — understand current state and next steps.
 3. Check if git log and progress.md are in sync — if not, update progress.md first before doing anything else.
 4. Read `docs/roadmap.md` — to understand the high-level UI Phase context.
-5. Read `docs/plan-main.md` — if working on architecture or new features.
-6. Read `docs/design.md` — before any UI/frontend work.
+5. If working on backend/data: use Directus MCP `schema` tool to read current
+      collections before creating anything new.
+6. Read `docs/plan-main.md` — if working on architecture or new features.
+7. Read `docs/design.md` — before any UI/frontend work.
 
 ### After EVERY response that changed a file or ran a command
 Immediately update `docs/progress.md`:
@@ -99,3 +101,46 @@ Examples:
 - Debug steps and experiments that didn't result in a file change
 - Intermediate thoughts or explanations
 - Duplicate entries for the same fix
+
+-----
+
+## Browser Debugging (Chrome DevTools MCP)
+
+Chrome DevTools MCP is available for inspecting the frontend in the browser.
+
+**Important:** Claude cannot launch Chrome. If browser inspection is needed,
+ask the user to run this command in terminal first:
+
+```bash
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/chrome-debug \
+  http://localhost:3000
+```
+
+Once Chrome is running on port 9222, use these MCP tools:
+- `list_console_messages` — console errors and warnings
+- `list_network_requests` — all HTTP requests and responses
+- `navigate_page` — navigate to a specific URL
+- `take_snapshot` — screenshot of the current state
+
+Always use chrome-devtools MCP to check browser errors before asking the user to copy-paste them.
+
+---
+
+## Directus MCP
+
+Directus MCP is available for schema and data management without using the UI.
+MCP server runs at `http://localhost:8055/mcp`.
+
+Use Directus MCP for:
+- Creating/modifying collections, fields, relations
+- Reading/writing data (items CRUD)
+- Creating Flows and automations
+- Inspecting current schema before any backend work
+
+**Always check current schema via Directus MCP before creating new collections**
+to avoid duplicates or conflicts with existing structure.
+
+When working on Phase 3+ features, prefer Directus MCP over manual UI clicks
+for all schema changes — this keeps changes reproducible and documented.

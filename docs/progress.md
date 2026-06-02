@@ -26,6 +26,10 @@
 - [x] `server/api/auth/signup.post.ts` — серверный прокси для регистрации через админа Directus
 - [x] `docker-compose.yml` — CORS_ENABLED, CORS_ORIGIN, NUXT_DIRECTUS_ADMIN_EMAIL/PASSWORD
 - [x] `nuxt.config.ts` — runtimeConfig для admin email/password + серверный directusUrl
+- [x] **Role User назначается автоматически** при регистрации (через `signup.post.ts`)
+- [x] **Directus MCP подключён** (http://localhost:8055/mcp) — агент может управлять схемой
+- [x] **Chrome DevTools MCP подключён** (port 9222) — агент может инспектировать браузер
+- [x] **`ssr: false`** на верхнем уровне, `experimental.viteEnvironmentApi: true` (фикс Nuxt 4 SPA падения)
 
 ## Known issues
 - **Sign Up работает** через серверный прокси (`server/api/auth/signup.post.ts`) — создаёт юзера через админ-токен
@@ -35,16 +39,21 @@
 - **Balance и Today's Cook** на index.vue — заглушки (€0.00 / —). Будут наполняться после настройки Directus коллекций
 - **7 из 10 экранов не созданы:** meal-plan, ai-recipe, journal, learning, profile, recipe/[id]
 - **BottomTabBar готов,** остальные компоненты (RecipeCard, CategoryPill, MacroRing) ещё нет
+- **Nuxt 4 SPA краш** — `ssr: false` + `compatibilityVersion: 4` вызывает `No entry found in rollupOptions.input`. Лечится `experimental.viteEnvironmentApi: true`
 
 ## Next session — plan
 
-### Phase 2: continue
-- [ ] Создать страницу Profile (`pages/profile.vue`) — отображение данных юзера, logout
+### Phase 2: finish
 - [ ] Настроить динамический редирект: если юзер — сегодняшний повар → Cook page, иначе → Home
-- [ ] FastAPI endpoint: расчёт суммы на участника
-- [ ] FastAPI endpoint: триггер уведомлений (email)
 
-### Phase 2.1: Feature Screens
+### Phase 3: Directus Schema Setup
+- [ ] cook_queue collection (date, cook user relation, dish name, status)
+- [ ] orders collection (user relation, cook_queue relation, status)
+- [ ] order_items collection (order relation, quantity)
+- [ ] transactions collection (user relation, amount, type, description, date)
+- [ ] balances collection (user relation, amount)
+
+### Phase 4: Feature Screens (после схемы)
 - [ ] Полноценный Home screen (поиск, категории, карточки рецептов)
 - [ ] Создать остальные экраны: meal-plan, ai-recipe, journal, learning, profile, recipe/[id]
 - [ ] Вспомогательные компоненты: RecipeCard, CategoryPill, MacroRing
@@ -55,3 +64,4 @@
 - `adff924` — feat(auth): add fake login flow, form validation, route protection, darkStatus
 - `5a16375` — chore: update git log in progress.md
 - `ef1d539` — feat(auth): replace fake login with real Directus auth + signup proxy
+- `96cde43` — chore: update git log in progress.md
