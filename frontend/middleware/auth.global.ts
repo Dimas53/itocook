@@ -1,9 +1,33 @@
-export default defineNuxtRouteMiddleware((to) => {
-  const { isLoggedIn } = useAuth()
-
+export default defineNuxtRouteMiddleware(async (to) => {
   const publicRoutes = ['/onboarding', '/auth']
 
-  if (!isLoggedIn.value && !publicRoutes.includes(to.path)) {
+  const { tokenCookie } = useDirectus()
+  const { user, fetchUser, logout } = useAuth()
+
+  const token = tokenCookie.value
+
+  if (publicRoutes.includes(to.path)) {
+    if (token && !user.value) {
+      try {
+        await fetchUser()
+        return navigateTo('/')
+      } catch {
+        logout()
+      }
+    }
+    return
+  }
+
+  if (!token) {
     return navigateTo('/auth')
+  }
+
+  if (!user.value) {
+    try {
+      await fetchUser()
+    } catch {
+      logout()
+      return navigateTo('/auth')
+    }
   }
 })

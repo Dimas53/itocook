@@ -91,11 +91,11 @@
 
           <button
             @click="handleSubmit"
-            :disabled="loading"
+            :disabled="validating"
             class="w-full h-14 rounded-full mt-5 font-semibold text-[16px] text-white active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
-            :class="loading ? 'bg-primary/60' : 'bg-primary'"
+            :class="validating ? 'bg-primary/60' : 'bg-primary'"
           >
-            <svg v-if="loading" class="animate-spin size-5 text-white" viewBox="0 0 24 24" fill="none">
+            <svg v-if="validating" class="animate-spin size-5 text-white" viewBox="0 0 24 24" fill="none">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
             </svg>
@@ -137,7 +137,7 @@ definePageMeta({
   darkStatus: true
 })
 
-const { login } = useAuth()
+const { signUp, login } = useAuth()
 const router = useRouter()
 
 const isSignUp = ref(true)
@@ -145,58 +145,58 @@ const firstName = ref('')
 const lastName = ref('')
 const email = ref('')
 const password = ref('')
-const loading = ref(false)
 const errorMsg = ref('')
+const validating = ref(false)
 
-function handleSubmit() {
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function validate(): boolean {
   errorMsg.value = ''
-  loading.value = true
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   if (isSignUp.value) {
     if (!firstName.value || !lastName.value || !email.value || !password.value) {
       errorMsg.value = 'Please fill in all fields.'
-      loading.value = false
-      return
+      return false
     }
     if (!emailRegex.test(email.value)) {
       errorMsg.value = 'Please enter a valid email address.'
-      loading.value = false
-      return
+      return false
     }
     if (password.value.length < 6) {
       errorMsg.value = 'Password must be at least 6 characters.'
-      loading.value = false
-      return
+      return false
     }
-    setTimeout(() => {
-      router.push('/')
-      loading.value = false
-    }, 800)
-    return
+  } else {
+    if (!email.value || !password.value) {
+      errorMsg.value = 'Please enter email and password.'
+      return false
+    }
+    if (!emailRegex.test(email.value)) {
+      errorMsg.value = 'Please enter a valid email address.'
+      return false
+    }
   }
+  return true
+}
 
-  if (!email.value || !password.value) {
-    errorMsg.value = 'Please enter email and password.'
-    loading.value = false
-    return
-  }
-  if (!emailRegex.test(email.value)) {
-    errorMsg.value = 'Please enter a valid email address.'
-    loading.value = false
-    return
-  }
+async function handleSubmit() {
+  if (!validate()) return
 
-  setTimeout(() => {
-    const success = login(email.value, password.value)
-    if (success) {
-      router.push('/')
+  validating.value = true
+  errorMsg.value = ''
+
+  try {
+    if (isSignUp.value) {
+      await signUp(firstName.value, lastName.value, email.value, password.value)
     } else {
-      errorMsg.value = 'Invalid email or password.'
+      await login(email.value, password.value)
     }
-    loading.value = false
-  }, 800)
+    router.push('/')
+  } catch (e) {
+    errorMsg.value = (e as Error).message
+  } finally {
+    validating.value = false
+  }
 }
 </script>
 

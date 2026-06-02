@@ -1,20 +1,61 @@
-export const useAuth = () => {
-  const isLoggedIn = useState('auth:loggedIn', () => false)
-  const user = useState<{ firstName: string; lastName: string; email: string } | null>('auth:user', () => null)
+interface DirectusUser {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  role: string
+}
 
-  function login(email: string, password: string): boolean {
-    if (email === 'test@itocook.com' && password === '123456') {
-      user.value = { firstName: 'Alex', lastName: 'Test', email }
-      isLoggedIn.value = true
-      return true
+interface LoginResponse {
+  access_token: string
+  expires: number
+  refresh_token: string
+}
+
+export const useAuth = () => {
+  const { request, tokenCookie } = useDirectus()
+
+  const user = useState<DirectusUser | null>('auth:user', () => null)
+  const isLoggedIn = computed(() => !!user.value)
+
+  async function signUp(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string
+  ): Promise<void> {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName, lastName, email, password }),
+    })
+
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.message || 'Registration failed')
     }
-    return false
+
+    await login(email, password)
+  }
+
+  async function login(email: string, password: string): Promise<void> {
+    const data = await request<LoginResponse>('post', '/auth/login', {
+      email,
+      password,
+    })
+    tokenCookie.value = data.access_token
+    await fetchUser()
+  }
+
+  async function fetchUser(): Promise<void> {
+    const userData = await request<DirectusUser>('get', '/users/me')
+    user.value = userData
   }
 
   function logout() {
-    isLoggedIn.value = false
+    tokenCookie.value = null
     user.value = null
   }
 
-  return { isLoggedIn, user, login, logout }
+  return { isLoggedIn, user, signUp, login, logout, fetchUser }
 }

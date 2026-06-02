@@ -15,6 +15,15 @@ export default defineNuxtConfig({
     '@/assets/css/main.css'
   ],
 
+  runtimeConfig: {
+    directusUrl: 'http://directus:8055',
+    directusAdminEmail: '',
+    directusAdminPassword: '',
+    public: {
+      directusUrl: 'http://localhost:8055',
+    },
+  },
+
   devtools: { enabled: true },
 
   compatibilityDate: '2025-01-01',

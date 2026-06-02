@@ -38,6 +38,8 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
       ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: "http://localhost:3000"
 
   frontend:
     build:
@@ -51,7 +53,9 @@ services:
       - /app/node_modules
       - /app/.nuxt
     environment:
-      NUXT_PUBLIC_DIRECTUS_URL: http://directus:8055
+      NUXT_PUBLIC_DIRECTUS_URL: http://localhost:8055
+      NUXT_DIRECTUS_ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
+      NUXT_DIRECTUS_ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
     depends_on:
       - directus
 
