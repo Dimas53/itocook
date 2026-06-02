@@ -1,25 +1,22 @@
 <template>
   <div class="relative w-full h-full overflow-hidden flex flex-col">
-    <!-- Background Image -->
     <div class="absolute top-0 left-0 w-full h-[300px] shrink-0 overflow-hidden">
       <img src="/images/login_bg.jpg" alt="" class="w-full h-full object-cover" />
-      <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t  to-transparent" />
+      <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t to-transparent" />
     </div>
 
-    <!-- Auth Card -->
     <div class="relative z-10 mt-[200px] flex-1 flex flex-col">
       <div class="rounded-t-[32px] bg-auth-bg w-full flex-1 flex flex-col px-6 py-8">
-        <!-- Toggle Pill -->
         <div class="bg-white rounded-full p-1 flex mb-6">
           <button
-            @click="isSignUp = false"
+            @click="isSignUp = false; errorMsg = ''"
             class="flex-1 h-10 rounded-full text-[14px] font-semibold transition-all duration-200"
             :class="!isSignUp ? 'bg-app-black text-white' : 'text-gray-500 bg-transparent'"
           >
             Log In
           </button>
           <button
-            @click="isSignUp = true"
+            @click="isSignUp = true; errorMsg = ''"
             class="flex-1 h-10 rounded-full text-[14px] font-semibold transition-all duration-200"
             :class="isSignUp ? 'bg-app-black text-white' : 'text-gray-500 bg-transparent'"
           >
@@ -27,7 +24,6 @@
           </button>
         </div>
 
-        <!-- Title and Description -->
         <div class="mb-6 text-center">
           <h2 class="text-2xl font-bold text-app-black">
             {{ isSignUp ? 'Sign Up with ItoCook' : 'Log In with ItoCook' }}
@@ -40,7 +36,6 @@
           </p>
         </div>
 
-        <!-- Form Fields -->
         <div class="flex-1">
           <Transition name="fade" mode="out-in">
             <div v-if="isSignUp" key="signup" class="space-y-3">
@@ -49,26 +44,26 @@
                   v-model="firstName"
                   type="text"
                   placeholder="First Name"
-                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-2xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
                 <input
                   v-model="lastName"
                   type="text"
                   placeholder="Last Name"
-                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-2xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
               </div>
               <input
                 v-model="email"
                 type="text"
                 placeholder="Email or Phone Number"
-                class="w-full h-12 bg-white/40 border border-primary/20 rounded-2xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
               />
               <input
                 v-model="password"
                 type="password"
                 placeholder="Password"
-                class="w-full h-12 bg-white/40 border border-primary/20 rounded-2xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
               />
             </div>
             <div v-else key="login" class="space-y-3">
@@ -76,14 +71,14 @@
                 v-model="email"
                 type="text"
                 placeholder="Email or Phone Number"
-                class="w-full h-12 bg-white/40 border border-primary/20 rounded-2xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
               />
               <div>
                 <input
                   v-model="password"
                   type="password"
                   placeholder="Password"
-                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-2xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
                 <div class="flex justify-end mt-2">
                   <a href="#" class="text-xs text-gray-500 font-medium">Forgot Password?</a>
@@ -92,22 +87,28 @@
             </div>
           </Transition>
 
-          <!-- Primary Button -->
+          <p v-if="errorMsg" class="text-red-500 text-[13px] mt-3 text-center">{{ errorMsg }}</p>
+
           <button
-            class="w-full h-14 bg-primary rounded-full mt-5 font-semibold text-[16px] text-white active:scale-[0.98] transition-transform"
+            @click="handleSubmit"
+            :disabled="loading"
+            class="w-full h-14 rounded-full mt-5 font-semibold text-[16px] text-white active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+            :class="loading ? 'bg-primary/60' : 'bg-primary'"
           >
+            <svg v-if="loading" class="animate-spin size-5 text-white" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
             {{ isSignUp ? 'Sign Up' : 'Log In' }}
           </button>
         </div>
 
-        <!-- Or Divider -->
         <div class="flex items-center my-6">
           <div class="flex-1 h-px bg-gray-200" />
           <span class="px-4 text-xs text-gray-400 font-medium">Or</span>
           <div class="flex-1 h-px bg-gray-200" />
         </div>
 
-        <!-- Social Buttons -->
         <div class="flex flex-row gap-3 w-full">
           <button class="flex-1 h-12 border border-gray-200 rounded-full flex items-center justify-center gap-2 bg-white active:scale-[0.98] transition-transform">
             <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
@@ -136,11 +137,67 @@ definePageMeta({
   darkStatus: true
 })
 
+const { login } = useAuth()
+const router = useRouter()
+
 const isSignUp = ref(true)
 const firstName = ref('')
 const lastName = ref('')
 const email = ref('')
 const password = ref('')
+const loading = ref(false)
+const errorMsg = ref('')
+
+function handleSubmit() {
+  errorMsg.value = ''
+  loading.value = true
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  if (isSignUp.value) {
+    if (!firstName.value || !lastName.value || !email.value || !password.value) {
+      errorMsg.value = 'Please fill in all fields.'
+      loading.value = false
+      return
+    }
+    if (!emailRegex.test(email.value)) {
+      errorMsg.value = 'Please enter a valid email address.'
+      loading.value = false
+      return
+    }
+    if (password.value.length < 6) {
+      errorMsg.value = 'Password must be at least 6 characters.'
+      loading.value = false
+      return
+    }
+    setTimeout(() => {
+      router.push('/')
+      loading.value = false
+    }, 800)
+    return
+  }
+
+  if (!email.value || !password.value) {
+    errorMsg.value = 'Please enter email and password.'
+    loading.value = false
+    return
+  }
+  if (!emailRegex.test(email.value)) {
+    errorMsg.value = 'Please enter a valid email address.'
+    loading.value = false
+    return
+  }
+
+  setTimeout(() => {
+    const success = login(email.value, password.value)
+    if (success) {
+      router.push('/')
+    } else {
+      errorMsg.value = 'Invalid email or password.'
+    }
+    loading.value = false
+  }, 800)
+}
 </script>
 
 <style scoped>

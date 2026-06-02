@@ -8,31 +8,47 @@
 ## Phase 1: UI-скелет ← ТЫ ЗДЕСЬ
 **Goal:** можно открыть приложение, нажимать по экранам, видеть финальную верстку всех экранов. Без реальных данных — только UI.
 
+### M1: UI Foundation & Design System ✅
 - [x] Design system — токены, шрифты, Tailwind config
-- [x] iPhone frame layout (`layouts/default.vue`)
-- [x] Onboarding screen
+- [x] iPhone frame layout (`layouts/default.vue`), Dynamic Island
+- [x] Onboarding screen — flex layout, TypeScript
 - [x] Auth screen — базовая верстка
-- [ ] BottomTabBar component — 5 табов, active/inactive состояния
-- [ ] Роутинг — табы переключают экраны, onboarding/auth скрывают таббар
-- [ ] Home screen — статичная верстка (заглушки вместо данных)
-- [ ] Meal Plan screen
-- [ ] AI Recipe screen
-- [ ] Journal screen
-- [ ] Learning screen
-- [ ] Profile screen
-- [ ] Recipe Detail screen (`recipe/[id].vue`)
-- [ ] Supporting components: `RecipeCard.vue`, `CategoryPill.vue`, `MacroRing.vue`
+- [x] Tailwind config full sync — все 13 токенов
+- [x] Nuxt config — main.css подключён
+
+### M2: Layout & Global Navigation ✅
+- [x] `components/` directory создана
+- [x] `BottomTabBar.vue` — 5 табов, Phosphor icons, active/inactive
+- [x] Таббар встроен в `default.vue`, скрыт на `/onboarding` и `/auth`
+
+### M3: Core Authentication Flow ✅
+- [x] auth.vue — форма, валидация, ошибки, loading state
+- [x] Фейковый логин (хардкод пользователя)
+- [x] Редирект после логина на Home
+- [x] `darkStatus` — раскомментировать `invert` в layout
+- [x] Защита роутов — редирект на `/auth` если не залогинен
 
 ---
 
 ## Phase 2: Первый живой flow
-**Goal:** логин работает, токен сохраняется, реальные данные из Directus появляются на экране.
+**Goal:** Логин работает с реальным бэкендом, токен сохраняется, базовая сессия юзера тянется из Directus.
 
-- [ ] Auth → POST к Directus `/auth/login` → сохранить токен
-- [ ] Редирект после логина: если сегодняшний повар → Cook page, иначе → Home
-- [ ] Directus SDK настроен как composable (`useDirectus`)
-- [ ] Home screen — реальные данные: баланс пользователя, кто готовит сегодня
-- [ ] Защищённые роуты — редирект на `/auth` если не залогинен
+- [ ] Настроить Directus SDK / HTTP-клиент как composable (`useDirectus`)
+- [ ] Переписать `useAuth` — слать реальный POST к Directus `/auth/login` и сохранять токен в куки/localStorage
+- [ ] Настроить глобальный middleware на проверку живого токена через Directus (запрос к `/users/me`)
+- [ ] Вывести на главную страницу (`index.vue`) первые реальные данные из Directus: Имя залогиненного пользователя, его баланс и роль (кто готовит сегодня)
+- [ ] Настроить динамический редирект после логина: если юзер — сегодняшний повар → Cook page, иначе → Home
+
+---
+
+
+### Phase 2.1: Feature Screens
+**Goal:** Финальная вёрстка всех страниц приложения, адаптированная сразу под реальную структуру данных из базы.
+
+- [ ] Home screen — полноценная вёрстка (приветствие, поиск, категории, карточки)
+- [ ] Остальные экраны: Meal Plan, AI Recipe, Journal, Learning, Profile, Recipe Detail (`recipe/[id].vue`)
+- [ ] Вспомогательные компоненты: `RecipeCard.vue`, `CategoryPill.vue`, `MacroRing.vue`
+
 
 ---
 

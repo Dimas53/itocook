@@ -1,17 +1,3 @@
-<!--
-<template>
-  <div class="min-h-screen flex items-center justify-center bg-app-bg p-4">
-    <div class="relative w-[390px] h-[844px] rounded-[50px] border-[6px] border-app-black shadow-2xl overflow-hidden bg-white">
-      &lt;!&ndash; Dynamic Island &ndash;&gt;
-      <div class="absolute top-3 left-1/2 -translate-x-1/2 w-[126px] h-[34px] bg-app-black rounded-full z-50"></div>
-      &lt;!&ndash; Screen Content &ndash;&gt;
-      <div class="h-full pt-[60px] pb-[34px] px-5 overflow-y-auto scrollbar-hide">
-        <slot />
-      </div>
-    </div>
-  </div>
-</template>-->
-
 <template>
   <div class="min-h-screen flex items-center justify-center bg-app-bg p-4">
     <div class="relative w-[390px] h-[844px] rounded-[50px] border-[6px] border-app-black shadow-2xl overflow-hidden bg-white">
@@ -27,9 +13,7 @@
             src="/images/ios_bar.svg"
             alt="status-bar"
             class="h-[12px] object-contain mt-[14px]"
-
-        />
-<!--        :class="{ 'invert': isDarkStatus }"-->
+            :class="{ 'invert': isDarkStatus }">
       </div>
 
       <div class="flex flex-col h-full">
