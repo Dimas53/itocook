@@ -54,3 +54,4 @@
 - `376d90f` — feat(layout): add BottomTabBar with 5 tabs, wire into default layout
 - `adff924` — feat(auth): add fake login flow, form validation, route protection, darkStatus
 - `5a16375` — chore: update git log in progress.md
+- `ef1d539` — feat(auth): replace fake login with real Directus auth + signup proxy
