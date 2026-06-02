@@ -137,8 +137,13 @@ definePageMeta({
   darkStatus: true
 })
 
-const { signUp, login } = useAuth()
+const { signUp, login, isTodayCook } = useAuth()
 const router = useRouter()
+
+async function redirectAfterLogin() {
+  const cook = await isTodayCook()
+  router.push(cook ? '/cook' : '/')
+}
 
 const isSignUp = ref(true)
 const firstName = ref('')
@@ -191,7 +196,7 @@ async function handleSubmit() {
     } else {
       await login(email.value, password.value)
     }
-    router.push('/')
+    await redirectAfterLogin()
   } catch (e) {
     errorMsg.value = (e as Error).message
   } finally {

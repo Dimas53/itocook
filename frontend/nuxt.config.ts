@@ -2,9 +2,9 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   future: {
-    ssr: false,
     compatibilityVersion: 4,
   },
+  ssr: false,
 
   modules: [
     '@nuxtjs/tailwindcss',
@@ -22,6 +22,10 @@ export default defineNuxtConfig({
     public: {
       directusUrl: 'http://localhost:8055',
     },
+  },
+
+  experimental: {
+    viteEnvironmentApi: true,
   },
 
   devtools: { enabled: true },

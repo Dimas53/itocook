@@ -20,5 +20,11 @@
 </template>
 
 <script setup lang="ts">
-const { user } = useAuth()
+const { user, isTodayCook } = useAuth()
+
+onMounted(async () => {
+  if (await isTodayCook()) {
+    await navigateTo('/cook')
+  }
+})
 </script>

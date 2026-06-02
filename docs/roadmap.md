@@ -30,7 +30,7 @@
 
 ---
 
-## Phase 2: Первый живой flow ← ТЫ ЗДЕСЬ
+## Phase 2: Первый живой flow ✅ 2026-06-03
 **Goal:** Логин работает с реальным бэкендом, токен сохраняется, базовая сессия юзера тянется из Directus.
 
 - [x] Настроить Directus SDK / HTTP-клиент как composable (`useDirectus`)
@@ -38,18 +38,18 @@
 - [x] Настроить глобальный middleware на проверку живого токена через Directus (запрос к `/users/me`)
 - [x] Вывести на главную страницу (`index.vue`) первые реальные данные из Directus: имя, email
 - [x] Регистрация — через серверный прокси (admin API), роль User назначается
-- [ ] Настроить динамический редирект после логина: если юзер — сегодняшний повар → Cook page, иначе → Home
+- [x] Настроить динамический редирект после логина: если юзер — сегодняшний повар → Cook page, иначе → Home
 
 ---
 
-## Phase 3: Directus Schema Setup
+## Phase 3: Directus Schema Setup ✅ 2026-06-03
 **Goal:** создать все коллекции через Directus MCP до начала вёрстки экранов. Schema-first подход.
 
-- [ ] `cook_queue` collection (fields: date, cook user relation, dish name, status)
-- [ ] `orders` collection (fields: user relation, cook_queue relation, status)
-- [ ] `order_items` collection (fields: order relation, quantity)
-- [ ] `transactions` collection (fields: user relation, amount, type, description, date)
-- [ ] `balances` collection (fields: user relation, amount)
+- [x] `cook_queue` collection (fields: date, cook user relation, dish name, status)
+- [x] `orders` collection (fields: user relation, cook_queue relation, status)
+- [x] `order_items` collection (fields: order relation, quantity)
+- [x] `transactions` collection (fields: user relation, amount, type, description, date)
+- [x] `balances` collection (fields: user relation, amount)
 
 ---
 

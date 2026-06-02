@@ -30,6 +30,14 @@
 - [x] **Directus MCP подключён** (http://localhost:8055/mcp) — агент может управлять схемой
 - [x] **Chrome DevTools MCP подключён** (port 9222) — агент может инспектировать браузер
 - [x] **`ssr: false`** на верхнем уровне, `experimental.viteEnvironmentApi: true` (фикс Nuxt 4 SPA падения)
+- [x] **Динамический редирект** после логина: повар → `/cook`, иначе → Home
+- [x] **Страница `/cook`** — базовая заглушка с кнопкой
+- [x] **`cook_queue`** collection — дата, повар (M2O users), dish_name, статус
+- [x] **`orders`** collection — юзер (M2O users), cook_queue (M2O cook_queue), статус
+- [x] **`order_items`** collection — заказ (M2O orders), quantity
+- [x] **`transactions`** collection — юзер (M2O users), amount, type, description, date
+- [x] **`balances`** collection — юзер (M2O users), amount
+- [x] **O2M alias-поля** — `cook_queue` → orders, `orders` → items
 
 ## Known issues
 - **Sign Up работает** через серверный прокси (`server/api/auth/signup.post.ts`) — создаёт юзера через админ-токен
@@ -43,16 +51,6 @@
 
 ## Next session — plan
 
-### Phase 2: finish
-- [ ] Настроить динамический редирект: если юзер — сегодняшний повар → Cook page, иначе → Home
-
-### Phase 3: Directus Schema Setup
-- [ ] cook_queue collection (date, cook user relation, dish name, status)
-- [ ] orders collection (user relation, cook_queue relation, status)
-- [ ] order_items collection (order relation, quantity)
-- [ ] transactions collection (user relation, amount, type, description, date)
-- [ ] balances collection (user relation, amount)
-
 ### Phase 4: Feature Screens (после схемы)
 - [ ] Полноценный Home screen (поиск, категории, карточки рецептов)
 - [ ] Создать остальные экраны: meal-plan, ai-recipe, journal, learning, profile, recipe/[id]
@@ -65,3 +63,4 @@
 - `5a16375` — chore: update git log in progress.md
 - `ef1d539` — feat(auth): replace fake login with real Directus auth + signup proxy
 - `96cde43` — chore: update git log in progress.md
+- `b130126` — feat(docs): sync progress log, reorder roadmap phases, update AGENTS workflow
