@@ -77,3 +77,4 @@
 ## Git log
 - `94fc7a4` — feat(onboarding): replace absolute layout with flex, add lang=ts
 - `376d90f` — feat(layout): add BottomTabBar with 5 tabs, wire into default layout
+- `adff924` — feat(auth): add fake login flow, form validation, route protection, darkStatus
