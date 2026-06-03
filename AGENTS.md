@@ -79,6 +79,11 @@ Verify `docs/progress.md` is complete enough that a different agent could contin
 ### When to commit
 - After completing every Milestone or major feature (new page, new component)
 - Never commit broken or half-done code
+- 
+### Commit frequency
+Do NOT commit after every small fix.
+Commit only after a complete feature or milestone is done.
+For small fixes (warnings, typos, minor CSS) — make changes but wait for explicit commit instruction.
 
 ### Commit message format
 `<type>(<scope>): <what was done>`

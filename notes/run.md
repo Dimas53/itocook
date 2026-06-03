@@ -29,3 +29,18 @@ docker ps
 ```
 
 Ожидаемые контейнеры: `itocook-postgres`, `itocook-directus`, `itocook-frontend`, `itocook-api`.
+
+
+## chrome-debug
+
+```bash
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/chrome-debug \
+  http://localhost:3000
+```
+
+
+
+MCP user directus
+dkIHulcJZ18e3ZuENS943XlY8K_S3nMZ

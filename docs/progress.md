@@ -13,6 +13,7 @@
 - [x] `auth-bg: '#EDE8FF'` added to tailwind + design.md
 - [x] Auth screen refactored — auth-bg token, transparent inputs, rounded-xl, branding fixed
 - [x] Auth input interaction states — bg-white/40, focus:bg-white, focus:border-primary
+- [x] Auth browser warnings fixed — Transition → v-show, autocomplete + name attributes
 - [x] Nuxt config fixed — main.css uncommented, stale .nuxt cache cleared
 - [x] `onboarding.vue` — `absolute inset-0` → `h-full`, добавлен `lang="ts"`
 - [x] `components/BottomTabBar.vue` — 5 табов с Phosphor icons, активный/неактивный стиль
@@ -66,3 +67,5 @@
 - `b130126` — feat(docs): sync progress log, reorder roadmap phases, update AGENTS workflow
 - `7caac6a` — feat(schema): create 5 Directus collections + dynamic login redirect
 - `ba67cc7` — fix(frontend): typescript and syntax cleanup
+- `46c47da` — fix(auth): replace Transition v-if with v-show, add autocomplete attributes
+- `4d4b236` — fix(auth): smooth opacity-only field transition, stable form height
