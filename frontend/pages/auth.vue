@@ -38,8 +38,11 @@
 
         <div class="flex-1">
           <form @submit.prevent="handleSubmit" class="flex flex-col">
-            <Transition name="fields">
-              <div v-show="isSignUp" key="signup" class="space-y-3">
+            <div class="relative">
+              <div
+                :class="isSignUp ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
+                class="space-y-3 relative transition-opacity duration-200"
+              >
                 <div class="flex gap-3">
                   <input
                     v-model="firstName"
@@ -75,9 +78,10 @@
                   class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
               </div>
-            </Transition>
-            <Transition name="fields">
-              <div v-show="!isSignUp" key="login" class="space-y-3">
+              <div
+                :class="!isSignUp ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
+                class="space-y-3 absolute inset-x-0 top-0 transition-opacity duration-200"
+              >
                 <input
                   v-model="email"
                   type="text"
@@ -100,7 +104,7 @@
                   </div>
                 </div>
               </div>
-            </Transition>
+            </div>
 
             <p v-if="errorMsg" class="text-red-500 text-[13px] mt-3 text-center">{{ errorMsg }}</p>
 
@@ -222,18 +226,4 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-.fields-enter-active,
-.fields-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.fields-enter-from {
-  opacity: 0;
-  transform: translateY(6px);
-}
-
-.fields-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
-}
 </style>
