@@ -38,7 +38,7 @@
 
         <div class="flex-1">
           <Transition name="fade" mode="out-in">
-            <div v-if="isSignUp" key="signup" class="space-y-3">
+            <form v-if="isSignUp" key="signup" @submit.prevent="handleSubmit" class="space-y-3">
               <div class="flex gap-3">
                 <input
                   v-model="firstName"
@@ -65,8 +65,8 @@
                 placeholder="Password"
                 class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
               />
-            </div>
-            <div v-else key="login" class="space-y-3">
+            </form>
+            <form v-else key="login" @submit.prevent="handleSubmit" class="space-y-3">
               <input
                 v-model="email"
                 type="text"
@@ -84,12 +84,13 @@
                   <a href="#" class="text-xs text-gray-500 font-medium">Forgot Password?</a>
                 </div>
               </div>
-            </div>
+            </form>
           </Transition>
 
           <p v-if="errorMsg" class="text-red-500 text-[13px] mt-3 text-center">{{ errorMsg }}</p>
 
           <button
+            type="submit"
             @click="handleSubmit"
             :disabled="validating"
             class="w-full h-14 rounded-full mt-5 font-semibold text-[16px] text-white active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
