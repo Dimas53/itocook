@@ -20,6 +20,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ layout: 'app' })
+
 const { user, isTodayCook } = useAuth()
 
 onMounted(async () => {

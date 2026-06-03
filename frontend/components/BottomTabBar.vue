@@ -1,29 +1,41 @@
 <template>
-  <div class="h-[70px] bg-white border-t border-gray-100 flex items-center justify-around px-2 shrink-0">
+<!--  <div-->
+<!--    class="fixed left-4 right-4 z-50 rounded-3xl h-[64px] backdrop-blur-md bg-black/30 flex items-center justify-between px-4"-->
+<!--    :style="{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }"-->
+<!--  >-->
+
+  <div
+      class="absolute left-4 right-4 z-50 rounded-3xl h-[64px] backdrop-blur-md bg-black/30 flex items-center justify-between px-4"
+      :style="{ bottom: '16px' }"
+  >
     <button
       v-for="tab in tabs"
       :key="tab.id"
       @click="navigate(tab.route)"
-      class="flex flex-col items-center justify-center gap-0.5 active:scale-[0.98] transition-transform"
+      class="flex items-center justify-center active:scale-[0.98] transition-transform"
+      :class="activeTab === tab.id ? 'bg-white rounded-full w-12 h-12' : 'w-12 h-12'"
     >
-      <component :is="tab.icon" :class="activeTab === tab.id ? 'text-primary' : 'text-gray-400'" class="size-6" weight="regular" />
-      <span :class="activeTab === tab.id ? 'text-primary font-semibold' : 'text-gray-400 font-normal'" class="text-[10px]">{{ tab.label }}</span>
+      <component
+        :is="tab.icon"
+        weight="fill"
+        :class="activeTab === tab.id ? 'text-app-black size-5' : 'text-white/80 size-5'"
+      />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { PhHouse, PhForkKnife, PhSparkle, PhNotebook, PhBooks } from '@phosphor-icons/vue'
+import { PhChefHat, PhCalendarDots, PhStarFour, PhNotepad, PhBookOpenText } from '@phosphor-icons/vue'
 
 const router = useRouter()
 const route = useRoute()
 
 const tabs = [
-  { id: 'home', label: 'Home', icon: PhHouse, route: '/' },
-  { id: 'meal-plan', label: 'Meal Plan', icon: PhForkKnife, route: '/meal-plan' },
-  { id: 'ai-recipe', label: 'AI Recipe', icon: PhSparkle, route: '/ai-recipe' },
-  { id: 'journal', label: 'Journal', icon: PhNotebook, route: '/journal' },
-  { id: 'learning', label: 'Learning', icon: PhBooks, route: '/learning' },
+  { id: 'home', icon: PhChefHat, route: '/' },
+  { id: 'meal-plan', icon: PhCalendarDots, route: '/meal-plan' },
+  { id: 'ai-recipe', icon: PhStarFour, route: '/ai-recipe' },
+  { id: 'journal', icon: PhNotepad, route: '/journal' },
+  { id: 'learning', icon: PhBookOpenText, route: '/learning' },
 ]
 
 const activeTab = computed(() => {

@@ -22,6 +22,7 @@
 
 <script setup lang="ts">
 definePageMeta({
+  layout: 'app',
   darkStatus: false,
 })
 </script>

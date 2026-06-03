@@ -44,15 +44,14 @@
 - **Sign Up работает** через серверный прокси (`server/api/auth/signup.post.ts`) — создаёт юзера через админ-токен
 - **CORS на Directus** — включён (`CORS_ENABLED`, `CORS_ORIGIN: http://localhost:3000`)
 - **Profile page** — отсутствует (нужно создать `pages/profile.vue`)
-- **Layout safe areas:** `pt-[60px]` / `pb-[34px]` будут на каждой странице индивидуально (в `default.vue` ломают auth)
 - **Balance и Today's Cook** на index.vue — заглушки (€0.00 / —). Будут наполняться после настройки Directus коллекций
 - **7 из 10 экранов не созданы:** meal-plan, ai-recipe, journal, learning, profile, recipe/[id]
-- **BottomTabBar готов,** остальные компоненты (RecipeCard, CategoryPill, MacroRing) ещё нет
+- **RecipeCard, CategoryPill, MacroRing** ещё не созданы
 - **Nuxt 4 SPA краш** — `ssr: false` + `compatibilityVersion: 4` вызывает `No entry found in rollupOptions.input`. Лечится `experimental.viteEnvironmentApi: true`
 
 ## Next session — plan
 
-### Phase 4: Feature Screens (после схемы)
+### Phase 4: Feature Screens
 - [ ] Полноценный Home screen (поиск, категории, карточки рецептов)
 - [ ] Создать остальные экраны: meal-plan, ai-recipe, journal, learning, profile, recipe/[id]
 - [ ] Вспомогательные компоненты: RecipeCard, CategoryPill, MacroRing
@@ -69,3 +68,5 @@
 - `ba67cc7` — fix(frontend): typescript and syntax cleanup
 - `46c47da` — fix(auth): replace Transition v-if with v-show, add autocomplete attributes
 - `4d4b236` — fix(auth): smooth opacity-only field transition, stable form height
+- `514a823` — chore: add camera indicator to notch, commit frequency rules, update progress
+- `(not committed)` — feat(layout): create app.vue layout with safe area padding, redesign BottomTabBar to floating pill
