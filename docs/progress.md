@@ -39,13 +39,14 @@
 - [x] **`transactions`** collection — юзер (M2O users), amount, type, description, date
 - [x] **`balances`** collection — юзер (M2O users), amount
 - [x] **O2M alias-поля** — `cook_queue` → orders, `orders` → items
+- [x] **Profile page** — `pages/profile.vue` с аватаром, табами, списками рецептов
+- [x] **Home header** — обновлён с кликабелным профилем, аватаром и колокольчиком
 
 ## Known issues
 - **Sign Up работает** через серверный прокси (`server/api/auth/signup.post.ts`) — создаёт юзера через админ-токен
 - **CORS на Directus** — включён (`CORS_ENABLED`, `CORS_ORIGIN: http://localhost:3000`)
-- **Profile page** — отсутствует (нужно создать `pages/profile.vue`)
 - **Balance и Today's Cook** на index.vue — заглушки (€0.00 / —). Будут наполняться после настройки Directus коллекций
-- **7 из 10 экранов не созданы:** meal-plan, ai-recipe, journal, learning, profile, recipe/[id]
+- **6 из 10 экранов не созданы:** meal-plan, ai-recipe, journal, learning, recipe/[id]
 - **RecipeCard, CategoryPill, MacroRing** ещё не созданы
 - **Nuxt 4 SPA краш** — `ssr: false` + `compatibilityVersion: 4` вызывает `No entry found in rollupOptions.input`. Лечится `experimental.viteEnvironmentApi: true`
 
@@ -53,7 +54,7 @@
 
 ### Phase 4: Feature Screens
 - [ ] Полноценный Home screen (поиск, категории, карточки рецептов)
-- [ ] Создать остальные экраны: meal-plan, ai-recipe, journal, learning, profile, recipe/[id]
+- [ ] Создать остальные экраны: meal-plan, ai-recipe, journal, learning, recipe/[id]
 - [ ] Вспомогательные компоненты: RecipeCard, CategoryPill, MacroRing
 
 ## Git log

@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-app-bg p-4">
-<!--    <div class="relative w-[390px] h-[844px] rounded-[50px] border-[6px] border-app-black shadow-2xl overflow-hidden bg-white">-->
-    <div class="relative w-[390px] h-[844px] rounded-[50px] border-[6px] border-app-black shadow-2xl overflow-hidden bg-blue-300">
+    <div class="relative w-[390px] h-[844px] rounded-[50px] border-[6px] border-app-black shadow-2xl overflow-hidden bg-white">
 
       <!-- Phone brow / notch -->
       <div class="absolute top-3 left-1/2 -translate-x-1/2 w-[126px] h-[34px] bg-app-black rounded-full z-50">
@@ -15,7 +14,8 @@
           src="/images/ios_bar.svg"
           alt="status-bar"
           class="h-[12px] object-contain mt-[14px]"
-          :class="{ 'invert': isDarkStatus }">
+          :class="{ 'invert': isDarkStatus }"
+        >
       </div>
 
       <!-- Content area with top/bottom padding for notch + tab bar -->
@@ -24,7 +24,7 @@
       </div>
 
       <!-- Floating bottom tab bar -->
-      <BottomTabBar />
+      <BottomTabBar v-if="!isProfilePage" />
     </div>
   </div>
 </template>
@@ -33,4 +33,5 @@
 const route = useRoute()
 
 const isDarkStatus = computed(() => route.meta.darkStatus === true)
+const isProfilePage = computed(() => route.path === '/profile')
 </script>
