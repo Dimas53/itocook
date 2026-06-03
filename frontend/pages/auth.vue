@@ -38,18 +38,22 @@
 
         <div class="flex-1">
           <form @submit.prevent="handleSubmit" class="flex flex-col">
-            <Transition name="fade" mode="out-in">
-              <div v-if="isSignUp" key="signup" class="space-y-3">
+            <Transition name="fields">
+              <div v-show="isSignUp" key="signup" class="space-y-3">
                 <div class="flex gap-3">
                   <input
                     v-model="firstName"
                     type="text"
+                    name="firstName"
+                    autocomplete="given-name"
                     placeholder="First Name"
                     class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                   />
                   <input
                     v-model="lastName"
                     type="text"
+                    name="lastName"
+                    autocomplete="family-name"
                     placeholder="Last Name"
                     class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                   />
@@ -57,20 +61,28 @@
                 <input
                   v-model="email"
                   type="text"
+                  name="email"
+                  autocomplete="email"
                   placeholder="Email or Phone Number"
                   class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
                 <input
                   v-model="password"
                   type="password"
+                  name="password"
+                  autocomplete="new-password"
                   placeholder="Password"
                   class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
               </div>
-              <div v-else key="login" class="space-y-3">
+            </Transition>
+            <Transition name="fields">
+              <div v-show="!isSignUp" key="login" class="space-y-3">
                 <input
                   v-model="email"
                   type="text"
+                  name="email"
+                  autocomplete="email"
                   placeholder="Email or Phone Number"
                   class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
@@ -78,6 +90,8 @@
                   <input
                     v-model="password"
                     type="password"
+                    name="password"
+                    autocomplete="current-password"
                     placeholder="Password"
                     class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                   />
@@ -208,17 +222,17 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
+.fields-enter-active,
+.fields-leave-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.fade-enter-from {
+.fields-enter-from {
   opacity: 0;
   transform: translateY(6px);
 }
 
-.fade-leave-to {
+.fields-leave-to {
   opacity: 0;
   transform: translateY(-6px);
 }
