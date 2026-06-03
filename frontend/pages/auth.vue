@@ -37,71 +37,72 @@
         </div>
 
         <div class="flex-1">
-          <Transition name="fade" mode="out-in">
-            <form v-if="isSignUp" key="signup" @submit.prevent="handleSubmit" class="space-y-3">
-              <div class="flex gap-3">
+          <form @submit.prevent="handleSubmit" class="flex flex-col">
+            <Transition name="fade" mode="out-in">
+              <div v-if="isSignUp" key="signup" class="space-y-3">
+                <div class="flex gap-3">
+                  <input
+                    v-model="firstName"
+                    type="text"
+                    placeholder="First Name"
+                    class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  />
+                  <input
+                    v-model="lastName"
+                    type="text"
+                    placeholder="Last Name"
+                    class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  />
+                </div>
                 <input
-                  v-model="firstName"
+                  v-model="email"
                   type="text"
-                  placeholder="First Name"
+                  placeholder="Email or Phone Number"
                   class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
-                <input
-                  v-model="lastName"
-                  type="text"
-                  placeholder="Last Name"
-                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-                />
-              </div>
-              <input
-                v-model="email"
-                type="text"
-                placeholder="Email or Phone Number"
-                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-              />
-              <input
-                v-model="password"
-                type="password"
-                placeholder="Password"
-                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-              />
-            </form>
-            <form v-else key="login" @submit.prevent="handleSubmit" class="space-y-3">
-              <input
-                v-model="email"
-                type="text"
-                placeholder="Email or Phone Number"
-                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-              />
-              <div>
                 <input
                   v-model="password"
                   type="password"
                   placeholder="Password"
                   class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
-                <div class="flex justify-end mt-2">
-                  <a href="#" class="text-xs text-gray-500 font-medium">Forgot Password?</a>
+              </div>
+              <div v-else key="login" class="space-y-3">
+                <input
+                  v-model="email"
+                  type="text"
+                  placeholder="Email or Phone Number"
+                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                />
+                <div>
+                  <input
+                    v-model="password"
+                    type="password"
+                    placeholder="Password"
+                    class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  />
+                  <div class="flex justify-end mt-2">
+                    <a href="#" class="text-xs text-gray-500 font-medium">Forgot Password?</a>
+                  </div>
                 </div>
               </div>
-            </form>
-          </Transition>
+            </Transition>
 
-          <p v-if="errorMsg" class="text-red-500 text-[13px] mt-3 text-center">{{ errorMsg }}</p>
+            <p v-if="errorMsg" class="text-red-500 text-[13px] mt-3 text-center">{{ errorMsg }}</p>
 
-          <button
-            type="submit"
-            @click="handleSubmit"
-            :disabled="validating"
-            class="w-full h-14 rounded-full mt-5 font-semibold text-[16px] text-white active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
-            :class="validating ? 'bg-primary/60' : 'bg-primary'"
-          >
-            <svg v-if="validating" class="animate-spin size-5 text-white" viewBox="0 0 24 24" fill="none">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-            </svg>
-            {{ isSignUp ? 'Sign Up' : 'Log In' }}
-          </button>
+            <button
+              type="submit"
+              :disabled="validating"
+              class="w-full h-14 rounded-full mt-5 font-semibold text-[16px] text-white active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+              :class="validating ? 'bg-primary/60' : 'bg-primary'"
+            >
+              <svg v-if="validating" class="animate-spin size-5 text-white" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+              {{ isSignUp ? 'Sign Up' : 'Log In' }}
+            </button>
+          </form>
         </div>
 
         <div class="flex items-center my-6">
