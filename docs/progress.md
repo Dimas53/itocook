@@ -43,6 +43,11 @@
 - [x] **Home header** — обновлён с кликабелным профилем, аватаром и колокольчиком
 - [x] **`app.vue` layout** — iPhone frame, Dynamic Island, safe area, скролл
 - [x] **Floating BottomTabBar** — пилюля, backdrop-blur, абсолютное позиционирование
+- [x] **HeroBlock.vue** — 3 состояния: загрузка, повар назначен, пусто
+- [x] **RecipeCard.vue** — карточка блюда с skeleton и моковыми данными
+- [x] **BalanceWidget.vue** — запрос баланса из Directus коллекции balances
+- [x] **DutyWidget.vue** — виджет ближайшего дежурства
+- [x] **Home screen** — полный экран: HeroBlock, счётчик участников, BalanceWidget + DutyWidget в сетке, поиск, RecipeCard с моковыми данными
 
 ## Known issues
 - **Sign Up работает** через серверный прокси (`server/api/auth/signup.post.ts`) — создаёт юзера через админ-токен
@@ -57,7 +62,11 @@
 **Goal:** Финальная вёрстка всех экранов по актуальной карте экранов.
 
 - [x] Навигация (BottomTabBar) — 5 табов с новыми иконками, роуты под Phase 4, Admin-логика
-- [ ] Home screen — Hero-блок «кто готовит сегодня», кнопки обеда/повара, счётчик, виджеты, поиск, RecipeCard
+- [x] Home screen — HeroBlock, кнопки «Я обедаю»/«Стать поваром», счётчик, BalanceWidget, DutyWidget, поиск, RecipeCard
+- [x] HeroBlock.vue — 3 состояния (loading/cook/empty)
+- [x] RecipeCard.vue — карточка с моковыми данными и skeleton
+- [x] BalanceWidget.vue — запрос к balances через Directus
+- [x] DutyWidget.vue — виджет дежурства
 - [ ] Kitchen screen — очередь поваров, история блюд, поиск, оценки
 - [ ] AI Recipe — чат с AI, JSON-рендер рецепта, пересчёт порций
 - [ ] Duty screen — календарь дежурств, подтверждение, автоназначение
@@ -84,3 +93,4 @@
 - `(not committed)` — feat(layout): create app.vue layout with safe area padding, redesign BottomTabBar to floating pill
 - `aef7403` — feat(profile): add profile page, home header block with avatar, Gravatar → pravatar
 - `da4b884` — feat(layout): add app layout with floating BottomTabBar and stub pages
+- `b847eb4` — feat(navigation): update BottomTabBar with Phase 4 icons, routes, and admin logic
