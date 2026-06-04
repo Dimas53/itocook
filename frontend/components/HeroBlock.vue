@@ -16,10 +16,10 @@
 
 
 
-      <!-- Кнопки рядом -->
+      <!-- Buttons row -->
       <div class="flex gap-3">
         <button
-            class="flex-1 h-10 rounded-full flex items-center justify-center gap-2 px-4 transition-all active:scale-[0.97] backdrop-blur-md bg-white/30 border border-white/50 shadow-sm"
+            class="flex-1 h-10 rounded-full flex items-center justify-center gap-2 px-4 transition-all active:scale-[0.97] backdrop-blur-md bg-white/30 border border-white/50 shadow-sm z-10"
             :class="cook ? 'opacity-40 pointer-events-none' : ''"
             @click="$emit('become-cook')"
         >
@@ -28,7 +28,7 @@
         </button>
 
         <button
-            class="flex-1 h-10 rounded-full flex items-center justify-center gap-2 px-4 transition-all active:scale-[0.97] backdrop-blur-md bg-white/30 border border-white/50 shadow-sm"
+            class="flex-1 h-10 rounded-full flex items-center justify-center gap-2 px-4 transition-all active:scale-[0.97] backdrop-blur-md bg-white/30 border border-white/50 shadow-sm z-10"
             :class="joined ? 'opacity-60' : ''"
             @click="$emit('join')"
         >
@@ -39,14 +39,17 @@
         </button>
       </div>
 
-      <!-- Блок блюда — только если повар назначен -->
+      <!-- Dish block -- only when cook is set -->
 
       <div v-if="cook" class="relative mt-3 -mx-5 -mb-5 min-h-[140px]">
-        <!-- Текст слева -->
+        <!-- Text left -->
         <div class="absolute left-5 bottom-5 flex flex-col gap-1 z-10">
-          <h3 class="text-[22px] font-bold text-app-black leading-tight">
+          <span
+            class="text-[22px] font-bold text-app-black  cursor-pointer"
+            @click="$emit('view-dish')"
+          >
             {{ cook.dish }}
-          </h3>
+          </span>
           <p class="text-[13px] text-app-black/60">by {{ cook.name }}</p>
           <div class="flex items-center gap-1.5 mt-0.5">
             <PhUsers class="w-3.5 h-3.5 text-app-black/50" weight="fill" />
@@ -59,7 +62,7 @@
           </div>
         </div>
 
-        <!-- Звёздочка-подложка -->
+        <!-- Star decoration -->
         <svg
             class="absolute -right-1 -bottom-8 w-56 h-56 z-0 opacity-10 text-primary"
             xmlns="http://www.w3.org/2000/svg"
@@ -69,7 +72,7 @@
           <polygon points="501.539,169.221 453.886,86.7 303.669,173.449 303.669,0 208.365,0 208.365,173.479 58.114,86.73 10.461,169.261 160.674,255.99 10.501,342.71 58.154,425.231 208.365,338.482 208.365,512 303.669,512 303.669,338.542 453.846,425.271 501.499,342.74 351.267,255.99"/>
         </svg>
 
-        <!-- Картинка блюда поверх -->
+        <!-- Dish image overlay -->
         <img
             :src="cook.photo || '/images/salat.png'"
             alt="Dish"
@@ -104,5 +107,6 @@ defineProps<{
 defineEmits<{
   join: []
   'become-cook': []
+  'view-dish': []
 }>()
 </script>

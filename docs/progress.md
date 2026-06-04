@@ -5,7 +5,7 @@
 - [x] Docker running (Nuxt + Directus + PostgreSQL)
 - [x] iPhone frame layout (`layouts/default.vue`)
 - [x] Onboarding screen — fully fixed (flex layout, TypeScript)
-- [x] Auth screen — форма, валидация, ошибки, loading state
+- [x] Auth screen — form, validation, errors, loading state
 - [x] Tailwind CSS installed with custom config
 - [x] Jost font imported, global styles in `main.css`
 - [x] Phosphor Icons installed
@@ -15,67 +15,70 @@
 - [x] Auth input interaction states — bg-white/40, focus:bg-white, focus:border-primary
 - [x] Auth browser warnings fixed — Transition → v-show, autocomplete + name attributes
 - [x] Nuxt config fixed — main.css uncommented, stale .nuxt cache cleared
-- [x] `onboarding.vue` — `absolute inset-0` → `h-full`, добавлен `lang="ts"`
-- [x] `components/BottomTabBar.vue` — 5 табов с Phosphor icons, активный/неактивный стиль
-- [x] `default.vue` — таббар встроен, скрывается на /onboarding и /auth
-- [x] `default.vue` — `darkStatus` invert раскомментирован
-- [x] `composables/useDirectus.ts` — HTTP-клиент для Directus API
-- [x] `composables/useAuth.ts` — реальный signUp/login/logout/fetchUser через Directus
-- [x] `middleware/auth.global.ts` — проверка токена через GET /users/me
-- [x] `auth.vue` — реальный Sign Up и Log In (без setTimeout, без фейка)
-- [x] `index.vue` — вывод реальных данных пользователя (имя, email, баланс, роль)
-- [x] `server/api/auth/signup.post.ts` — серверный прокси для регистрации через админа Directus
+- [x] `onboarding.vue` — `absolute inset-0` → `h-full`, added `lang="ts"`
+- [x] `components/BottomTabBar.vue` — 5 tabs with Phosphor icons, active/inactive style
+- [x] `default.vue` — tabbar embedded, hidden on /onboarding and /auth
+- [x] `default.vue` — `darkStatus` invert uncommented
+- [x] `composables/useDirectus.ts` — HTTP client for Directus API
+- [x] `composables/useAuth.ts` — real signUp/login/logout/fetchUser via Directus
+- [x] `middleware/auth.global.ts` — token validation via GET /users/me
+- [x] `auth.vue` — real Sign Up and Log In (no setTimeout, no fake)
+- [x] `index.vue` — display real user data (name, email, balance, role)
+- [x] `server/api/auth/signup.post.ts` — server proxy for registration via Directus admin
 - [x] `docker-compose.yml` — CORS_ENABLED, CORS_ORIGIN, NUXT_DIRECTUS_ADMIN_EMAIL/PASSWORD
-- [x] `nuxt.config.ts` — runtimeConfig для admin email/password + серверный directusUrl
-- [x] **Role User назначается автоматически** при регистрации (через `signup.post.ts`)
-- [x] **Directus MCP подключён** (http://localhost:8055/mcp) — агент может управлять схемой
-- [x] **Chrome DevTools MCP подключён** (port 9222) — агент может инспектировать браузер
-- [x] **`ssr: false`** на верхнем уровне, `experimental.viteEnvironmentApi: true` (фикс Nuxt 4 SPA падения)
-- [x] **Динамический редирект** после логина: повар → `/cook`, иначе → Home
-- [x] **Страница `/cook`** — базовая заглушка с кнопкой
-- [x] **`cook_queue`** collection — дата, повар (M2O users), dish_name, статус
-- [x] **`orders`** collection — юзер (M2O users), cook_queue (M2O cook_queue), статус
-- [x] **`order_items`** collection — заказ (M2O orders), quantity
-- [x] **`transactions`** collection — юзер (M2O users), amount, type, description, date
-- [x] **`balances`** collection — юзер (M2O users), amount
-- [x] **O2M alias-поля** — `cook_queue` → orders, `orders` → items
-- [x] **Profile page** — `pages/profile.vue` с аватаром, табами, списками рецептов
-- [x] **Home header** — обновлён с кликабелным профилем, аватаром и колокольчиком
-- [x] **`app.vue` layout** — iPhone frame, Dynamic Island, safe area, скролл
-- [x] **Floating BottomTabBar** — пилюля, backdrop-blur, абсолютное позиционирование
-- [x] **HeroBlock.vue** — 3 состояния: загрузка, повар назначен, пусто
-- [x] **RecipeCard.vue** — карточка блюда с skeleton и моковыми данными
-- [x] **BalanceWidget.vue** — запрос баланса из Directus коллекции balances
-- [x] **DutyWidget.vue** — виджет ближайшего дежурства
-- [x] **Home screen** — полный экран: HeroBlock, счётчик участников, BalanceWidget + DutyWidget в сетке, поиск, RecipeCard с моковыми данными
+- [x] `nuxt.config.ts` — runtimeConfig for admin email/password + server directusUrl
+- [x] **Role User assigned automatically** on signup (via `signup.post.ts`)
+- [x] **Directus MCP connected** (http://localhost:8055/mcp) — agent can manage schema
+- [x] **Chrome DevTools MCP connected** (port 9222) — agent can inspect browser
+- [x] **`ssr: false`** at top level, `experimental.viteEnvironmentApi: true` (Nuxt 4 SPA crash fix)
+- [x] **Dynamic redirect** after login: cook → `/cook`, otherwise → Home
+- [x] **`/cook` page** — basic stub with button
+- [x] **`cook_queue`** collection — date, cook (M2O users), dish_name, status
+- [x] **`orders`** collection — user (M2O users), cook_queue (M2O cook_queue), status
+- [x] **`order_items`** collection — order (M2O orders), quantity
+- [x] **`transactions`** collection — user (M2O users), amount, type, description, date
+- [x] **`balances`** collection — user (M2O users), amount
+- [x] **O2M alias fields** — `cook_queue` → orders, `orders` → items
+- [x] **Profile page** — `pages/profile.vue` with avatar, tabs, recipe lists
+- [x] **Home header** — updated with clickable profile, avatar and bell icon
+- [x] **`app.vue` layout** — iPhone frame, Dynamic Island, safe area, scroll
+- [x] **Floating BottomTabBar** — pill, backdrop-blur, absolute positioning
+- [x] **HeroBlock.vue** — 3 states: loading, cook assigned, empty
+- [x] **HeroBlock.vue** — click on dish name → emit `view-dish`, text wrap via `break-words max-w-[55%]`
+- [x] **RecipeCard.vue** — dish card with skeleton and mock data
+- [x] **BalanceWidget.vue** — fetch balance from Directus balances collection
+- [x] **DutyWidget.vue** — nearest duty widget
+- [x] **Home screen** — full screen: HeroBlock, participant counter, BalanceWidget + DutyWidget in grid, search, RecipeCard with mock data
+- [x] **Recipe Detail stub** — `pages/recipe/today.vue` with mock data (Caesar Salad)
+- [x] **Recipe Detail redesign** — ekilu-style: photo 280px with buttons, white card -mt-6, rating, cook, description, ingredients, fixed Join button at bottom
 
 ## Known issues
-- **Sign Up работает** через серверный прокси (`server/api/auth/signup.post.ts`) — создаёт юзера через админ-токен
-- **CORS на Directus** — включён (`CORS_ENABLED`, `CORS_ORIGIN: http://localhost:3000`)
-- **Balance и Today's Cook** на index.vue — заглушки (€0.00 / —). Будут наполняться после настройки Directus коллекций
-- **RecipeCard, HeroBlock, BalanceWidget** и другие переиспользуемые компоненты ещё не созданы
-- **Nuxt 4 SPA краш** — `ssr: false` + `compatibilityVersion: 4` вызывает `No entry found in rollupOptions.input`. Лечится `experimental.viteEnvironmentApi: true`
+- **Sign Up works** through server proxy (`server/api/auth/signup.post.ts`) — creates user via admin token
+- **CORS on Directus** — enabled (`CORS_ENABLED`, `CORS_ORIGIN: http://localhost:3000`)
+- **Balance and Today's Cook** on index.vue — placeholders (€0.00 / —). Will be populated after setting up Directus collections
+- **RecipeCard, HeroBlock, BalanceWidget** and other reusable components not yet created
+- **Nuxt 4 SPA crash** — `ssr: false` + `compatibilityVersion: 4` triggers `No entry found in rollupOptions.input`. Fixed with `experimental.viteEnvironmentApi: true`
 
 ## Next session — plan
 
 ### Phase 4: Feature Screens
-**Goal:** Финальная вёрстка всех экранов по актуальной карте экранов.
+**Goal:** Final layout of all screens according to the current screen map.
 
-- [x] Навигация (BottomTabBar) — 5 табов с новыми иконками, роуты под Phase 4, Admin-логика
-- [x] Home screen — HeroBlock, кнопки «Я обедаю»/«Стать поваром», счётчик, BalanceWidget, DutyWidget, поиск, RecipeCard
-- [x] HeroBlock.vue — 3 состояния (loading/cook/empty)
-- [x] RecipeCard.vue — карточка с моковыми данными и skeleton
-- [x] BalanceWidget.vue — запрос к balances через Directus
-- [x] DutyWidget.vue — виджет дежурства
-- [ ] Kitchen screen — очередь поваров, история блюд, поиск, оценки
-- [ ] AI Recipe — чат с AI, JSON-рендер рецепта, пересчёт порций
-- [ ] Duty screen — календарь дежурств, подтверждение, автоназначение
-- [ ] Common screen — складчины, объявления, голосования
-- [ ] Cook Page — списание с баланса, чек, авторасчёт доли
-- [ ] Recipe Detail — фото, ингредиенты, шаги, пересчёт порций
-- [ ] Finance page — таблица балансов, алерты, история, отчёт
-- [ ] Notifications — лента, быстрые действия
-- [ ] Переиспользуемые компоненты: RecipeCard, HeroBlock, BalanceWidget, ParticipantCounter, DutyWidget
+- [x] Navigation (BottomTabBar) — 5 tabs with new icons, routes for Phase 4, Admin logic
+- [x] Home screen — HeroBlock, "I'm eating"/"Become a cook" buttons, counter, BalanceWidget, DutyWidget, search, RecipeCard
+- [x] HeroBlock.vue — 3 states (loading/cook/empty)
+- [x] RecipeCard.vue — card with mock data and skeleton
+- [x] BalanceWidget.vue — query to balances via Directus
+- [x] DutyWidget.vue — widget for duty
+- [ ] Kitchen screen — cook queue, dish history, search, ratings
+- [ ] AI Recipe — chat with AI, JSON recipe render, serving recalculation
+- [ ] Duty screen — duty calendar, confirmation, auto-assignment
+- [ ] Common screen — group purchases, announcements, polls
+- [ ] Cook Page — balance deduction, check, auto share calculation
+- [ ] Recipe Detail — populate with real data from cook_queue, ingredients, steps, serving recalculation
+- [ ] Finance page — balance table, alerts, history, report
+- [ ] Notifications — feed, quick actions
+- [ ] Reusable components: RecipeCard, HeroBlock, BalanceWidget, ParticipantCounter, DutyWidget
 
 ## Git log
 - `94fc7a4` — feat(onboarding): replace absolute layout with flex, add lang=ts
@@ -95,3 +98,5 @@
 - `da4b884` — feat(layout): add app layout with floating BottomTabBar and stub pages
 - `b847eb4` — feat(navigation): update BottomTabBar with Phase 4 icons, routes, and admin logic
 - `e5a2f1c` — feat(home): build Home screen with HeroBlock, RecipeCard, BalanceWidget, DutyWidget
+- `8c3d1b4` — chore(home): add hero decorative assets, polish HeroBlock layout
+- `(not committed)` — feat(recipe): add Recipe Detail page with ekilu-style layout, collapsible ingredients, sticky join button

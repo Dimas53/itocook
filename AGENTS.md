@@ -149,3 +149,43 @@ to avoid duplicates or conflicts with existing structure.
 
 When working on Phase 3+ features, prefer Directus MCP over manual UI clicks
 for all schema changes — this keeps changes reproducible and documented.
+
+
+
+---
+
+# English-Only Policy
+
+Russian language is strictly prohibited anywhere in the project.
+
+This rule applies to:
+
+* source code
+* comments
+* documentation
+* commit messages
+* pull requests
+* TODOs
+* FIXMEs
+* variable names
+* function names
+* file names
+* UI text
+* logs
+* tests
+* configuration files
+* generated code
+
+Before starting any work in an existing repository, perform a one-time full-project scan for Cyrillic characters and Russian text. Treat any detected Russian content as technical debt and replace it with English whenever the affected files are touched.
+
+If any Russian text is detected, it must be immediately translated and replaced with English.
+
+Before every commit and push:
+
+1. Scan all modified files for Cyrillic characters and Russian text.
+2. Replace any detected Russian text with clear English equivalents.
+3. Ensure that no new Russian content is introduced into the repository.
+
+When reviewing existing code, automatically convert any Russian comments, descriptions, or text to English as part of the current task.
+
+Never generate, insert, copy, preserve, or leave Russian text in project files under any circumstances.

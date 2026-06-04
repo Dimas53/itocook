@@ -31,6 +31,7 @@
           :total-count="totalCount"
           @join="onJoin"
           @become-cook="onBecomeCook"
+          @view-dish="router.push('/recipe/today')"
       />
 
 <!--      &lt;!&ndash; Participant counter &ndash;&gt;
