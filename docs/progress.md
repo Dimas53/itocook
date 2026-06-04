@@ -41,21 +41,32 @@
 - [x] **O2M alias-поля** — `cook_queue` → orders, `orders` → items
 - [x] **Profile page** — `pages/profile.vue` с аватаром, табами, списками рецептов
 - [x] **Home header** — обновлён с кликабелным профилем, аватаром и колокольчиком
+- [x] **`app.vue` layout** — iPhone frame, Dynamic Island, safe area, скролл
+- [x] **Floating BottomTabBar** — пилюля, backdrop-blur, абсолютное позиционирование
 
 ## Known issues
 - **Sign Up работает** через серверный прокси (`server/api/auth/signup.post.ts`) — создаёт юзера через админ-токен
 - **CORS на Directus** — включён (`CORS_ENABLED`, `CORS_ORIGIN: http://localhost:3000`)
 - **Balance и Today's Cook** на index.vue — заглушки (€0.00 / —). Будут наполняться после настройки Directus коллекций
-- **6 из 10 экранов не созданы:** meal-plan, ai-recipe, journal, learning, recipe/[id]
-- **RecipeCard, CategoryPill, MacroRing** ещё не созданы
+- **RecipeCard, HeroBlock, BalanceWidget** и другие переиспользуемые компоненты ещё не созданы
 - **Nuxt 4 SPA краш** — `ssr: false` + `compatibilityVersion: 4` вызывает `No entry found in rollupOptions.input`. Лечится `experimental.viteEnvironmentApi: true`
 
 ## Next session — plan
 
 ### Phase 4: Feature Screens
-- [ ] Полноценный Home screen (поиск, категории, карточки рецептов)
-- [ ] Создать остальные экраны: meal-plan, ai-recipe, journal, learning, recipe/[id]
-- [ ] Вспомогательные компоненты: RecipeCard, CategoryPill, MacroRing
+**Goal:** Финальная вёрстка всех экранов по актуальной карте экранов.
+
+- [x] Навигация (BottomTabBar) — 5 табов с новыми иконками, роуты под Phase 4, Admin-логика
+- [ ] Home screen — Hero-блок «кто готовит сегодня», кнопки обеда/повара, счётчик, виджеты, поиск, RecipeCard
+- [ ] Kitchen screen — очередь поваров, история блюд, поиск, оценки
+- [ ] AI Recipe — чат с AI, JSON-рендер рецепта, пересчёт порций
+- [ ] Duty screen — календарь дежурств, подтверждение, автоназначение
+- [ ] Common screen — складчины, объявления, голосования
+- [ ] Cook Page — списание с баланса, чек, авторасчёт доли
+- [ ] Recipe Detail — фото, ингредиенты, шаги, пересчёт порций
+- [ ] Finance page — таблица балансов, алерты, история, отчёт
+- [ ] Notifications — лента, быстрые действия
+- [ ] Переиспользуемые компоненты: RecipeCard, HeroBlock, BalanceWidget, ParticipantCounter, DutyWidget
 
 ## Git log
 - `94fc7a4` — feat(onboarding): replace absolute layout with flex, add lang=ts
@@ -71,3 +82,5 @@
 - `4d4b236` — fix(auth): smooth opacity-only field transition, stable form height
 - `514a823` — chore: add camera indicator to notch, commit frequency rules, update progress
 - `(not committed)` — feat(layout): create app.vue layout with safe area padding, redesign BottomTabBar to floating pill
+- `aef7403` — feat(profile): add profile page, home header block with avatar, Gravatar → pravatar
+- `da4b884` — feat(layout): add app layout with floating BottomTabBar and stub pages

@@ -1,12 +1,7 @@
 <template>
-<!--  <div-->
-<!--    class="fixed left-4 right-4 z-50 rounded-3xl h-[64px] backdrop-blur-md bg-black/30 flex items-center justify-between px-4"-->
-<!--    :style="{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }"-->
-<!--  >-->
-
   <div
-      class="absolute left-4 right-4 z-50 rounded-3xl h-[64px] backdrop-blur-md bg-black/30 flex items-center justify-between px-4"
-      :style="{ bottom: '16px' }"
+    class="absolute left-4 right-4 z-50 rounded-3xl h-[64px] backdrop-blur-md bg-black/30 flex items-center justify-between px-4"
+    :style="{ bottom: '16px' }"
   >
     <button
       v-for="tab in tabs"
@@ -25,22 +20,38 @@
 </template>
 
 <script setup lang="ts">
-import { PhChefHat, PhCalendarDots, PhStarFour, PhNotepad, PhBookOpenText } from '@phosphor-icons/vue'
+import {
+  PhCookingPot,
+  PhCalendarBlank,
+  PhSparkle,
+  PhChartBar,
+  PhBroom,
+  PhUsers,
+} from '@phosphor-icons/vue'
 
 const router = useRouter()
 const route = useRoute()
+const { user } = useAuth()
 
-const tabs = [
-  { id: 'home', icon: PhChefHat, route: '/' },
-  { id: 'meal-plan', icon: PhCalendarDots, route: '/meal-plan' },
-  { id: 'ai-recipe', icon: PhStarFour, route: '/ai-recipe' },
-  { id: 'journal', icon: PhNotepad, route: '/journal' },
-  { id: 'learning', icon: PhBookOpenText, route: '/learning' },
-]
+const isFinanceRole = computed(() => {
+  return user.value?.role && user.value.role !== '1927ae8a-4442-4097-91ce-0c290b3fc1d4'
+})
+
+const tabs = computed(() => [
+  { id: 'home', icon: PhCookingPot, route: '/' },
+  { id: 'kitchen', icon: PhCalendarBlank, route: '/kitchen' },
+  {
+    id: 'ai-recipe',
+    icon: isFinanceRole.value ? PhChartBar : PhSparkle,
+    route: isFinanceRole.value ? '/finance' : '/ai-recipe',
+  },
+  { id: 'duty', icon: PhBroom, route: '/duty' },
+  { id: 'common', icon: PhUsers, route: '/common' },
+])
 
 const activeTab = computed(() => {
   const path = route.path
-  const match = tabs.find(t => t.route === path)
+  const match = tabs.value.find(t => t.route === path)
   return match ? match.id : 'home'
 })
 

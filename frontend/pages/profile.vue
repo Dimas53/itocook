@@ -5,8 +5,8 @@
         <PhCaretLeft class="w-6 h-6 text-app-black" />
       </button>
       <h1 class="text-[20px] font-semibold text-app-black">Profile</h1>
-      <button class="w-10 h-10 flex items-center justify-center">
-        <PhGear class="w-6 h-6 text-app-black" />
+      <button class="w-10 h-10 flex items-center justify-center" @click="handleLogout">
+        <PhSignOut class="w-6 h-6 text-app-black" />
       </button>
     </div>
 
@@ -88,12 +88,12 @@
 </template>
 
 <script setup lang="ts">
-import { PhCaretLeft, PhGear, PhCaretRight, PhPlus } from '@phosphor-icons/vue'
+import { PhCaretLeft, PhSignOut, PhCaretRight, PhPlus } from '@phosphor-icons/vue'
 
 definePageMeta({ layout: 'app' })
 
 const router = useRouter()
-const { user } = useAuth()
+const { user, logout } = useAuth()
 
 const activeTab = ref('My Lists')
 const tabs = ['My Lists', 'My Recipes']
@@ -107,6 +107,11 @@ const displayName = computed(() => {
 const avatarUrl = computed(() =>
   `https://i.pravatar.cc/200?u=${user.value?.email}`
 )
+
+async function handleLogout() {
+  logout()
+  await navigateTo('/auth')
+}
 
 const fakeLists = [
   { title: 'Weekly Meals', subtitle: '05 recipes' },
