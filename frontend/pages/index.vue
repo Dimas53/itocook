@@ -24,21 +24,23 @@
     <div class="px-5 pb-[100px] space-y-4">
       <!-- Hero block -->
       <HeroBlock
-        :loading="heroLoading"
-        :cook="todayCook"
-        @join="onJoin"
-        @decline="onDecline"
-        @become-cook="onBecomeCook"
+          :loading="heroLoading"
+          :cook="todayCook"
+          :joined="hasJoined"
+          :participant-count="participantCount"
+          :total-count="totalCount"
+          @join="onJoin"
+          @become-cook="onBecomeCook"
       />
 
-      <!-- Participant counter -->
-      <div v-if="!heroLoading" class="flex items-center gap-2 px-1">
+<!--      &lt;!&ndash; Participant counter &ndash;&gt;
+      <div v-if="todayCook && !heroLoading" class="flex items-center gap-2 px-1">
         <PhUsers class="w-4 h-4 text-app-black/60" weight="fill" />
         <p class="text-[13px] text-app-black/60">
           <span class="font-semibold text-app-black">{{ participantCount }}</span> of
           <span class="font-semibold text-app-black">{{ totalCount }}</span> confirmed
         </p>
-      </div>
+      </div>-->
 
       <!-- Widgets row -->
       <div class="grid grid-cols-2 gap-3">
@@ -88,16 +90,17 @@
 
 <script setup lang="ts">
 import { PhBell, PhUsers, PhMagnifyingGlass } from '@phosphor-icons/vue'
+import type { CookInfo } from '~/components/HeroBlock.vue'
 
 definePageMeta({ layout: 'app' })
 
 const router = useRouter()
 const { user } = useAuth()
-const { request, tokenCookie } = useDirectus()
 
 // Hero state
 const heroLoading = ref(true)
-const todayCook = ref<{ name: string; dish?: string; status?: string } | null>(null)
+const todayCook = ref<CookInfo | null>(null)
+const hasJoined = ref(false)
 
 // Participant counter (static for now)
 const participantCount = ref(3)
@@ -118,11 +121,9 @@ const avatarUrl = computed(() =>
 )
 
 function onJoin() {
+  if (hasJoined.value) return
+  hasJoined.value = true
   participantCount.value = Math.min(participantCount.value + 1, totalCount.value)
-}
-
-function onDecline() {
-  participantCount.value = Math.max(participantCount.value - 1, 0)
 }
 
 function onBecomeCook() {
@@ -134,27 +135,16 @@ function onSearchFocus() {
 }
 
 onMounted(async () => {
-  // Fetch today's cook
-  try {
-    const today = new Date().toISOString().split('T')[0]!
-    const cooks = await request<any[]>('get', `/items/cook_queue?filter[date][_eq]=${today}&filter[status][_neq]=cancelled&limit=1`)
-    if (cooks.length > 0) {
-      const cookData = cooks[0]
-      let cookName = 'Chef'
-      if (cookData.cook && typeof cookData.cook === 'object') {
-        cookName = cookData.cook.first_name || 'Chef'
-      }
-      todayCook.value = {
-        name: cookName,
-        dish: cookData.dish_name || undefined,
-        status: cookData.status || undefined,
-      }
+  // Mock data based on email — Phase 5 will use real Directus query
+  if (user.value?.email === 'admin@itocook.com') {
+    todayCook.value = {
+      name: 'Admin',
+      dish: 'Cobb Salad',
+      photo: '/images/salat.png',
     }
-  } catch {
-    todayCook.value = null
-  } finally {
-    heroLoading.value = false
   }
+
+  heroLoading.value = false
 
   // Mock recipes
   recipes.value = [
@@ -164,21 +154,6 @@ onMounted(async () => {
   ]
   recipesLoading.value = false
 
-  // Duty done loading
   dutyLoading.value = false
-
-  // Redirect to cook page if user is today's cook
-  const token = tokenCookie.value
-  if (token && user.value) {
-    const today = new Date().toISOString().split('T')[0]!
-    try {
-      const myCook = await request<any[]>('get', `/items/cook_queue?filter[date][_eq]=${today}&filter[cook][_eq]=${user.value.id}&filter[status][_nin]=cancelled&limit=1`)
-      if (myCook.length > 0) {
-        await navigateTo('/cook')
-      }
-    } catch {
-      // silently fail
-    }
-  }
 })
 </script>

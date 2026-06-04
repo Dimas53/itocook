@@ -94,3 +94,4 @@
 - `aef7403` — feat(profile): add profile page, home header block with avatar, Gravatar → pravatar
 - `da4b884` — feat(layout): add app layout with floating BottomTabBar and stub pages
 - `b847eb4` — feat(navigation): update BottomTabBar with Phase 4 icons, routes, and admin logic
+- `e5a2f1c` — feat(home): build Home screen with HeroBlock, RecipeCard, BalanceWidget, DutyWidget
