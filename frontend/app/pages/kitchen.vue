@@ -13,95 +13,70 @@
 
     <div class="px-5 pb-[100px] space-y-5">
 
-      <!-- 1. Today's block -->
-      <div class="rounded-2xl bg-primary-light p-5">
-        <div v-if="todayLoading" class="space-y-3">
-          <div class="h-3 w-24 bg-white/60 rounded-full animate-pulse" />
-          <div class="h-5 w-40 bg-white/60 rounded-full animate-pulse" />
-          <div class="h-8 w-full bg-white/60 rounded-2xl animate-pulse" />
-        </div>
+      <!-- 1. Today's Kitchen hero -->
+      <HeroBlock
+        :loading="todayLoading"
+        :cook="heroCook"
+        :joined="hasJoined"
+        :participant-count="participantCount"
+        :total-count="totalCount"
+        @join="onJoin"
+        @become-cook="onBecomeCook"
+        @view-dish="router.push('/recipe/today')"
+      />
 
-        <div v-else class="space-y-4">
-          <p class="text-[12px] text-app-black/60 font-semibold uppercase tracking-wide">Today's Kitchen</p>
+      <!-- 2. Week calendar -->
+      <WeekCalendar
+        v-if="!weekLoading"
+        :days="calendarDays"
+        :selected-date="selectedDate"
+        @select-day="selectedDate = $event"
+        @prev-week="weekOffset -= 1"
+        @next-week="weekOffset += 1"
+      />
 
-          <div v-if="todayCook">
+      <!-- 3. Selected day detail -->
+      <div class="rounded-2xl bg-primary-light/50 p-5">
+        <div v-if="selectedSlot">
+          <p class="text-[12px] text-app-black/60 font-semibold uppercase tracking-wide mb-3">
+            {{ selectedSlot.dayName }} &middot; {{ selectedSlot.dateStr }}
+          </p>
+
+          <div v-if="selectedSlot.cookName">
             <p class="text-[14px] text-app-black/70">Cooked by</p>
-            <p class="text-[20px] font-bold text-app-black">{{ todayCook.cookName }}</p>
-            <p v-if="todayCook.dishName" class="text-[14px] text-app-black/70 mt-1">
-              Dish: <span class="font-semibold text-app-black">{{ todayCook.dishName }}</span>
+            <p class="text-[18px] font-bold text-app-black">{{ selectedSlot.cookName }}</p>
+            <p v-if="selectedSlot.dishName" class="text-[14px] text-app-black/70 mt-1">
+              Dish: <span class="font-semibold text-app-black">{{ selectedSlot.dishName }}</span>
             </p>
-            <div class="flex items-center gap-1.5 mt-2">
-              <PhUsers class="w-3.5 h-3.5 text-app-black/50" weight="fill" />
-              <p class="text-[12px] text-app-black/50">
-                <span class="font-semibold text-app-black">{{ participantCount }}</span> of {{ totalCount }} confirmed
-              </p>
-            </div>
-            <div v-if="isUserTodayCook" class="mt-3 inline-flex items-center gap-1.5 bg-primary text-white text-[12px] font-semibold rounded-full px-4 py-1.5">
-              <PhChefHat class="w-4 h-4" weight="fill" />
-              You're cooking today
-            </div>
           </div>
 
-          <div v-else class="space-y-3">
-            <p class="text-[14px] text-app-black/70">No cook assigned for today</p>
+          <div v-else-if="!selectedSlot.isPast" class="space-y-3">
+            <p class="text-[14px] text-app-black/70">No cook assigned for this day</p>
             <button
               class="w-full h-10 rounded-full bg-primary text-white font-semibold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-              @click="onBecomeCook"
+              @click="onSignUp(selectedSlot.date)"
             >
               <PhChefHat class="w-4 h-4" weight="fill" />
               Become a cook
             </button>
           </div>
-        </div>
-      </div>
 
-      <!-- 2. Weekly cook queue -->
-      <div>
-        <h2 class="text-[16px] font-semibold text-app-black mb-3">This Week</h2>
-
-        <div v-if="weekLoading" class="space-y-2">
-          <div v-for="i in 7" :key="i" class="h-12 bg-gray-100 rounded-xl animate-pulse" />
-        </div>
-
-        <div v-else class="space-y-2">
-          <div
-            v-for="slot in weekSlots"
-            :key="slot.date"
-            class="rounded-xl flex items-center justify-between px-4 py-3"
-            :class="slot.isToday ? 'bg-primary text-white' : 'bg-primary-light/50'"
-          >
-            <div class="flex items-center gap-3">
-              <div>
-                <p class="text-[13px] font-semibold" :class="slot.isToday ? 'text-white' : 'text-app-black'">
-                  {{ slot.dayName }}
-                </p>
-                <p class="text-[11px]" :class="slot.isToday ? 'text-white/70' : 'text-app-black/50'">
-                  {{ slot.dateStr }}
-                </p>
-              </div>
-              <p class="text-[14px]" :class="slot.isToday ? 'text-white/90' : 'text-app-black/70'">
-                {{ slot.cookName || 'Free' }}
-                <span v-if="slot.dishName" class="text-[12px] opacity-70"> — {{ slot.dishName }}</span>
-              </p>
-            </div>
-
-            <button
-              v-if="!slot.cookName && !slot.isPast"
-              class="shrink-0 h-8 rounded-full px-4 text-[12px] font-semibold active:scale-[0.98] transition-transform"
-              :class="slot.isToday ? 'bg-white text-primary' : 'bg-primary text-white'"
-              @click="onSignUp(slot.date)"
-            >
-              Sign up
-            </button>
+          <div v-else>
+            <p class="text-[14px] text-app-black/50">No cook was assigned</p>
           </div>
         </div>
+
+        <div v-else-if="weekLoading" class="space-y-3">
+          <div class="h-3 w-24 bg-gray-200 rounded-full animate-pulse" />
+          <div class="h-5 w-32 bg-gray-200 rounded-full animate-pulse" />
+          <div class="h-8 w-full bg-gray-200 rounded-2xl animate-pulse" />
+        </div>
       </div>
 
-      <!-- 3. Dish history -->
+      <!-- 4. Dish history -->
       <div>
         <h2 class="text-[16px] font-semibold text-app-black mb-3">Dish History</h2>
 
-        <!-- Search -->
         <div class="relative mb-3">
           <PhMagnifyingGlass class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -146,7 +121,9 @@
 </template>
 
 <script setup lang="ts">
-import { PhBell, PhChefHat, PhUsers, PhStar, PhMagnifyingGlass } from '@phosphor-icons/vue'
+import { PhBell, PhChefHat, PhStar, PhMagnifyingGlass } from '@phosphor-icons/vue'
+import type { CalendarDay } from '~/components/WeekCalendar.vue'
+import type { CookInfo } from '~/components/HeroBlock.vue'
 
 definePageMeta({ layout: 'app' })
 
@@ -193,14 +170,19 @@ const historyLoading = ref(true)
 const todayCook = ref<{ cookName: string; dishName: string | null } | null>(null)
 const participantCount = ref(0)
 const totalCount = ref(0)
-const weekSlots = ref<WeekSlot[]>([])
+const allItems = ref<CookQueueItem[]>([])
 const historyItems = ref<HistoryItem[]>([])
 const searchQuery = ref('')
 
 const isUserTodayCook = ref(false)
+const hasJoined = ref(false)
+
+// ── Week navigation ──
+const weekOffset = ref(0)
+const selectedDate = ref(formatDateISO(new Date()))
 
 // ── Helpers ──
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 function getMonday(d: Date): Date {
@@ -217,7 +199,10 @@ function formatDateStr(d: Date): string {
 }
 
 function formatDateISO(d: Date): string {
-  return d.toISOString().split('T')[0]!
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 function getCookName(cook: CookQueueItem['cook']): string {
@@ -228,49 +213,23 @@ function getCookName(cook: CookQueueItem['cook']): string {
   return 'Unknown'
 }
 
-// ── Data fetching ──
-const todayISO = formatDateISO(new Date())
+// ── Computed: week days ──
+const currentMonday = computed(() => {
+  const m = getMonday(new Date())
+  m.setDate(m.getDate() + weekOffset.value * 7)
+  return m
+})
 
-onMounted(async () => {
-  // Fetch all cook_queue items
-  const params = new URLSearchParams({
-    fields: '*,cook.id,cook.first_name,cook.last_name',
-    sort: 'date',
-  })
-
-  let allItems: CookQueueItem[] = []
-  try {
-    allItems = await request<CookQueueItem[]>('get', `/items/cook_queue?${params}`)
-  } catch {
-    // Directus may not be available — use defaults
-  }
-
-  // ── Today's block ──
-  const todayItem = allItems.find(
-    (i) => i.date === todayISO && i.status !== 'cancelled'
-  )
-  if (todayItem) {
-    todayCook.value = {
-      cookName: getCookName(todayItem.cook),
-      dishName: todayItem.dish_name,
-    }
-    if (user.value && typeof todayItem.cook === 'object' && todayItem.cook.id === user.value.id) {
-      isUserTodayCook.value = true
-    }
-  }
-  participantCount.value = 3 // mock
-  totalCount.value = 8 // mock
-  todayLoading.value = false
-
-  // ── Weekly queue ──
-  const monday = getMonday(new Date())
+const weekSlots = computed<WeekSlot[]>(() => {
+  const monday = currentMonday.value
+  const todayISO = formatDateISO(new Date())
   const slots: WeekSlot[] = []
 
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday)
     d.setDate(monday.getDate() + i)
     const iso = formatDateISO(d)
-    const item = allItems.find(
+    const item = allItems.value.find(
       (ci) => ci.date === iso && ci.status !== 'cancelled'
     )
 
@@ -284,11 +243,70 @@ onMounted(async () => {
       isPast: iso < todayISO,
     })
   }
-  weekSlots.value = slots
+  return slots
+})
+
+const calendarDays = computed<CalendarDay[]>(() =>
+  weekSlots.value.map((s) => ({
+    date: s.date,
+    dayName: s.dayName,
+    dateNum: new Date(s.date + 'T12:00:00').getDate(),
+    hasActivity: !!s.cookName,
+    isToday: s.isToday,
+  }))
+)
+
+const selectedSlot = computed(() =>
+  weekSlots.value.find((s) => s.date === selectedDate.value) ?? null
+)
+
+const heroCook = computed<CookInfo | null>(() => {
+  if (!todayCook.value) return null
+  return {
+    name: todayCook.value.cookName,
+    dish: todayCook.value.dishName || '',
+  }
+})
+
+// ── Data fetching ──
+const todayISO = formatDateISO(new Date())
+
+onMounted(async () => {
+  const params = new URLSearchParams({
+    fields: '*,cook.id,cook.first_name,cook.last_name',
+    sort: 'date',
+  })
+
+  let items: CookQueueItem[] = []
+  try {
+    items = await request<CookQueueItem[]>('get', `/items/cook_queue?${params}`)
+  } catch {
+    // Directus may not be available
+  }
+  allItems.value = items
+
+  // ── Today's block ──
+  const todayItem = items.find(
+    (i) => i.date === todayISO && i.status !== 'cancelled'
+  )
+  if (todayItem) {
+    todayCook.value = {
+      cookName: getCookName(todayItem.cook),
+      dishName: todayItem.dish_name,
+    }
+    if (user.value && typeof todayItem.cook === 'object' && todayItem.cook !== null && todayItem.cook.id === user.value.id) {
+      isUserTodayCook.value = true
+    }
+  }
+  participantCount.value = 3
+  totalCount.value = 8
+  todayLoading.value = false
+
+  // ── Week & History are derived from allItems — no loading needed ──
   weekLoading.value = false
 
   // ── Dish history ──
-  const doneItems = allItems
+  const doneItems = items
     .filter((i) => i.date < todayISO && i.dish_name)
     .reverse()
     .slice(0, 20)
@@ -310,12 +328,17 @@ const filteredHistory = computed(() => {
 })
 
 // ── Actions ──
+function onJoin() {
+  if (hasJoined.value) return
+  hasJoined.value = true
+  participantCount.value = Math.min(participantCount.value + 1, totalCount.value)
+}
+
 function onBecomeCook() {
   router.push('/cook')
 }
 
 function onSignUp(date: string) {
-  // Creates a cook_queue entry — Phase 5 real implementation
   router.push('/cook')
 }
 
