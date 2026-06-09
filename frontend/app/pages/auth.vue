@@ -47,7 +47,7 @@
                   name="firstName"
                   autocomplete="given-name"
                   placeholder="First Name"
-                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
                 <input
                   v-model="lastName"
@@ -55,7 +55,7 @@
                   name="lastName"
                   autocomplete="family-name"
                   placeholder="Last Name"
-                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
               </div>
               <input
@@ -64,16 +64,26 @@
                 name="email"
                 autocomplete="email"
                 placeholder="Email or Phone Number"
-                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
               />
-              <input
-                v-model="password"
-                type="password"
-                name="password"
-                autocomplete="new-password"
-                placeholder="Password"
-                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-              />
+              <div class="relative">
+                <input
+                  v-model="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  name="password"
+                  autocomplete="new-password"
+                  placeholder="Password"
+                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 pr-11 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                />
+                <button
+                  type="button"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-400"
+                  @click="showPassword = !showPassword"
+                  tabindex="-1"
+                >
+                  <component :is="showPassword ? PhEye : PhEyeClosed" class="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             <p v-if="errorMsg" class="text-red-500 text-[13px] mt-3 text-center">{{ errorMsg }}</p>
@@ -101,17 +111,27 @@
                 name="email"
                 autocomplete="email"
                 placeholder="Email or Phone Number"
-                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
               />
               <div>
-                <input
-                  v-model="password"
-                  type="password"
-                  name="password"
-                  autocomplete="current-password"
-                  placeholder="Password"
-                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-                />
+                <div class="relative">
+                  <input
+                    v-model="password"
+                    :type="showPassword ? 'text' : 'password'"
+                    name="password"
+                    autocomplete="current-password"
+                    placeholder="Password"
+                    class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 pr-11 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-400"
+                    @click="showPassword = !showPassword"
+                    tabindex="-1"
+                  >
+                    <component :is="showPassword ? PhEye : PhEyeClosed" class="w-5 h-5" />
+                  </button>
+                </div>
                 <div class="flex justify-end mt-2">
                   <a href="#" class="text-xs text-gray-500 font-medium">Forgot Password?</a>
                 </div>
@@ -165,6 +185,8 @@
 </template>
 
 <script setup lang="ts">
+import { PhEye, PhEyeClosed } from '@phosphor-icons/vue'
+
 definePageMeta({
   darkStatus: true
 })
@@ -182,6 +204,7 @@ const firstName = ref('')
 const lastName = ref('')
 const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
 const errorMsg = ref('')
 const validating = ref(false)
 

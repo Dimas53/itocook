@@ -60,31 +60,31 @@ Agent reads `docs/design.md` before laying out each screen.
 
 ---
 
-### Navigation (Bottom Tab Bar) — update icons and routing
+### Navigation (Bottom Tab Bar) — update icons and routing ✅
 
-- [ ] Tab 1 — Home: icon `ph:cooking-pot`
-- [ ] Tab 2 — Kitchen: icon `ph:calendar-blank`
-- [ ] Tab 3 — AI Recipe: icon `ph:sparkle` (for Admin it's replaced with `ph:chart-bar` → Finance Page)
-- [ ] Tab 4 — Duty: icon `ph:broom`
-- [ ] Tab 5 — Common: icon `ph:users`
-- [ ] Tab replacement logic when Admin/Accountant logs in: `ph:sparkle` → `ph:chart-bar`
+- [x] Tab 1 — Home: icon `ph:cooking-pot`
+- [x] Tab 2 — Kitchen: icon `ph:calendar-blank`
+- [x] Tab 3 — AI Recipe: icon `ph:sparkle` (for Admin it's replaced with `ph:chart-bar` → Finance Page)
+- [x] Tab 4 — Duty: icon `ph:broom`
+- [x] Tab 5 — Common: icon `ph:users`
+- [x] Tab replacement logic when Admin/Accountant logs in: `ph:sparkle` → `ph:chart-bar`
 
 ---
 
 ### Main Screens (Tabs)
 
-#### Tab 1 — Home (`pages/index.vue`)
+#### Tab 1 — Home (`pages/index.vue`) ✅
 UI: top part custom, bottom part (cards + search) — from ekilu Home screen reference.
 
-- [ ] Header: greeting + user name + avatar (→ Profile)
-- [ ] Hero block: who's cooking today + dish name + lunch status
-- [ ] Button "I'm having lunch" / "Skip" (with timer — only until 24h before lunch)
-- [ ] Button "Become a cook" — shown only if no cook is assigned for today
-- [ ] Lunch participant counter (X of N confirmed)
-- [ ] Widget: my balance (mini, tap → Profile)
-- [ ] Widget: upcoming kitchen duty (tap → Duty tab)
-- [ ] Search dish history (tap opens Kitchen tab with search focus)
-- [ ] Office's latest dish cards — `RecipeCard.vue` (tap → Recipe Detail)
+- [x] Header: greeting + user name + avatar (→ Profile)
+- [x] Hero block: who's cooking today + dish name + lunch status
+- [x] Button "I'm having lunch" / "Skip" (with timer — only until 24h before lunch)
+- [x] Button "Become a cook" — shown only if no cook is assigned for today
+- [x] Lunch participant counter (X of N confirmed)
+- [x] Widget: my balance (mini, tap → Profile)
+- [x] Widget: upcoming kitchen duty (tap → Duty tab)
+- [x] Search dish history (tap opens Kitchen tab with search focus)
+- [x] Office's latest dish cards — `RecipeCard.vue` (tap → Recipe Detail)
 
 #### Tab 2 — Kitchen (`pages/kitchen.vue`)
 UI: custom. Combines cook queue + dish history.
@@ -132,17 +132,17 @@ UI: custom. Office pool collections, announcements, votes.
 
 ### Inner Screens (No Tab)
 
-#### Profile (`pages/profile.vue`)
+#### Profile (`pages/profile.vue`) 🟡
 UI: from ekilu Profile reference — basic layout, add balance block.
 Navigation: avatar in the header on any screen.
 
-- [ ] Avatar, name, position, department
+- [x] Avatar, name, position, department
 - [ ] Balance block: current balance + "Request top-up" button (amount input)
 - [ ] My transaction history (list: date, dish, amount)
 - [ ] Notification settings: push / email / WhatsApp (toggle)
 - [ ] My ratings and reviews
 - [ ] Statistics: how many times cooked, been on duty
-- [ ] Log out
+- [x] Log out
 
 #### Cook Page (`pages/cook.vue`)
 UI: entirely custom. The most important business screen.
@@ -157,13 +157,13 @@ Navigation: "Become a cook" button from Home or Kitchen. Auto-opens on login if 
 - [ ] "Confirm deduction" button → transactions in Directus
 - [ ] Shopping list from recipe (if a recipe from history is selected)
 
-#### Recipe Detail (`pages/recipe/[id].vue`)
+#### Recipe Detail (`pages/recipe/today.vue`) 🟡
 UI: from ekilu Recipe Detail reference (Spiced Fried Chicken) — almost 1-to-1.
 Navigation: dish card on Home, Kitchen, Cook Page.
 
-- [ ] Dish photo (fullscreen at the top)
-- [ ] Name, cook, date, rating
-- [ ] Ingredients + portion recalculation field
+- [x] Dish photo (fullscreen at the top)
+- [x] Name, cook, date, rating
+- [x] Ingredients + collapsible
 - [ ] Cooking steps
 - [ ] "Cooking this today" button (cook only — if user = Cook)
 - [ ] Ratings and reviews (anonymous)
@@ -190,14 +190,14 @@ Navigation: `ph:bell` icon in the header (with unread badge).
 
 ---
 
-### Reusable Components
+### Reusable Components ✅
 
-- [ ] `RecipeCard.vue` — dish card (photo, name, cook, rating, date)
+- [x] `RecipeCard.vue` — dish card (photo, name, cook, rating, date)
 - [ ] `CategoryPill.vue` — category / filter pill
-- [ ] `HeroBlock.vue` — "who's cooking today" block (Home + Kitchen)
-- [ ] `BalanceWidget.vue` — mini balance widget
-- [ ] `ParticipantCounter.vue` — lunch participant counter
-- [ ] `DutyWidget.vue` — upcoming duty widget
+- [x] `HeroBlock.vue` — "who's cooking today" block (Home + Kitchen)
+- [x] `BalanceWidget.vue` — mini balance widget
+- [ ] `ParticipantCounter.vue` — lunch participant counter (embedded in HeroBlock)
+- [x] `DutyWidget.vue` — upcoming duty widget
 
 ---
 
