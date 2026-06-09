@@ -18,18 +18,16 @@
       </div>
     </div>
 
-    <div class="flex gap-1.5">
+    <div class="grid grid-cols-7 gap-1.5">
       <button
         v-for="day in days"
         :key="day.date"
-        class="flex-1 flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-colors active:scale-[0.97]"
+        class="flex flex-col items-center gap-1 py-2 px-1 rounded-2xl transition-colors active:scale-[0.97]"
         :class="getDayClasses(day)"
         @click="$emit('select-day', day.date)"
       >
-        <span class="text-[11px] font-semibold uppercase tracking-wide">{{ day.dayName }}</span>
-        <span class="text-[18px] font-bold leading-none">{{ day.dateNum }}</span>
-        <span v-if="day.hasActivity" class="w-1 h-1 rounded-full mt-0.5" :class="day.date === selectedDate ? 'bg-white' : 'bg-primary'" />
-        <span v-else class="w-1 h-1 mt-0.5" />
+        <span class="text-xs font-semibold">{{ day.dayName }}</span>
+        <span class="text-lg font-bold">{{ day.dateNum }}</span>
       </button>
     </div>
   </div>
@@ -59,12 +57,12 @@ defineEmits<{
 
 function getDayClasses(day: CalendarDay) {
   if (day.date === props.selectedDate) {
-    return 'bg-primary text-white shadow-none'
+    return 'bg-primary text-white'
   }
   if (day.isToday) {
     return 'bg-white text-app-black shadow-sm'
   }
-  return 'bg-gray-100/70 text-app-black'
+  return 'bg-gray-100 text-app-black'
 }
 
 const monthLabel = computed(() => {
