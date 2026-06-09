@@ -116,6 +116,16 @@
         </div>
       </div>
 
+<!--      test api-->
+      <div>
+        <div v-for="item in items" :key="item.id">
+          {{ item.dish_name }} — {{ item.amount }}€ ({{ item.status }})
+        </div>
+      </div>
+
+
+
+
     </div>
   </div>
 </template>
@@ -130,6 +140,23 @@ definePageMeta({ layout: 'app' })
 const router = useRouter()
 const { request } = useDirectus()
 const { user } = useAuth()
+
+
+
+// test api
+// const { request } = useDirectus()
+interface TestItem {
+  id: string
+  dish_name: string
+  status: string
+  amount: number
+}
+
+const { data: items } = useAsyncData('test-api', () =>
+    request<TestItem[]>('get', '/items/test_api')
+)
+
+// ---------------------
 
 // ── Types ──
 interface CookQueueItem {
@@ -279,6 +306,11 @@ onMounted(async () => {
 
   let items: CookQueueItem[] = []
   try {
+    // directus api — GET /items/cook_queue с полями cook.id, first_name, last_name
+    // Запрашиваем всю очередь готовки, чтобы показать:
+    //   - кто сегодня готовит (Today's block)
+    //   - расписание на неделю (WeekCalendar)
+    //   - историю блюд (Dish history)
     items = await request<CookQueueItem[]>('get', `/items/cook_queue?${params}`)
   } catch {
     // Directus may not be available

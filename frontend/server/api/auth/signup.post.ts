@@ -4,6 +4,12 @@ interface DirectusError {
   errors: Array<{ message: string }>
 }
 
+// ─── POST /api/auth/signup ──────────────────────────────────────────────
+// Nuxt server-route. Прокси для регистрации новых пользователей.
+// Нужен потому что Directus не позволяет создавать пользователей
+// через публичный API — только через Admin API с токеном админа.
+// ────────────────────────────────────────────────────────────────────────
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
   const { email, password, firstName, lastName } = await readBody(event)
@@ -12,6 +18,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'All fields are required' })
   }
 
+  // ── Шаг 1: логинимся как админ Directus ──────────────────────────────
+  // directus api — POST /auth/login с credentials админа
+  // config.directusUrl = http://directus:8055 (на сервере через Docker)
   const adminRes = await fetch(`${config.directusUrl}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -33,6 +42,9 @@ export default defineEventHandler(async (event) => {
 
   const adminToken = (adminJson as { data: { access_token: string } }).data.access_token
 
+  // ── Шаг 2: создаём нового пользователя через Admin API ───────────────
+  // directus api — POST /users с Bearer-токеном админа
+  // ВАЖНО: роль '1927ae8a-...' — это UUID роли User в Directus
   const createRes = await fetch(`${config.directusUrl}/users`, {
     method: 'POST',
     headers: {

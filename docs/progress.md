@@ -1,6 +1,9 @@
 # ItoCook — Progress Log
 
 ## Current status
+- [x] **Architecture overview** — `notes/architecture-overview.md` (full structural analysis)
+- [x] **Code walkthrough** — `notes/itocook-full-overview.md` (step-by-step code tour)
+- [x] **Directus API comments** — added `// directus api` comments to all call sites: `useDirectus.ts`, `useAuth.ts`, `signup.post.ts`, `auth.vue`, `BalanceWidget.vue`, `kitchen.vue`, `BottomTabBar.vue`, `auth.global.ts`
 - [x] Project structure set up (frontend/, api/, directus/)
 - [x] Docker running (Nuxt + Directus + PostgreSQL)
 - [x] iPhone frame layout (`layouts/default.vue`)
@@ -107,4 +110,5 @@
 - `b91dc64` — chore(frontend): migrate to Nuxt 4 app/ structure, fix nested form, add optimizeDeps
 - `d7702c6` — feat(auth): add password visibility toggle, increase input font to text-base
 - `e5f0e46` — feat(kitchen): add Kitchen screen with cook queue, weekly schedule, dish history
+- `78b5df0` — fix(kitchen): day offset bug, WeekCalendar pill design, HeroBlock reuse
 

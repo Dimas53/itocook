@@ -24,6 +24,10 @@ interface BalanceItem {
   amount: string
 }
 
+// ── fetchBalance ────────────────────────────────────────────────────────
+// directus api — GET /items/balances с фильтром по текущему юзеру
+// Берёт первую запись баланса для этого пользователя и показывает её
+// в мини-виджете на главном экране (index.vue).
 async function fetchBalance() {
   if (!user.value) {
     loading.value = false

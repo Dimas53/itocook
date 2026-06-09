@@ -205,3 +205,5 @@ Before every commit and push:
 When reviewing existing code, automatically convert any Russian comments, descriptions, or text to English as part of the current task.
 
 Never generate, insert, copy, preserve, or leave Russian text in project files under any circumstances.
+
+do not look at the mape /notes. in this mape /notes kann be written in russian.

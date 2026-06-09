@@ -33,6 +33,9 @@ const router = useRouter()
 const route = useRoute()
 const { user } = useAuth()
 
+// ── isFinanceRole ───────────────────────────────────────────────────────
+// directus api — user.value.role сравнивается с UUID роли User
+// Если роль отличается — значит юзер Admin/Accountant → показываем Finance
 const isFinanceRole = computed(() => {
   return user.value?.role && user.value.role !== '1927ae8a-4442-4097-91ce-0c290b3fc1d4'
 })
