@@ -86,15 +86,15 @@ UI: top part custom, bottom part (cards + search) — from ekilu Home screen ref
 - [x] Search dish history (tap opens Kitchen tab with search focus)
 - [x] Office's latest dish cards — `RecipeCard.vue` (tap → Recipe Detail)
 
-#### Tab 2 — Kitchen (`pages/kitchen.vue`)
+#### Tab 2 — Kitchen (`app/pages/kitchen.vue`) ✅
 UI: custom. Combines cook queue + dish history.
 
-- [ ] "Today" block: cook + dish + status + participant counter
-- [ ] Button "Become a cook" (if not assigned)
-- [ ] Weekly cook queue — slots by day, "Sign up" button
+- [x] "Today" block: cook + dish + status + participant counter
+- [x] Button "Become a cook" (if not assigned)
+- [x] Weekly cook queue — slots by day, "Sign up" button
 - [ ] Weekly menu (if planned by cook in advance)
-- [ ] Dish history: list with search, photo, cook name, date, rating
-- [ ] Select a dish from history → navigate to Recipe Detail with "Cooking this today" button
+- [x] Dish history: list with search, cook name, date, rating
+- [x] Select a dish from history → navigate to Recipe Detail (stub)
 - [ ] Anonymous dish ratings (stars + text, directly in the card)
 
 #### Tab 3 — AI Recipe (`pages/ai-recipe.vue`)

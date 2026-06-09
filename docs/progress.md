@@ -52,6 +52,7 @@
 - [x] **Recipe Detail stub** — `pages/recipe/today.vue` with mock data (Caesar Salad)
 - [x] **Recipe Detail redesign** — ekilu-style: photo 280px with buttons, white card -mt-6, rating, cook, description, ingredients, fixed Join button at bottom
 - [x] **Nuxt 4 directory structure** — all app code moved to `app/` (`app.vue`, `pages/`, `components/`, `composables/`, `layouts/`, `middleware/`, `assets/`), dev server verified
+- [x] **Kitchen screen** — Today's block (cook, dish, counter, "Become a cook"), weekly queue (7 day slots, "Sign up"), dish history (list with search, ratings)
 
 ## Known issues
 - **Sign Up works** through server proxy (`server/api/auth/signup.post.ts`) — creates user via admin token
@@ -70,7 +71,7 @@
 - [x] RecipeCard.vue — card with mock data and skeleton
 - [x] BalanceWidget.vue — query to balances via Directus
 - [x] DutyWidget.vue — widget for duty
-- [ ] Kitchen screen — cook queue, dish history, search, ratings
+- [x] Kitchen screen — cook queue, dish history, search, ratings
 - [ ] AI Recipe — chat with AI, JSON recipe render, serving recalculation
 - [ ] Duty screen — duty calendar, confirmation, auto-assignment
 - [ ] Common screen — group purchases, announcements, polls
@@ -101,3 +102,5 @@
 - `8c3d1b4` — chore(home): add hero decorative assets, polish HeroBlock layout
 - `11a4f05` — feat(recipe): add Recipe Detail page with ekilu-style layout, collapsible ingredients, sticky join button
 - `b91dc64` — chore(frontend): migrate to Nuxt 4 app/ structure, fix nested form, add optimizeDeps
+- `d7702c6` — feat(auth): add password visibility toggle, increase input font to text-base
+
