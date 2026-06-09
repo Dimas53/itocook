@@ -12,6 +12,15 @@
 
 ---
 
+## Nuxt 4 Structure (MANDATORY)
+
+- This project uses **Nuxt 4**. All application code MUST follow the official Nuxt 4 directory structure.
+- All app-level folders (`pages/`, `components/`, `composables/`, `layouts/`, `middleware/`, `assets/`, `plugins/`, `utils/`) and files (`app.vue`, `error.vue`, `app.config.ts`) MUST reside inside the `app/` directory.
+- Before any Nuxt-related implementation, fetch current docs via context7: resolve `nuxt` library and read the relevant section.
+- Do NOT use Nuxt 3 flat structure. If you are unsure — check context7 first, not your training data.
+
+---
+
 ## Project Structure & Context
 - **Pages:** `frontend/pages/`
 - **Layouts:** `frontend/layouts/`
@@ -150,7 +159,14 @@ to avoid duplicates or conflicts with existing structure.
 When working on Phase 3+ features, prefer Directus MCP over manual UI clicks
 for all schema changes — this keeps changes reproducible and documented.
 
+---
 
+## Chat Language Rules
+
+- In CLI chat, always respond in Russian by default.
+- If the user explicitly writes in German, respond in German.
+- If the user explicitly writes in English, respond in English.
+- All code explanations, reviews, analyses, and descriptions in chat must be written in Russian unless the user requests another language.
 
 ---
 

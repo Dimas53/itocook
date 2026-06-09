@@ -39,6 +39,9 @@ export default defineNuxtConfig({
         interval: 500,
       },
     },
+    optimizeDeps: {
+      include: ['@phosphor-icons/vue', '@vue/devtools-core', '@vue/devtools-kit'],
+    },
   },
 
   app: {

@@ -51,13 +51,13 @@
 - [x] **Home screen** — full screen: HeroBlock, participant counter, BalanceWidget + DutyWidget in grid, search, RecipeCard with mock data
 - [x] **Recipe Detail stub** — `pages/recipe/today.vue` with mock data (Caesar Salad)
 - [x] **Recipe Detail redesign** — ekilu-style: photo 280px with buttons, white card -mt-6, rating, cook, description, ingredients, fixed Join button at bottom
+- [x] **Nuxt 4 directory structure** — all app code moved to `app/` (`app.vue`, `pages/`, `components/`, `composables/`, `layouts/`, `middleware/`, `assets/`), dev server verified
 
 ## Known issues
 - **Sign Up works** through server proxy (`server/api/auth/signup.post.ts`) — creates user via admin token
 - **CORS on Directus** — enabled (`CORS_ENABLED`, `CORS_ORIGIN: http://localhost:3000`)
 - **Balance and Today's Cook** on index.vue — placeholders (€0.00 / —). Will be populated after setting up Directus collections
-- **RecipeCard, HeroBlock, BalanceWidget** and other reusable components not yet created
-- **Nuxt 4 SPA crash** — `ssr: false` + `compatibilityVersion: 4` triggers `No entry found in rollupOptions.input`. Fixed with `experimental.viteEnvironmentApi: true`
+- **Phase 4 screens** — Kitchen, AI Recipe, Duty, Common, Cook Page, Recipe Detail, Finance, Notifications all stubs or unfinished
 
 ## Next session — plan
 
@@ -99,4 +99,4 @@
 - `b847eb4` — feat(navigation): update BottomTabBar with Phase 4 icons, routes, and admin logic
 - `e5a2f1c` — feat(home): build Home screen with HeroBlock, RecipeCard, BalanceWidget, DutyWidget
 - `8c3d1b4` — chore(home): add hero decorative assets, polish HeroBlock layout
-- `(not committed)` — feat(recipe): add Recipe Detail page with ekilu-style layout, collapsible ingredients, sticky join button
+- `11a4f05` — feat(recipe): add Recipe Detail page with ekilu-style layout, collapsible ingredients, sticky join button

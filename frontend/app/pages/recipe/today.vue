@@ -3,7 +3,7 @@
 
     <!-- Photo -- fixed top -->
     <div class="bg-primary-light h-[320px] relative shrink-0">
-      <div class="absolute inset-0 p-2">
+      <div class="absolute top-10 inset-0 p-2">
         <img
           v-if="dish.photo"
           :src="dish.photo"

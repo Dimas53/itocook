@@ -37,71 +37,83 @@
         </div>
 
         <div class="flex-1">
-          <form @submit.prevent="handleSubmit" class="flex flex-col">
-            <div class="relative">
-              <div
-                :class="isSignUp ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
-                class="space-y-3 relative transition-opacity duration-200"
-              >
-                <div class="flex gap-3">
-                  <input
-                    v-model="firstName"
-                    type="text"
-                    name="firstName"
-                    autocomplete="given-name"
-                    placeholder="First Name"
-                    class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-                  />
-                  <input
-                    v-model="lastName"
-                    type="text"
-                    name="lastName"
-                    autocomplete="family-name"
-                    placeholder="Last Name"
-                    class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-                  />
-                </div>
+          <!-- Sign Up form -->
+          <form v-if="isSignUp" @submit.prevent="handleSubmit" class="flex flex-col">
+            <div class="space-y-3">
+              <div class="flex gap-3">
                 <input
-                  v-model="email"
+                  v-model="firstName"
                   type="text"
-                  name="email"
-                  autocomplete="email"
-                  placeholder="Email or Phone Number"
+                  name="firstName"
+                  autocomplete="given-name"
+                  placeholder="First Name"
                   class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
+                <input
+                  v-model="lastName"
+                  type="text"
+                  name="lastName"
+                  autocomplete="family-name"
+                  placeholder="Last Name"
+                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                />
+              </div>
+              <input
+                v-model="email"
+                type="text"
+                name="email"
+                autocomplete="email"
+                placeholder="Email or Phone Number"
+                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+              />
+              <input
+                v-model="password"
+                type="password"
+                name="password"
+                autocomplete="new-password"
+                placeholder="Password"
+                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+              />
+            </div>
+
+            <p v-if="errorMsg" class="text-red-500 text-[13px] mt-3 text-center">{{ errorMsg }}</p>
+
+            <button
+              type="submit"
+              :disabled="validating"
+              class="w-full h-14 rounded-full mt-5 font-semibold text-[16px] text-white active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+              :class="validating ? 'bg-primary/60' : 'bg-primary'"
+            >
+              <svg v-if="validating" class="animate-spin size-5 text-white" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+              Sign Up
+            </button>
+          </form>
+
+          <!-- Log In form -->
+          <form v-else @submit.prevent="handleSubmit" class="flex flex-col">
+            <div class="space-y-3">
+              <input
+                v-model="email"
+                type="text"
+                name="email"
+                autocomplete="email"
+                placeholder="Email or Phone Number"
+                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+              />
+              <div>
                 <input
                   v-model="password"
                   type="password"
                   name="password"
-                  autocomplete="new-password"
+                  autocomplete="current-password"
                   placeholder="Password"
                   class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
-              </div>
-              <div
-                :class="!isSignUp ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
-                class="space-y-3 absolute inset-x-0 top-0 transition-opacity duration-200"
-              >
-                <input
-                  v-model="email"
-                  type="text"
-                  name="email"
-                  autocomplete="email"
-                  placeholder="Email or Phone Number"
-                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-                />
-                <div>
-                  <input
-                    v-model="password"
-                    type="password"
-                    name="password"
-                    autocomplete="current-password"
-                    placeholder="Password"
-                    class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-sm placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-                  />
-                  <div class="flex justify-end mt-2">
-                    <a href="#" class="text-xs text-gray-500 font-medium">Forgot Password?</a>
-                  </div>
+                <div class="flex justify-end mt-2">
+                  <a href="#" class="text-xs text-gray-500 font-medium">Forgot Password?</a>
                 </div>
               </div>
             </div>
@@ -118,7 +130,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
               </svg>
-              {{ isSignUp ? 'Sign Up' : 'Log In' }}
+              Log In
             </button>
           </form>
         </div>
