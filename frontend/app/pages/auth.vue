@@ -195,9 +195,9 @@ const { signUp, login, isTodayCook } = useAuth()
 const router = useRouter()
 
 // ── redirectAfterLogin ──────────────────────────────────────────────────
-// После успешного логина проверяем, является ли юзер сегодняшним поваром.
-// Если да → /cook (панель повара), если нет → / (главная).
-// directus api — isTodayCook() → GET /items/cook_queue с фильтром
+// After successful login check if user is today's cook.
+// If yes → /cook (cook panel), if not → / (home).
+// directus api — isTodayCook() → GET /items/cook_queue with filter
 async function redirectAfterLogin() {
   const cook = await isTodayCook()
   router.push(cook ? '/cook' : '/')
@@ -244,9 +244,9 @@ function validate(): boolean {
 }
 
   // ── handleSubmit ─────────────────────────────────────────────────────
-  // Запускается при сабмите формы логина или регистрации.
-  // Логин → useAuth().login() → useDirectus().request('post', '/auth/login')
-  // Регистрация → useAuth().signUp() → fetch('/api/auth/signup') → Nuxt server route
+  // Runs on login or registration form submit.
+  // Login → useAuth().login() → useDirectus().request('post', '/auth/login')
+  // Registration → useAuth().signUp() → fetch('/api/auth/signup') → Nuxt server route
   async function handleSubmit() {
     if (!validate()) return
 

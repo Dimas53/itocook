@@ -30,8 +30,9 @@
           :participant-count="participantCount"
           :total-count="totalCount"
           @join="onJoin"
-          @become-cook="onBecomeCook"
-          @view-dish="router.push('/recipe/today')"
+        @become-cook="onBecomeCook"
+        @view-dish="router.push('/recipe/today')"
+        @go-to-cook="router.push('/cook')"
       />
 
 <!--      &lt;!&ndash; Participant counter &ndash;&gt;
@@ -97,6 +98,7 @@ definePageMeta({ layout: 'app' })
 
 const router = useRouter()
 const { user } = useAuth()
+const { request } = useDirectus()
 
 // Hero state
 const heroLoading = ref(true)
@@ -104,8 +106,8 @@ const todayCook = ref<CookInfo | null>(null)
 const hasJoined = ref(false)
 
 // Participant counter (static for now)
-const participantCount = ref(3)
-const totalCount = ref(8)
+const participantCount = ref(0)
+const totalCount = ref(0)
 
 // Duty (static for now)
 const dutyLoading = ref(true)
@@ -116,6 +118,16 @@ const searchQuery = ref('')
 // Recipes
 const recipesLoading = ref(true)
 const recipes = ref<{ title: string; chef: string; rating: number; time: string }[]>([])
+
+// Date helpers
+function formatDateISO(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+const todayISO = formatDateISO(new Date())
 
 const avatarUrl = computed(() =>
   `https://i.pravatar.cc/200?u=${user.value?.email}`
@@ -128,7 +140,7 @@ function onJoin() {
 }
 
 function onBecomeCook() {
-  router.push('/cook')
+  router.push('/cook?action=become')
 }
 
 function onSearchFocus() {
@@ -136,15 +148,35 @@ function onSearchFocus() {
 }
 
 onMounted(async () => {
-  // Mock data based on email — Phase 5 will use real Directus query
-  if (user.value?.email === 'admin@itocook.com') {
-    todayCook.value = {
-      name: 'Admin',
-      dish: 'Cobb Salad',
-      photo: '/images/salat.png',
-    }
-  }
+  // Fetch real cook_queue data
+  try {
+    const items = await request<any[]>('get',
+      `/items/cook_queue?filter[date][_eq]=${todayISO}&filter[status][_nin]=cancelled&sort=date&fields=*,cook.id,cook.first_name,cook.last_name`
+    )
 
+    // Priority: cooking > ready > scheduled
+    const todayEntry = items.find((i) => i.status === 'cooking')
+      || items.find((i) => i.status === 'ready')
+      || items[0]
+
+    if (todayEntry) {
+      const cookName = todayEntry.cook
+        ? [todayEntry.cook.first_name, todayEntry.cook.last_name].filter(Boolean).join(' ')
+        : 'Unknown'
+      todayCook.value = {
+        name: cookName,
+        dish: todayEntry.dish_name || '',
+        photo: '/images/salat.png',
+      }
+
+      // Check if current user is today's cook
+      if (user.value && todayEntry.cook?.id === user.value.id) {
+        hasJoined.value = true
+      }
+    }
+  } catch {
+    // Directus may not be available
+  }
   heroLoading.value = false
 
   // Mock recipes

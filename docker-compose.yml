@@ -40,6 +40,12 @@ services:
       ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
       CORS_ENABLED: "true"
       CORS_ORIGIN: "http://localhost:3000"
+      CORS_METHODS: "GET,POST,PATCH,DELETE,OPTIONS"
+      CORS_HEADERS: "Content-Type,Authorization"
+      CORS_MAX_AGE: "5"
+      # TODO: replace with proper refresh token flow in useAuth.ts
+      # 7 days matches the cookie lifetime
+      ACCESS_TOKEN_TTL: "7d"
 
   frontend:
     build:

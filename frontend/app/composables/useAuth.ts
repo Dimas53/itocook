@@ -13,23 +13,23 @@ interface LoginResponse {
 }
 
 // ─── useAuth ────────────────────────────────────────────────────────────
-// Управление аутентификацией: логин, регистрация, выход, получение юзера.
-// Полностью завязан на useDirectus().request() — все запросы к Directus
-// идут через центральный HTTP-клиент.
+// Manages authentication: login, registration, logout, fetch user.
+// Fully depends on useDirectus().request() — all requests to Directus
+// go through the central HTTP client.
 // ────────────────────────────────────────────────────────────────────────
 
 export const useAuth = () => {
   const { request, tokenCookie } = useDirectus()
 
-  // directus api — глобальное состояние текущего пользователя
-  // через useState, чтобы было доступно во всём приложении
+  // directus api — global reactive state for current user
+  // via useState so it's accessible across the whole app
   const user = useState<DirectusUser | null>('auth:user', () => null)
   const isLoggedIn = computed(() => !!user.value)
 
-  // ── Регистрация ──────────────────────────────────────────────────────
-  // Не идёт напрямую в Directus — сначала через Nuxt server-route
-  // (frontend/server/api/auth/signup.post.ts), которая логинится как
-  // админ и создаёт юзера через Directus Admin API.
+  // ── Registration ─────────────────────────────────────────────────────
+  // Does not go directly to Directus — first through a Nuxt server-route
+  // (frontend/server/api/auth/signup.post.ts), which logs in as
+  // admin and creates the user via Directus Admin API.
   async function signUp(
     firstName: string,
     lastName: string,
@@ -48,33 +48,33 @@ export const useAuth = () => {
       throw new Error(err.message || 'Registration failed')
     }
 
-    // После успешной регистрации — сразу логинимся
+    // After successful registration — log in immediately
     await login(email, password)
   }
 
-  // ── Логин ────────────────────────────────────────────────────────────
+  // ── Login ─────────────────────────────────────────────────────────────
   // directus api — POST /auth/login → Directus auth endpoint
-  // Возвращает access_token, refresh_token, expires
+  // Returns access_token, refresh_token, expires
   async function login(email: string, password: string): Promise<void> {
     const data = await request<LoginResponse>('post', '/auth/login', {
       email,
       password,
     })
-    // directus api — сохраняем access_token в куку
+    // directus api — save access_token to cookie
     tokenCookie.value = data.access_token
-    // directus api — сразу подтягиваем данные юзера
+    // directus api — immediately fetch user data
     await fetchUser()
   }
 
-  // ── Получение текущего юзера ─────────────────────────────────────────
-  // directus api — GET /users/me — проверяет токен и возвращает юзера
+  // ── Fetch current user ────────────────────────────────────────────────
+  // directus api — GET /users/me — validates token and returns user
   async function fetchUser(): Promise<void> {
     const userData = await request<DirectusUser>('get', '/users/me')
     user.value = userData
   }
 
-  // ── Проверка: является ли юзер сегодняшним поваром ──────────────────
-  // directus api — GET /items/cook_queue с фильтром по дате и юзеру
+  // ── Check: is user today's cook ────────────────────────────────────────
+  // directus api — GET /items/cook_queue filtered by date and user
   async function isTodayCook(): Promise<boolean> {
     if (!user.value) return false
     const today = new Date().toISOString().split('T')[0]!
@@ -92,9 +92,9 @@ export const useAuth = () => {
     }
   }
 
-  // ── Выход ────────────────────────────────────────────────────────────
+  // ── Logout ────────────────────────────────────────────────────────────
   function logout() {
-    // directus api — очищаем токен и пользователя
+    // directus api — clear token and user
     tokenCookie.value = null
     user.value = null
   }

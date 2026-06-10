@@ -23,6 +23,7 @@
         @join="onJoin"
         @become-cook="onBecomeCook"
         @view-dish="router.push('/recipe/today')"
+        @go-to-cook="router.push('/cook')"
       />
 
       <!-- 2. Week calendar -->
@@ -116,10 +117,44 @@
         </div>
       </div>
 
-<!--      test api-->
-      <div>
-        <div v-for="item in items" :key="item.id">
-          {{ item.dish_name }} — {{ item.amount }}€ ({{ item.status }})
+<!--      test api cards-->
+      <div class="space-y-3">
+        <h2 class="text-[16px] font-semibold text-app-black">Test Dishes (repeater demo)</h2>
+        <div v-for="item in items" :key="item.id"
+             class="rounded-2xl bg-white border border-gray-100 p-4 space-y-3 shadow-sm"
+        >
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-[16px] font-bold text-app-black">{{ item.dish_name }}</p>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="text-[12px] font-medium text-primary bg-primary-light px-2 py-0.5 rounded-full">
+                  {{ item.category }}
+                </span>
+                <span class="text-[14px] font-semibold text-app-black/70">
+                  €{{ Number(item.amount).toFixed(2) }}
+                </span>
+              </div>
+            </div>
+            <span class="text-[11px] uppercase tracking-wide font-semibold"
+                  :class="item.status === 'active' ? 'text-green-600' : 'text-gray-400'"
+            >
+              {{ item.status }}
+            </span>
+          </div>
+
+          <hr class="border-gray-50" />
+
+          <div>
+            <p class="text-[11px] uppercase tracking-wide font-semibold text-app-black/50 mb-2">Ingredients</p>
+            <div class="flex flex-wrap gap-1.5">
+              <span v-for="(ing, j) in (item.ingredients || [])" :key="j"
+                    class="text-[12px] bg-gray-50 text-app-black/80 px-2.5 py-1 rounded-full"
+              >
+                {{ ing.amount }}{{ ing.unit }} {{ ing.name }}
+              </span>
+            </div>
+            <p v-if="!item.ingredients?.length" class="text-[12px] text-gray-400 italic">No ingredients</p>
+          </div>
         </div>
       </div>
 
@@ -144,12 +179,19 @@ const { user } = useAuth()
 
 
 // test api
-// const { request } = useDirectus()
+interface TestIngredient {
+  name: string
+  amount: string
+  unit: string
+}
+
 interface TestItem {
   id: string
   dish_name: string
   status: string
-  amount: number
+  amount: string
+  category: string
+  ingredients: TestIngredient[]
 }
 
 const { data: items } = useAsyncData('test-api', () =>
@@ -256,9 +298,12 @@ const weekSlots = computed<WeekSlot[]>(() => {
     const d = new Date(monday)
     d.setDate(monday.getDate() + i)
     const iso = formatDateISO(d)
-    const item = allItems.value.find(
+    const dayItems = allItems.value.filter(
       (ci) => ci.date === iso && ci.status !== 'cancelled'
     )
+    const item = dayItems.find((ci) => ci.status === 'cooking')
+      || dayItems.find((ci) => ci.status === 'ready')
+      || dayItems[0]
 
     slots.push({
       date: iso,
@@ -306,11 +351,11 @@ onMounted(async () => {
 
   let items: CookQueueItem[] = []
   try {
-    // directus api — GET /items/cook_queue с полями cook.id, first_name, last_name
-    // Запрашиваем всю очередь готовки, чтобы показать:
-    //   - кто сегодня готовит (Today's block)
-    //   - расписание на неделю (WeekCalendar)
-    //   - историю блюд (Dish history)
+    // directus api — GET /items/cook_queue with cook.id, first_name, last_name
+    // Fetch the full cook queue to show:
+    //   - who cooks today (Today's block)
+    //   - weekly schedule (WeekCalendar)
+    //   - dish history (Dish history)
     items = await request<CookQueueItem[]>('get', `/items/cook_queue?${params}`)
   } catch {
     // Directus may not be available
@@ -318,9 +363,13 @@ onMounted(async () => {
   allItems.value = items
 
   // ── Today's block ──
-  const todayItem = items.find(
+  const todayItems = items.filter(
     (i) => i.date === todayISO && i.status !== 'cancelled'
   )
+  const todayItem = todayItems.find((i) => i.status === 'cooking')
+    || todayItems.find((i) => i.status === 'ready')
+    || todayItems[0]
+
   if (todayItem) {
     todayCook.value = {
       cookName: getCookName(todayItem.cook),
@@ -328,6 +377,7 @@ onMounted(async () => {
     }
     if (user.value && typeof todayItem.cook === 'object' && todayItem.cook !== null && todayItem.cook.id === user.value.id) {
       isUserTodayCook.value = true
+      hasJoined.value = true
     }
   }
   participantCount.value = 3
@@ -367,11 +417,11 @@ function onJoin() {
 }
 
 function onBecomeCook() {
-  router.push('/cook')
+  router.push('/cook?action=become')
 }
 
 function onSignUp(date: string) {
-  router.push('/cook')
+  router.push(`/cook?action=become&date=${date}`)
 }
 
 function onViewDish(item: HistoryItem) {

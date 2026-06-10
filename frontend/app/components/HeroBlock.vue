@@ -19,6 +19,15 @@
       <!-- Buttons row -->
       <div class="flex gap-3">
         <button
+            v-if="cook && joined"
+            class="flex-1 h-10 rounded-full flex items-center justify-center gap-2 px-4 transition-all active:scale-[0.97] backdrop-blur-md bg-primary/10 border border-primary/30 shadow-sm z-10"
+            @click="$emit('go-to-cook')"
+        >
+          <PhChefHat class="size-4 text-app-black" weight="fill" />
+          <span class="font-semibold text-[14px] text-app-black">Cook →</span>
+        </button>
+        <button
+            v-else
             class="flex-1 h-10 rounded-full flex items-center justify-center gap-2 px-4 transition-all active:scale-[0.97] backdrop-blur-md bg-white/30 border border-white/50 shadow-sm z-10"
             :class="cook ? 'opacity-40 pointer-events-none' : ''"
             @click="$emit('become-cook')"
@@ -108,5 +117,6 @@ defineEmits<{
   join: []
   'become-cook': []
   'view-dish': []
+  'go-to-cook': []
 }>()
 </script>

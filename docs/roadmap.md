@@ -144,17 +144,19 @@ Navigation: avatar in the header on any screen.
 - [ ] Statistics: how many times cooked, been on duty
 - [x] Log out
 
-#### Cook Page (`pages/cook.vue`)
+#### Cook Page (`pages/cook.vue`) 🟡
 UI: entirely custom. The most important business screen.
 Navigation: "Become a cook" button from Home or Kitchen. Auto-opens on login if user = today's cook.
+Middleware: `cook.ts` — blocks non-admin/non-cook users. `?action=become` query param bypass.
 
-- [ ] Status: "You're the cook today" + date
-- [ ] Dish selection: from history (Kitchen) or enter a new name
-- [ ] Participant counter: who confirmed + list of names
-- [ ] "Lunch is ready" button → notify all participants
-- [ ] Enter receipt amount / upload receipt photo
-- [ ] Auto-calculation of each participant's share and deduction preview
-- [ ] "Confirm deduction" button → transactions in Directus
+- [x] Status: "You're the cook today" + date
+- [x] Dish selection: from history (Kitchen) or enter a new name
+- [x] Participant counter: who confirmed + list of names
+- [x] "Lunch is ready" button → status change
+- [x] Enter receipt amount
+- [x] Auto-calculation of each participant's share and deduction preview
+- [x] "Confirm deduction" button → transactions + balance updates in Directus
+- [ ] Upload receipt photo
 - [ ] Shopping list from recipe (if a recipe from history is selected)
 
 #### Recipe Detail (`pages/recipe/today.vue`) 🟡

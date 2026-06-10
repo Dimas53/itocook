@@ -1,7 +1,7 @@
 // ─── auth.global.ts ─────────────────────────────────────────────────────
-// Глобальный middleware Nuxt — выполняется при каждом переходе между
-// страницами. Проверяет наличие Directus-токена и валидирует его.
-// Если токена нет — редирект на /auth.
+// Global Nuxt middleware — runs on every route transition.
+// Checks for Directus token presence and validates it.
+// If no token — redirect to /auth.
 // ────────────────────────────────────────────────────────────────────────
 
 export default defineNuxtRouteMiddleware(async (to) => {
@@ -10,38 +10,38 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const { tokenCookie } = useDirectus()
   const { user, fetchUser, logout } = useAuth()
 
-  // directus api — читаем токен из куки
+  // directus api — read token from cookie
   const token = tokenCookie.value
 
-  // ── Публичные страницы ───────────────────────────────────────────────
+  // ── Public pages ──────────────────────────────────────────────────────
   if (publicRoutes.includes(to.path)) {
-    // Если есть токен, но нет юзера — пробуем подтянуть
+    // If token exists but user not loaded — try to fetch
     if (token && !user.value) {
       try {
-        // directus api — fetchUser() делает GET /users/me для проверки токена
+        // directus api — fetchUser() does GET /users/me to validate token
         await fetchUser()
         return navigateTo('/')
       } catch {
-        // directus api — токен невалидный, чистим
+        // directus api — token invalid, clear it
         logout()
       }
     }
     return
   }
 
-  // ── Защищённые страницы ──────────────────────────────────────────────
-  // directus api — если токена нет → на логин
+  // ── Protected pages ──────────────────────────────────────────────────
+  // directus api — no token → go to login
   if (!token) {
     return navigateTo('/auth')
   }
 
-  // Токен есть — проверяем, что он ещё жив
+  // Token exists — verify it's still valid
   if (!user.value) {
     try {
-      // directus api — GET /users/me — валидируем токен
+      // directus api — GET /users/me — validate token
       await fetchUser()
     } catch {
-      // directus api — токен протух → чистим и на логин
+      // directus api — token expired → clear and redirect to login
       logout()
       return navigateTo('/auth')
     }

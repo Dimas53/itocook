@@ -59,12 +59,13 @@
 - [x] **WeekCalendar.vue** — reusable horizontal week calendar with individual pill cards, day selection, dot indicators, week navigation
 - [x] **Fix: day offset bug** — `formatDateISO` rewritten to use local date components instead of UTC `toISOString()`
 - [x] **Fix: HeroBlock reuse** — Kitchen now uses shared `<HeroBlock>` for "Today's Kitchen" card
+- [x] **Fix: Home page real data** — `index.vue` now fetches today's cook_queue from Directus (not mock only for admin)
+- [x] **Fix: Kitchen todayItem priority** — selects `cooking` > `ready` > `scheduled` when multiple entries exist for one day
 
 ## Known issues
-- **Sign Up works** through server proxy (`server/api/auth/signup.post.ts`) — creates user via admin token
-- **CORS on Directus** — enabled (`CORS_ENABLED`, `CORS_ORIGIN: http://localhost:3000`)
-- **Balance and Today's Cook** on index.vue — placeholders (€0.00 / —). Will be populated after setting up Directus collections
-- **Phase 4 screens** — Kitchen, AI Recipe, Duty, Common, Cook Page, Recipe Detail, Finance, Notifications all stubs or unfinished
+- **Phase 4 screens** — AI Recipe, Duty, Common, Recipe Detail, Finance, Notifications all stubs or unfinished
+- **Cook Page balance deduction** — uses user token directly, may need Directus permissions or server proxy for /items/balances and /items/transactions on behalf of other users
+- **Recipe navigation** — after dish creation, cook.vue doesn't redirect to recipe page (new → create page, history → detail page). Requires new data model + pages.
 
 ## Next session — plan
 
@@ -82,10 +83,27 @@
 - [ ] Duty screen — duty calendar, confirmation, auto-assignment
 - [ ] Common screen — group purchases, announcements, polls
 - [ ] Cook Page — balance deduction, check, auto share calculation
+  - [x] Middleware `middleware/cook.ts` — blocks non-admin/non-cook users, allows `?action=become`
+  - [x] Page logic: assign as cook → enter dish → participants → lunch ready → receipt → deduct balances
+  - [x] Past dish selection from history
+  - [x] "Become a cook" buttons in Home and Kitchen pass `?action=become`
+  - [x] CORS fix: added CORS_METHODS, CORS_HEADERS, CORS_MAX_AGE=5 to docker-compose.yml
+  - [x] Directus permissions fixed: User role can PATCH cook_queue, create orders/transactions/balances, update balances
+  - [x] Chrome preflight cache bypassed (CORS_MAX_AGE=5), PATCH requests work now
+  - [x] **Cook page date support** — `cook.vue` reads `?date=` query param, kitchen's "Become a cook" passes it (fix: selecting future day no longer shows today's dish)
+  - [x] **HeroBlock "Cook Panel →" button** — when current user IS today's cook, shows "Cook Panel →" button (navigates to `/cook`) instead of disabled "Cook" button
+  - [x] **Middleware date-aware** — `cook.ts` middleware checks date from query param, not just today
+    
 - [ ] Recipe Detail — populate with real data from cook_queue, ingredients, steps, serving recalculation
 - [ ] Finance page — balance table, alerts, history, report
 - [ ] Notifications — feed, quick actions
 - [ ] Reusable components: RecipeCard, HeroBlock, BalanceWidget, ParticipantCounter, DutyWidget, WeekCalendar
+- [ ] **Recipe navigation** — after cook enters dish name:
+  - New dish → redirect to `/recipe/create?name=DishName&date=YYYY-MM-DD` (recipe creation page)
+  - History dish → redirect to existing recipe detail page
+  - Prerequisites: Directus collection for recipes (ingredients, steps), recipe creation page, recipe detail page with real data
+- [ ] Shopping list from recipe
+- [ ] Receipt photo upload
 
 ## Git log
 - `94fc7a4` — feat(onboarding): replace absolute layout with flex, add lang=ts
@@ -111,4 +129,5 @@
 - `d7702c6` — feat(auth): add password visibility toggle, increase input font to text-base
 - `e5f0e46` — feat(kitchen): add Kitchen screen with cook queue, weekly schedule, dish history
 - `78b5df0` — fix(kitchen): day offset bug, WeekCalendar pill design, HeroBlock reuse
+- `6903498` — chore(docs): add directus api comments, update progress, add notes rule to AGENTS.md
 

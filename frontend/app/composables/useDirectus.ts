@@ -3,30 +3,30 @@ interface DirectusError {
 }
 
 // ─── useDirectus ────────────────────────────────────────────────────────
-// ЦЕНТРАЛЬНЫЙ композабл для связи с Directus API.
-// Единственное место в проекте, где создаётся HTTP-клиент.
-// Все остальные файлы (useAuth, компоненты, страницы) вызывают
-// request() из этого файла — через useDirectus().
+// Central composable for Directus API communication.
+// Single place in the project where the HTTP client is created.
+// All other files (useAuth, components, pages) call request()
+// from this file via useDirectus().
 // ────────────────────────────────────────────────────────────────────────
 
 export const useDirectus = () => {
   const config = useRuntimeConfig()
-  // directus api — URL берётся из runtimeConfig.public.directusUrl
-  // который приходит либо из .env (NUXT_PUBLIC_DIRECTUS_URL), либо из
-  // docker-compose.yml. На клиенте: http://localhost:8055
+  // directus api — URL comes from runtimeConfig.public.directusUrl
+  // which comes from either .env (NUXT_PUBLIC_DIRECTUS_URL) or
+  // docker-compose.yml. On client: http://localhost:8055
   const baseURL = config.public.directusUrl
 
-  // directus api — токен хранится в куке directus_token на 7 дней
+  // directus api — token stored in directus_token cookie for 7 days
   const tokenCookie = useCookie<string | null>('directus_token', {
     maxAge: 60 * 60 * 24 * 7,
     sameSite: 'lax',
     secure: false,
   })
 
-  // directus api — универсальная функция запроса к Directus
+  // directus api — universal request function for Directus
   // method: 'get' | 'post' | 'patch' | 'delete'
-  // path: относительный путь, например /auth/login или /items/cook_queue
-  // body: тело для POST/PATCH
+  // path: relative path, e.g. /auth/login or /items/cook_queue
+  // body: payload for POST/PATCH
   async function request<T = unknown>(
     method: string,
     path: string,
@@ -36,13 +36,13 @@ export const useDirectus = () => {
       'Content-Type': 'application/json',
     }
 
-    // directus api — автоматически подставляем Bearer-токен из куки
+    // directus api — automatically inject Bearer token from cookie
     const token = tokenCookie.value
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
     }
 
-    // directus api — сам fetch: baseURL (http://localhost:8055) + path
+    // directus api — the fetch itself: baseURL (http://localhost:8055) + path
     const res = await fetch(`${baseURL}${path}`, {
       method,
       headers,
@@ -53,12 +53,20 @@ export const useDirectus = () => {
 
     if (!res.ok) {
       const err = json as DirectusError
-      // directus api — ошибка парсится из Directus-формата { errors: [{ message }] }
+      // directus api — error parsed from Directus format { errors: [{ message }] }
       const message = err.errors?.[0]?.message || 'Request failed'
       throw new Error(message)
     }
 
-    // directus api — ответ всегда обёрнут в { data: ... }, распаковываем
+    // DEBUG LOGGING (in browser console)
+    if (import.meta.dev) {
+      console.group(`%c Directus API: ${method.toUpperCase()} ${path}`, 'color: #007bff; font-weight: bold;');
+      console.log('Payload:', body);
+      console.log('Response:', (json as { data: T }).data);
+      console.groupEnd();
+    }
+
+    // directus api — response always wrapped in { data: ... }, unwrap
     return (json as { data: T }).data
   }
 
