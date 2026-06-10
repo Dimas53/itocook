@@ -130,4 +130,5 @@
 - `e5f0e46` — feat(kitchen): add Kitchen screen with cook queue, weekly schedule, dish history
 - `78b5df0` — fix(kitchen): day offset bug, WeekCalendar pill design, HeroBlock reuse
 - `6903498` — chore(docs): add directus api comments, update progress, add notes rule to AGENTS.md
+- `20971d4` — feat(cook): date query support, HeroBlock cook button, CORS fix, ACCESS_TOKEN_TTL
 
