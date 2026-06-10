@@ -15,13 +15,19 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
   }
 
-  const date = (to.query.date as string) || new Date().toISOString().split('T')[0]
-  const params = new URLSearchParams({
-    'filter[date][_eq]': date,
-    'filter[cook][_eq]': user.value.id,
-    'filter[status][_nin]': 'cancelled',
-    'limit': '1',
-  })
+  function formatDateISO(d: Date): string {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+
+  const date = (to.query.date as string) || formatDateISO(new Date())
+  const params = new URLSearchParams()
+  params.append('filter[date][_eq]', date)
+  params.append('filter[cook][_eq]', user.value.id)
+  params.append('filter[status][_nin][]', 'cancelled')
+  params.append('limit', '1')
   try {
     const cooks = await request<any[]>('get', `/items/cook_queue?${params}`)
     if (cooks.length === 0) {

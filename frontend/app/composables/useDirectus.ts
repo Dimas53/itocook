@@ -49,7 +49,9 @@ export const useDirectus = () => {
       body: body ? JSON.stringify(body) : undefined,
     })
 
-    const json: DirectusError | { data: T } = await res.json()
+    // Handle empty response body (e.g. 204 No Content from DELETE)
+    const text = await res.text()
+    const json: DirectusError | { data: T } | Record<string, never> = text ? JSON.parse(text) : {}
 
     if (!res.ok) {
       const err = json as DirectusError
@@ -62,12 +64,12 @@ export const useDirectus = () => {
     if (import.meta.dev) {
       console.group(`%c Directus API: ${method.toUpperCase()} ${path}`, 'color: #007bff; font-weight: bold;');
       console.log('Payload:', body);
-      console.log('Response:', (json as { data: T }).data);
+      console.log('Response:', text ? (json as { data: T }).data : '(empty)');
       console.groupEnd();
     }
 
     // directus api — response always wrapped in { data: ... }, unwrap
-    return (json as { data: T }).data
+    return text ? (json as { data: T }).data : undefined as T
   }
 
   return { request, tokenCookie }

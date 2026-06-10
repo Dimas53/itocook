@@ -3,107 +3,77 @@
 ## Current status
 - [x] **Architecture overview** — `notes/architecture-overview.md` (full structural analysis)
 - [x] **Code walkthrough** — `notes/itocook-full-overview.md` (step-by-step code tour)
-- [x] **Directus API comments** — added `// directus api` comments to all call sites: `useDirectus.ts`, `useAuth.ts`, `signup.post.ts`, `auth.vue`, `BalanceWidget.vue`, `kitchen.vue`, `BottomTabBar.vue`, `auth.global.ts`
+- [x] **Directus API comments** — added `// directus api` comments to all call sites
 - [x] Project structure set up (frontend/, api/, directus/)
 - [x] Docker running (Nuxt + Directus + PostgreSQL)
-- [x] iPhone frame layout (`layouts/default.vue`)
-- [x] Onboarding screen — fully fixed (flex layout, TypeScript)
-- [x] Auth screen — form, validation, errors, loading state
-- [x] Tailwind CSS installed with custom config
-- [x] Jost font imported, global styles in `main.css`
-- [x] Phosphor Icons installed
-- [x] Tailwind config full sync — all 13 color tokens registered
-- [x] `auth-bg: '#EDE8FF'` added to tailwind + design.md
-- [x] Auth screen refactored — auth-bg token, transparent inputs, rounded-xl, branding fixed
-- [x] Auth input interaction states — bg-white/40, focus:bg-white, focus:border-primary
-- [x] Auth browser warnings fixed — Transition → v-show, autocomplete + name attributes
-- [x] Nuxt config fixed — main.css uncommented, stale .nuxt cache cleared
-- [x] `onboarding.vue` — `absolute inset-0` → `h-full`, added `lang="ts"`
-- [x] `components/BottomTabBar.vue` — 5 tabs with Phosphor icons, active/inactive style
-- [x] `default.vue` — tabbar embedded, hidden on /onboarding and /auth
-- [x] `default.vue` — `darkStatus` invert uncommented
-- [x] `composables/useDirectus.ts` — HTTP client for Directus API
-- [x] `composables/useAuth.ts` — real signUp/login/logout/fetchUser via Directus
-- [x] `middleware/auth.global.ts` — token validation via GET /users/me
-- [x] `auth.vue` — real Sign Up and Log In (no setTimeout, no fake)
-- [x] `index.vue` — display real user data (name, email, balance, role)
-- [x] `server/api/auth/signup.post.ts` — server proxy for registration via Directus admin
-- [x] `docker-compose.yml` — CORS_ENABLED, CORS_ORIGIN, NUXT_DIRECTUS_ADMIN_EMAIL/PASSWORD
-- [x] `nuxt.config.ts` — runtimeConfig for admin email/password + server directusUrl
-- [x] **Role User assigned automatically** on signup (via `signup.post.ts`)
-- [x] **Directus MCP connected** (http://localhost:8055/mcp) — agent can manage schema
-- [x] **Chrome DevTools MCP connected** (port 9222) — agent can inspect browser
-- [x] **`ssr: false`** at top level, `experimental.viteEnvironmentApi: true` (Nuxt 4 SPA crash fix)
-- [x] **Dynamic redirect** after login: cook → `/cook`, otherwise → Home
-- [x] **`/cook` page** — basic stub with button
-- [x] **`cook_queue`** collection — date, cook (M2O users), dish_name, status
-- [x] **`orders`** collection — user (M2O users), cook_queue (M2O cook_queue), status
-- [x] **`order_items`** collection — order (M2O orders), quantity
-- [x] **`transactions`** collection — user (M2O users), amount, type, description, date
-- [x] **`balances`** collection — user (M2O users), amount
-- [x] **O2M alias fields** — `cook_queue` → orders, `orders` → items
-- [x] **Profile page** — `pages/profile.vue` with avatar, tabs, recipe lists
-- [x] **Home header** — updated with clickable profile, avatar and bell icon
-- [x] **`app.vue` layout** — iPhone frame, Dynamic Island, safe area, scroll
-- [x] **Floating BottomTabBar** — pill, backdrop-blur, absolute positioning
-- [x] **HeroBlock.vue** — 3 states: loading, cook assigned, empty
-- [x] **HeroBlock.vue** — click on dish name → emit `view-dish`, text wrap via `break-words max-w-[55%]`
-- [x] **RecipeCard.vue** — dish card with skeleton and mock data
-- [x] **BalanceWidget.vue** — fetch balance from Directus balances collection
-- [x] **DutyWidget.vue** — nearest duty widget
-- [x] **Home screen** — full screen: HeroBlock, participant counter, BalanceWidget + DutyWidget in grid, search, RecipeCard with mock data
-- [x] **Recipe Detail stub** — `pages/recipe/today.vue` with mock data (Caesar Salad)
-- [x] **Recipe Detail redesign** — ekilu-style: photo 280px with buttons, white card -mt-6, rating, cook, description, ingredients, fixed Join button at bottom
-- [x] **Nuxt 4 directory structure** — all app code moved to `app/` (`app.vue`, `pages/`, `components/`, `composables/`, `layouts/`, `middleware/`, `assets/`), dev server verified
-- [x] **Kitchen screen** — Today's block (HeroBlock), WeekCalendar, day detail block, dish history (list with search, ratings)
-- [x] **WeekCalendar.vue** — reusable horizontal week calendar with individual pill cards, day selection, dot indicators, week navigation
-- [x] **Fix: day offset bug** — `formatDateISO` rewritten to use local date components instead of UTC `toISOString()`
-- [x] **Fix: HeroBlock reuse** — Kitchen now uses shared `<HeroBlock>` for "Today's Kitchen" card
-- [x] **Fix: Home page real data** — `index.vue` now fetches today's cook_queue from Directus (not mock only for admin)
-- [x] **Fix: Kitchen todayItem priority** — selects `cooking` > `ready` > `scheduled` when multiple entries exist for one day
+- [x] iPhone frame layout, Onboarding, Auth, Tailwind, Jost, Phosphor Icons
+- [x] Auth — real Directus signUp/login/logout, form validation, password toggle, middleware
+- [x] Nuxt 4 app/ directory structure migrated
+- [x] 5 Directus collections (cook_queue, orders, order_items, transactions, balances)
+- [x] `recipes` collection with read/create/update/delete for User role
+- [x] 4 seed recipes (Caesar Salad, Spaghetti Carbonara, Tomato Soup, Grilled Salmon)
+- [x] All screens: Home, Profile, Kitchen, Cook Panel, Recipe Detail, Recipe Create/Edit
+- [x] BottomTabBar with 5 tabs, app layout with iPhone frame, Dynamic Island
+- [x] HeroBlock.vue — 3 states (loading/cook/empty), links to recipe
+- [x] RecipeCard.vue — skeleton, category badge, dish image via `useRecipeImage`
+- [x] WeekCalendar.vue — horizontal week pills, dot indicators, week navigation
+- [x] BalanceWidget.vue, DutyWidget.vue
+- [x] `useRecipeImage` composable — photo or category fallback PNG
+- [x] `useParticipants` composable — shared participant count, hasJoined, join()
+- [x] `useDirectus` composable — HTTP client
+- [x] `useAuth` composable — signUp, login, logout, fetchUser, isTodayCook
+- [x] **Fix: auto-redirect removed from auth.vue** — login always redirects to `/` (never `/cook`)
+- [x] **Fix: Calendar → HeroBlock sync in kitchen.vue** — hero derives from selectedSlot reactively; recipeId + category fetched via watch on selectedSlot; participants fetched per selected day
+- [x] **Fix: Recipe detail conditional Join** — `recipe/[id].vue` auto-discovers active cook_queue entries by dish_name; Join button only visible when active entry exists
+- [x] **Fix: RecipeCard missing images** — `photo` field in Recipe interface; `<img>` tag with `useRecipeImage` in template; `photo` field passed from `index.vue` mapping
+- [x] **Fix: Cook Panel eye icon** — "Edit" link replaced with eye icon button navigating to `/recipe/[id]` (view only) in `cook.vue`
+- [x] **Fix: Ingredients default open** — `showIngredients` changed to `ref(true)` in `recipe/[id].vue`
+- [x] **Fix: Extended edit permission** — `canEdit` computed in `recipe/[id].vue`: edit button visible if recipe owner OR today's cook with linked queue entry
+- [x] **Fix: Status-based bottom controls** — `recipe/[id].vue` shows badges per queue status: "Scheduled for [date]", "Cooking in progress", "Lunch is ready!", "Cancelled"; Join button only for scheduled/cooking; "Lunch is ready!" only for cooking owner
+- [x] **Fix: Calendar today highlight** — `WeekCalendar.vue` today (not selected) uses `bg-purple-100 text-purple-700` instead of plain white
 
 ## Known issues
 - **Phase 4 screens** — AI Recipe, Duty, Common, Recipe Detail, Finance, Notifications all stubs or unfinished
 - **Cook Page balance deduction** — uses user token directly, may need Directus permissions or server proxy for /items/balances and /items/transactions on behalf of other users
-- **Recipe navigation** — after dish creation, cook.vue doesn't redirect to recipe page (new → create page, history → detail page). Requires new data model + pages.
+
+## Fixes — current session
+- [x] **UX: Status-based bottom controls** — `recipe/[id].vue` shows badges per queue status; Join only for `scheduled`/`cooking`; "Lunch is ready!" only for cooking owner
+- [x] **UX: Calendar today highlight** — today's non-selected cell gets `bg-purple-100 text-purple-700`
+- [x] **UX: Cook page status refresh** — `visibilitychange` listener re-fetches cook entry data when page becomes visible; status syncs with admin changes
+- [x] **UX: HeroBlock Cook button date fix** — `@go-to-cook` passes `?date=` param instead of bare `/cook`
+- [x] **UX: Cooking pot status icon** — recipe/[id].vue header shows `PhCookingPot` in status color when queue entry linked; `PhClock` added to scheduled badge
+- [x] **UX: Profile My List** — dishes user participated in; red X → confirmation with 10h rule → delete order from DB; darker bg + "You are the cook" when user is cook
+- [x] **UX: Profile My Recipes** — recipes created by user; items use random pastel colors from design palette
+
+## Fixes — second session
+- [x] **Bug: Recipe page heart hidden** — reverted cooking pot from header to bottom controls section; `PhHeart` restored unconditionally in top right corner;
+- [x] **Bug: Cook page status mismatch** — `scheduled` and `cooking` split into separate states in `cook.vue` state machine; added `scheduled` template with "Start Cooking" button that sets status to `cooking`; `pageTitle` reflects correct state
+- [x] **Bug: HeroBlock Cook redirects to home** — middleware `_nin` filter format fixed from single string to proper `_nin[]` array via `URLSearchParams.append`; cook middleware now correctly queries non-cancelled entries
+- [x] **Bug: Profile My List empty on first load** — `onMounted` added to call `fetchMyOrders()` on initial page load; `switchTab` changed from lazy (`length === 0` guard) to always-fetch on tab switch
+- [x] **Bug: Confirm dialog outside phone frame** — `Teleport to="body"` removed from profile.vue; fixed overlay rendered inside the `app` layout scope
+- [x] **Bug: DELETE response JSON parse crash** — `useDirectus.ts` changed from `res.json()` to `res.text()` + conditional `JSON.parse`; handles 204 No Content (empty body from DELETE) without crashing
+- [x] **UX: Cook X button → kitchen** — `router.push('/')` changed to `router.push('/kitchen')` in cook.vue
+- [x] **UX: saveDish status by date** — today dish → status=`cooking`, future dish → status=`scheduled`; button text changes dynamically ("Start Cooking" / "Add to Schedule")
+- [x] **UX: Unified status template** — recipe/[id].vue bottom controls: single dynamic template; icon/circle/text changes by status (`PhClock`/`PhCookingPot`/`PhCheckCircle`/`PhXCircle`); participants count always visible; Join/Start/Ready buttons adapt to status and ownership
+- [x] **Bug: Admin can edit any recipe** — `canEdit` now checks `isEntryCook` (specific queue entry cook) instead of `isCurrentUserTodayCook` (any cook today); removed `fetchIsTodayCook` call from recipe page entirely
+- [x] **Bug: _nin format in useAuth** — same fix as middleware: `URLSearchParams` single string → proper `_nin[]` array
+- [x] **UX: Auto-join for cook** — `assignAsCook()` in cook.vue creates a `confirmed` order for the cook; cook appears in participants automatically; Join button shows as joined for the cook
+- [x] **UX: Recipe ownership on cook** — `saveDish()` in cook.vue updates recipe's `cook` field to current user after matching; recipe appears in their "My Recipes" and shows their avatar
+- [x] **UX: Recent Dishes grid** — home page switched to `grid grid-cols-2 gap-3`; RecipeCard redesigned: title → chef → rating → small image, no button, no category
 
 ## Next session — plan
 
 ### Phase 4: Feature Screens
 **Goal:** Final layout of all screens according to the current screen map.
 
-- [x] Navigation (BottomTabBar) — 5 tabs with new icons, routes for Phase 4, Admin logic
-- [x] Home screen — HeroBlock, "I'm eating"/"Become a cook" buttons, counter, BalanceWidget, DutyWidget, search, RecipeCard
-- [x] HeroBlock.vue — 3 states (loading/cook/empty)
-- [x] RecipeCard.vue — card with mock data and skeleton
-- [x] BalanceWidget.vue — query to balances via Directus
-- [x] DutyWidget.vue — widget for duty
-- [x] Kitchen screen — HeroBlock, WeekCalendar, day detail, dish history
+- [x] Navigation (BottomTabBar), Home, HeroBlock, RecipeCard, BalanceWidget, DutyWidget
+- [x] Kitchen screen, Cook Page, Recipe Detail
 - [ ] AI Recipe — chat with AI, JSON recipe render, serving recalculation
 - [ ] Duty screen — duty calendar, confirmation, auto-assignment
 - [ ] Common screen — group purchases, announcements, polls
-- [ ] Cook Page — balance deduction, check, auto share calculation
-  - [x] Middleware `middleware/cook.ts` — blocks non-admin/non-cook users, allows `?action=become`
-  - [x] Page logic: assign as cook → enter dish → participants → lunch ready → receipt → deduct balances
-  - [x] Past dish selection from history
-  - [x] "Become a cook" buttons in Home and Kitchen pass `?action=become`
-  - [x] CORS fix: added CORS_METHODS, CORS_HEADERS, CORS_MAX_AGE=5 to docker-compose.yml
-  - [x] Directus permissions fixed: User role can PATCH cook_queue, create orders/transactions/balances, update balances
-  - [x] Chrome preflight cache bypassed (CORS_MAX_AGE=5), PATCH requests work now
-  - [x] **Cook page date support** — `cook.vue` reads `?date=` query param, kitchen's "Become a cook" passes it (fix: selecting future day no longer shows today's dish)
-  - [x] **HeroBlock "Cook Panel →" button** — when current user IS today's cook, shows "Cook Panel →" button (navigates to `/cook`) instead of disabled "Cook" button
-  - [x] **Middleware date-aware** — `cook.ts` middleware checks date from query param, not just today
-    
-- [ ] Recipe Detail — populate with real data from cook_queue, ingredients, steps, serving recalculation
 - [ ] Finance page — balance table, alerts, history, report
 - [ ] Notifications — feed, quick actions
-- [ ] Reusable components: RecipeCard, HeroBlock, BalanceWidget, ParticipantCounter, DutyWidget, WeekCalendar
-- [ ] **Recipe navigation** — after cook enters dish name:
-  - New dish → redirect to `/recipe/create?name=DishName&date=YYYY-MM-DD` (recipe creation page)
-  - History dish → redirect to existing recipe detail page
-  - Prerequisites: Directus collection for recipes (ingredients, steps), recipe creation page, recipe detail page with real data
-- [ ] Shopping list from recipe
-- [ ] Receipt photo upload
+- [ ] Shopping list from recipe, Receipt photo upload
 
 ## Git log
 - `94fc7a4` — feat(onboarding): replace absolute layout with flex, add lang=ts
@@ -118,7 +88,6 @@
 - `46c47da` — fix(auth): replace Transition v-if with v-show, add autocomplete attributes
 - `4d4b236` — fix(auth): smooth opacity-only field transition, stable form height
 - `514a823` — chore: add camera indicator to notch, commit frequency rules, update progress
-- `(not committed)` — feat(layout): create app.vue layout with safe area padding, redesign BottomTabBar to floating pill
 - `aef7403` — feat(profile): add profile page, home header block with avatar, Gravatar → pravatar
 - `da4b884` — feat(layout): add app layout with floating BottomTabBar and stub pages
 - `b847eb4` — feat(navigation): update BottomTabBar with Phase 4 icons, routes, and admin logic
@@ -131,4 +100,6 @@
 - `78b5df0` — fix(kitchen): day offset bug, WeekCalendar pill design, HeroBlock reuse
 - `6903498` — chore(docs): add directus api comments, update progress, add notes rule to AGENTS.md
 - `20971d4` — feat(cook): date query support, HeroBlock cook button, CORS fix, ACCESS_TOKEN_TTL
+- `d484638` — chore(docs): update git log in progress.md
+- `(uncommitted)` — fix: participants composable, remove auto-redirect, cook panel date, calendar dot, recipe edit, TS fixes
 

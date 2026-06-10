@@ -50,13 +50,10 @@
 
       <!-- Dish block -- only when cook is set -->
 
-      <div v-if="cook" class="relative mt-3 -mx-5 -mb-5 min-h-[140px]">
+      <div v-if="cook" class="relative mt-3 -mx-5 -mb-5 min-h-[140px] cursor-pointer" @click="onDishClick">
         <!-- Text left -->
         <div class="absolute left-5 bottom-5 flex flex-col gap-1 z-10">
-          <span
-            class="text-[22px] font-bold text-app-black  cursor-pointer"
-            @click="$emit('view-dish')"
-          >
+          <span class="text-[22px] font-bold text-app-black">
             {{ cook.dish }}
           </span>
           <p class="text-[13px] text-app-black/60">by {{ cook.name }}</p>
@@ -83,12 +80,10 @@
 
         <!-- Dish image overlay -->
         <img
-            :src="cook.photo || '/images/salat.png'"
+            :src="dishImage"
             alt="Dish"
-            class="absolute -right-10 -bottom-12 w-44 h-44 object-cover rounded-full shadow-lg z-10"
+            class="absolute -right-10 -bottom-12 w-56 h-44 object-cover rounded-full shadow-sm z-10"
         />
-
-
       </div>
 
     </div>
@@ -102,21 +97,38 @@ import { PhChefHat, PhForkKnife, PhUsers } from '@phosphor-icons/vue'
 export interface CookInfo {
   name: string
   dish: string
-  photo?: string
+  photo?: string | null
+  category?: string | null
 }
 
-defineProps<{
+const props = defineProps<{
   loading: boolean
   cook: CookInfo | null
   joined?: boolean
   participantCount?: number
   totalCount?: number
+  recipeId?: string
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   join: []
   'become-cook': []
   'view-dish': []
   'go-to-cook': []
 }>()
+
+const router = useRouter()
+
+const dishImage = computed(() => {
+  if (!props.cook) return '/images/categories/other.png'
+  return useRecipeImage({ photo: props.cook.photo ?? null, category: props.cook.category ?? 'other' }).value
+})
+
+function onDishClick() {
+  if (props.recipeId) {
+    router.push(`/recipe/${props.recipeId}`)
+  } else {
+    emit('view-dish')
+  }
+  }
 </script>

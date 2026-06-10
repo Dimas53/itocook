@@ -36,7 +36,8 @@ async function fetchBalance() {
   try {
     const items = await request<BalanceItem[]>('get', `/items/balances?filter[user][_eq]=${user.value.id}&limit=1`)
     if (items.length > 0) {
-      balance.value = Number(items[0].amount)
+      const first = items[0]
+      balance.value = first ? Number(first.amount) : 0
     }
   } catch {
     balance.value = null

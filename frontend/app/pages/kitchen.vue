@@ -13,20 +13,7 @@
 
     <div class="px-5 pb-[100px] space-y-5">
 
-      <!-- 1. Today's Kitchen hero -->
-      <HeroBlock
-        :loading="todayLoading"
-        :cook="heroCook"
-        :joined="hasJoined"
-        :participant-count="participantCount"
-        :total-count="totalCount"
-        @join="onJoin"
-        @become-cook="onBecomeCook"
-        @view-dish="router.push('/recipe/today')"
-        @go-to-cook="router.push('/cook')"
-      />
-
-      <!-- 2. Week calendar -->
+      <!-- 1. Week calendar -->
       <WeekCalendar
         v-if="!weekLoading"
         :days="calendarDays"
@@ -36,43 +23,60 @@
         @next-week="weekOffset += 1"
       />
 
-      <!-- 3. Selected day detail -->
-      <div class="rounded-2xl bg-primary-light/50 p-5">
-        <div v-if="selectedSlot">
-          <p class="text-[12px] text-app-black/60 font-semibold uppercase tracking-wide mb-3">
-            {{ selectedSlot.dayName }} &middot; {{ selectedSlot.dateStr }}
-          </p>
-
-          <div v-if="selectedSlot.cookName">
-            <p class="text-[14px] text-app-black/70">Cooked by</p>
-            <p class="text-[18px] font-bold text-app-black">{{ selectedSlot.cookName }}</p>
-            <p v-if="selectedSlot.dishName" class="text-[14px] text-app-black/70 mt-1">
-              Dish: <span class="font-semibold text-app-black">{{ selectedSlot.dishName }}</span>
+      <!-- 2. Compact day status -->
+      <template v-if="selectedSlot">
+        <!-- Current user is the cook -->
+        <div v-if="selectedSlot.cookName && isCurrentUserCookForSelected" class="rounded-2xl bg-primary-light/50 p-4 flex items-center justify-between">
+          <div>
+            <p class="text-[14px] font-semibold text-app-black">You are the cook</p>
+            <p v-if="selectedSlot.dishName" class="text-[12px] text-app-black/60 mt-0.5">
+              {{ selectedSlot.dishName }}
             </p>
           </div>
-
-          <div v-else-if="!selectedSlot.isPast" class="space-y-3">
-            <p class="text-[14px] text-app-black/70">No cook assigned for this day</p>
-            <button
-              class="w-full h-10 rounded-full bg-primary text-white font-semibold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-              @click="onSignUp(selectedSlot.date)"
-            >
-              <PhChefHat class="w-4 h-4" weight="fill" />
-              Become a cook
-            </button>
-          </div>
-
-          <div v-else>
-            <p class="text-[14px] text-app-black/50">No cook was assigned</p>
-          </div>
+          <button
+            class="h-10 px-5 rounded-full bg-primary text-white font-semibold text-[14px] active:scale-[0.98] transition-transform"
+            @click="router.push('/cook?date=' + selectedDate)"
+          >
+            Cook Panel →
+          </button>
         </div>
-
-        <div v-else-if="weekLoading" class="space-y-3">
-          <div class="h-3 w-24 bg-gray-200 rounded-full animate-pulse" />
-          <div class="h-5 w-32 bg-gray-200 rounded-full animate-pulse" />
-          <div class="h-8 w-full bg-gray-200 rounded-2xl animate-pulse" />
+        <!-- Someone else is the cook -->
+        <div v-else-if="selectedSlot.cookName" class="rounded-2xl bg-primary-light/50 p-4 flex items-center justify-between">
+          <div>
+            <p class="text-[14px] font-semibold text-app-black">{{ selectedSlot.cookName }} is cooking</p>
+            <p v-if="selectedSlot.dishName" class="text-[12px] text-app-black/60 mt-0.5">
+              {{ selectedSlot.dishName }}
+            </p>
+          </div>
+          <button
+            disabled
+            class="h-10 px-5 rounded-full bg-primary text-white font-semibold text-[14px] opacity-40 cursor-not-allowed"
+          >
+            Cook Panel →
+          </button>
         </div>
-      </div>
+        <!-- No cook -->
+        <button v-else-if="!selectedSlot.isPast"
+          class="w-full h-11 rounded-full bg-primary text-white font-semibold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+          @click="onSignUp(selectedSlot.date)"
+        >
+          <PhChefHat class="w-4 h-4" weight="fill" />
+          Become a cook
+        </button>
+      </template>
+
+      <!-- 3. Today's Kitchen hero -->
+      <HeroBlock
+        :loading="todayLoading"
+        :cook="heroCook"
+        :joined="hasJoined"
+        :participant-count="participantCount"
+        :total-count="totalCount"
+        @join="onJoin"
+        @become-cook="onBecomeCook"
+        :recipe-id="heroRecipeId"
+        @go-to-cook="router.push('/cook?date=' + selectedDate)"
+      />
 
       <!-- 4. Dish history -->
       <div>
@@ -117,50 +121,6 @@
         </div>
       </div>
 
-<!--      test api cards-->
-      <div class="space-y-3">
-        <h2 class="text-[16px] font-semibold text-app-black">Test Dishes (repeater demo)</h2>
-        <div v-for="item in items" :key="item.id"
-             class="rounded-2xl bg-white border border-gray-100 p-4 space-y-3 shadow-sm"
-        >
-          <div class="flex items-start justify-between">
-            <div>
-              <p class="text-[16px] font-bold text-app-black">{{ item.dish_name }}</p>
-              <div class="flex items-center gap-2 mt-0.5">
-                <span class="text-[12px] font-medium text-primary bg-primary-light px-2 py-0.5 rounded-full">
-                  {{ item.category }}
-                </span>
-                <span class="text-[14px] font-semibold text-app-black/70">
-                  €{{ Number(item.amount).toFixed(2) }}
-                </span>
-              </div>
-            </div>
-            <span class="text-[11px] uppercase tracking-wide font-semibold"
-                  :class="item.status === 'active' ? 'text-green-600' : 'text-gray-400'"
-            >
-              {{ item.status }}
-            </span>
-          </div>
-
-          <hr class="border-gray-50" />
-
-          <div>
-            <p class="text-[11px] uppercase tracking-wide font-semibold text-app-black/50 mb-2">Ingredients</p>
-            <div class="flex flex-wrap gap-1.5">
-              <span v-for="(ing, j) in (item.ingredients || [])" :key="j"
-                    class="text-[12px] bg-gray-50 text-app-black/80 px-2.5 py-1 rounded-full"
-              >
-                {{ ing.amount }}{{ ing.unit }} {{ ing.name }}
-              </span>
-            </div>
-            <p v-if="!item.ingredients?.length" class="text-[12px] text-gray-400 italic">No ingredients</p>
-          </div>
-        </div>
-      </div>
-
-
-
-
     </div>
   </div>
 </template>
@@ -177,28 +137,6 @@ const { request } = useDirectus()
 const { user } = useAuth()
 
 
-
-// test api
-interface TestIngredient {
-  name: string
-  amount: string
-  unit: string
-}
-
-interface TestItem {
-  id: string
-  dish_name: string
-  status: string
-  amount: string
-  category: string
-  ingredients: TestIngredient[]
-}
-
-const { data: items } = useAsyncData('test-api', () =>
-    request<TestItem[]>('get', '/items/test_api')
-)
-
-// ---------------------
 
 // ── Types ──
 interface CookQueueItem {
@@ -236,15 +174,24 @@ const todayLoading = ref(true)
 const weekLoading = ref(true)
 const historyLoading = ref(true)
 
-const todayCook = ref<{ cookName: string; dishName: string | null } | null>(null)
-const participantCount = ref(0)
-const totalCount = ref(0)
+const heroRecipeId = ref<string | undefined>(undefined)
+const selectedCategory = ref<string | null>(null)
 const allItems = ref<CookQueueItem[]>([])
 const historyItems = ref<HistoryItem[]>([])
 const searchQuery = ref('')
 
-const isUserTodayCook = ref(false)
-const hasJoined = ref(false)
+const activeEntryId = computed(() => {
+  if (!selectedDate.value) return null
+  const dayItems = allItems.value.filter(
+    (i) => i.date === selectedDate.value && i.status !== 'cancelled'
+  )
+  const item = dayItems.find((i) => i.status === 'cooking')
+    || dayItems.find((i) => i.status === 'ready')
+    || dayItems[0]
+  return item?.id ?? null
+})
+const { confirmed: participantCount, hasJoined, fetch: fetchParticipants, join: onJoin } = useParticipants(activeEntryId)
+const totalCount = ref(8)
 
 // ── Week navigation ──
 const weekOffset = ref(0)
@@ -333,16 +280,55 @@ const selectedSlot = computed(() =>
 )
 
 const heroCook = computed<CookInfo | null>(() => {
-  if (!todayCook.value) return null
+  const slot = selectedSlot.value
+  if (!slot || !slot.cookName) return null
   return {
-    name: todayCook.value.cookName,
-    dish: todayCook.value.dishName || '',
+    name: slot.cookName,
+    dish: slot.dishName || '',
+    category: selectedCategory.value,
+  }
+})
+
+const isCurrentUserCookForSelected = computed(() => {
+  if (!user.value || !selectedDate.value) return false
+  const dayItems = allItems.value.filter(
+    (i) => i.date === selectedDate.value && i.status !== 'cancelled'
+  )
+  const item = dayItems.find((i) => i.status === 'cooking')
+    || dayItems.find((i) => i.status === 'ready')
+    || dayItems[0]
+  if (!item || typeof item.cook !== 'object' || !item.cook) return false
+  return item.cook.id === user.value.id
+})
+
+// ── Reactive updates when selected day changes ──
+watch(selectedSlot, async (slot) => {
+  heroRecipeId.value = undefined
+  selectedCategory.value = null
+  if (!slot?.dishName) return
+
+  try {
+    const recipeMatch = await request<{ id: string; category: string | null }[]>('get',
+      `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(slot.dishName)}&limit=1&fields=id,category`
+    )
+    const match = recipeMatch[0]
+    if (match) {
+      heroRecipeId.value = match.id
+      selectedCategory.value = match.category || null
+    }
+  } catch { /* ignore */ }
+})
+
+watch(activeEntryId, async (id) => {
+  if (id) {
+    await fetchParticipants()
+  }
+  if (isCurrentUserCookForSelected.value) {
+    hasJoined.value = true
   }
 })
 
 // ── Data fetching ──
-const todayISO = formatDateISO(new Date())
-
 onMounted(async () => {
   const params = new URLSearchParams({
     fields: '*,cook.id,cook.first_name,cook.last_name',
@@ -362,44 +348,27 @@ onMounted(async () => {
   }
   allItems.value = items
 
-  // ── Today's block ──
-  const todayItems = items.filter(
-    (i) => i.date === todayISO && i.status !== 'cancelled'
-  )
-  const todayItem = todayItems.find((i) => i.status === 'cooking')
-    || todayItems.find((i) => i.status === 'ready')
-    || todayItems[0]
-
-  if (todayItem) {
-    todayCook.value = {
-      cookName: getCookName(todayItem.cook),
-      dishName: todayItem.dish_name,
-    }
-    if (user.value && typeof todayItem.cook === 'object' && todayItem.cook !== null && todayItem.cook.id === user.value.id) {
-      isUserTodayCook.value = true
-      hasJoined.value = true
-    }
-  }
-  participantCount.value = 3
-  totalCount.value = 8
+  // Hero data derives reactively from selectedSlot + watches
   todayLoading.value = false
-
-  // ── Week & History are derived from allItems — no loading needed ──
   weekLoading.value = false
 
-  // ── Dish history ──
-  const doneItems = items
-    .filter((i) => i.date < todayISO && i.dish_name)
-    .reverse()
-    .slice(0, 20)
-
-  historyItems.value = doneItems.map((i) => ({
-    id: i.id,
-    dish_name: i.dish_name || 'Unknown',
-    cookName: getCookName(i.cook),
-    dateLabel: formatDateStr(new Date(i.date)),
-    rating: Number((3.5 + Math.random() * 1.5).toFixed(1)),
-  }))
+  // ── Dish history from real recipes ──
+  try {
+    const recipeData = await request<any[]>('get',
+      '/items/recipes?sort=-date_created&limit=10&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created'
+    )
+    console.log('[kitchen] recipe history data:', recipeData)
+    historyItems.value = recipeData.map((r) => ({
+      id: r.id,
+      dish_name: r.dish_name,
+      cookName: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
+      dateLabel: formatDateStr(new Date(r.date_created)),
+      rating: 4.8,
+    }))
+    console.log('[kitchen] mapped history:', historyItems.value)
+  } catch {
+    // Directus may not be available
+  }
   historyLoading.value = false
 })
 
@@ -410,14 +379,8 @@ const filteredHistory = computed(() => {
 })
 
 // ── Actions ──
-function onJoin() {
-  if (hasJoined.value) return
-  hasJoined.value = true
-  participantCount.value = Math.min(participantCount.value + 1, totalCount.value)
-}
-
 function onBecomeCook() {
-  router.push('/cook?action=become')
+  router.push(`/cook?action=become&date=${selectedDate.value}`)
 }
 
 function onSignUp(date: string) {
@@ -425,6 +388,6 @@ function onSignUp(date: string) {
 }
 
 function onViewDish(item: HistoryItem) {
-  router.push('/recipe/today')
+  router.push(`/recipe/${item.id}`)
 }
 </script>

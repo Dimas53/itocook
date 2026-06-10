@@ -28,6 +28,7 @@
       >
         <span class="text-xs font-semibold">{{ day.dayName }}</span>
         <span class="text-lg font-bold">{{ day.dateNum }}</span>
+        <span v-if="day.hasActivity" class="w-1.5 h-1.5 rounded-full bg-purple-500 mt-0.5" />
       </button>
     </div>
   </div>
@@ -60,7 +61,7 @@ function getDayClasses(day: CalendarDay) {
     return 'bg-primary text-white'
   }
   if (day.isToday) {
-    return 'bg-white text-app-black shadow-sm'
+    return 'bg-purple-100 text-purple-700'
   }
   return 'bg-gray-100 text-app-black'
 }

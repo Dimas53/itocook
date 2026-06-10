@@ -78,12 +78,11 @@ export const useAuth = () => {
   async function isTodayCook(): Promise<boolean> {
     if (!user.value) return false
     const today = new Date().toISOString().split('T')[0]!
-    const params = new URLSearchParams({
-      'filter[date][_eq]': today,
-      'filter[cook][_eq]': user.value.id,
-      'filter[status][_nin]': 'cancelled',
-      'limit': '1',
-    })
+    const params = new URLSearchParams()
+    params.append('filter[date][_eq]', today)
+    params.append('filter[cook][_eq]', user.value.id)
+    params.append('filter[status][_nin][]', 'cancelled')
+    params.append('limit', '1')
     try {
       const cooks = await request<any[]>('get', `/items/cook_queue?${params}`)
       return cooks.length > 0

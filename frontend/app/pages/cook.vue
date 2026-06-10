@@ -8,7 +8,7 @@
           {{ pageTitle }}
         </h1>
       </div>
-      <button class="w-10 h-10 flex items-center justify-center" @click="router.push('/')">
+      <button class="w-10 h-10 flex items-center justify-center" @click="router.push('/kitchen')">
         <PhX class="w-6 h-6 text-app-black" />
       </button>
     </div>
@@ -61,6 +61,19 @@
             />
           </div>
 
+          <div>
+            <label class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide mb-2 block">
+              Category
+            </label>
+            <select
+              v-model="selectedCategory"
+              class="w-full h-12 rounded-xl bg-white border border-gray-200 px-4 text-[14px] text-app-black focus:outline-none focus:border-primary appearance-none"
+            >
+              <option value="">Select category</option>
+              <option v-for="c in CATEGORIES" :key="c" :value="c">{{ c.charAt(0).toUpperCase() + c.slice(1) }}</option>
+            </select>
+          </div>
+
           <div class="space-y-2">
             <p class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide">
               Or pick from history
@@ -85,7 +98,37 @@
             @click="saveDish"
           >
             <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
-            <span v-else>Start Cooking</span>
+            <span v-else>{{ pageDateStr === formatDateISO(new Date()) ? 'Start Cooking' : 'Add to Schedule' }}</span>
+          </button>
+        </div>
+      </template>
+
+      <!-- ═══════ SCHEDULED STATE ═══════ -->
+      <template v-if="state === 'scheduled'">
+        <div class="rounded-2xl bg-primary-light/50 p-5 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+              <PhClock class="w-5 h-5 text-purple-600" weight="fill" />
+            </div>
+            <div>
+              <p class="text-[14px] font-semibold text-app-black">Scheduled to cook</p>
+              <p class="text-[12px] text-gray-500">{{ formattedDate }}</p>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white p-4">
+            <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Today's Dish</p>
+            <p class="text-[20px] font-bold text-app-black mt-1">{{ cookEntry?.dish_name }}</p>
+          </div>
+
+          <button
+            class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+            :disabled="saving"
+            @click="startCooking"
+          >
+            <PhSpinner v-if="saving" class="w-5 h-5 animate-spin" />
+            <PhCookingPot v-else class="w-5 h-5" weight="fill" />
+            {{ saving ? 'Starting...' : 'Start Cooking' }}
           </button>
         </div>
       </template>
@@ -104,10 +147,11 @@
               </div>
             </div>
             <button
-              class="text-[12px] text-primary font-semibold underline active:scale-[0.98]"
-              @click="editDish"
+              v-if="existingRecipeId"
+              class="w-10 h-10 rounded-full bg-white flex items-center justify-center active:scale-[0.98] transition-transform"
+              @click="router.push(`/recipe/${existingRecipeId}`)"
             >
-              Edit
+              <PhEye class="w-5 h-5 text-app-black" />
             </button>
           </div>
 
@@ -115,6 +159,25 @@
             <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Today's Dish</p>
             <p class="text-[20px] font-bold text-app-black mt-1">{{ cookEntry?.dish_name }}</p>
           </div>
+
+          <template v-if="recipeSearchDone">
+            <button
+              v-if="existingRecipeId"
+              class="w-full h-12 rounded-full border border-primary text-primary font-semibold text-[14px] flex items-center justify-center gap-2 bg-white active:scale-[0.98] transition-transform"
+              @click="router.push(`/recipe/create?id=${existingRecipeId}&name=${encodeURIComponent(cookEntry!.dish_name || '')}`)"
+            >
+              <PhPencil class="w-4 h-4" />
+              Edit Recipe
+            </button>
+            <button
+              v-else
+              class="w-full h-12 rounded-full border border-primary text-primary font-semibold text-[14px] flex items-center justify-center gap-2 bg-white active:scale-[0.98] transition-transform"
+              @click="router.push(`/recipe/create?name=${encodeURIComponent(cookEntry!.dish_name || '')}&date=${pageDateStr}&category=${selectedCategory}`)"
+            >
+              <PhPlus class="w-4 h-4" weight="bold" />
+              Add Recipe
+            </button>
+          </template>
 
           <div>
             <p class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide mb-2">
@@ -275,6 +338,10 @@ import {
   PhReceipt,
   PhCreditCard,
   PhClockCounterClockwise,
+  PhPencil,
+  PhPlus,
+  PhEye,
+  PhClock,
 } from '@phosphor-icons/vue'
 
 definePageMeta({
@@ -321,6 +388,7 @@ interface Participant {
 interface HistoryDish {
   id: string
   dish_name: string
+  category: string | null
 }
 
 // ── Date helpers ──
@@ -349,17 +417,24 @@ const saving = ref(false)
 const deducting = ref(false)
 const cookEntry = ref<CookQueueEntry | null>(null)
 const dishName = ref('')
+const selectedCategory = ref('')
 const receiptAmount = ref<string>('')
 const participants = ref<Participant[]>([])
 const pastDishes = ref<HistoryDish[]>([])
 const deductionResult = ref(false)
+
+const CATEGORIES = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'other'] as const
+
+const existingRecipeId = ref<string | null>(null)
+const recipeSearchDone = ref(false)
 
 // ── Computed state machine ──
 const state = computed(() => {
   if (loading.value) return 'loading'
   if (!cookEntry.value) return 'assign'
   if (!cookEntry.value.dish_name) return 'dish'
-  if (cookEntry.value.status === 'scheduled' || cookEntry.value.status === 'cooking') return 'cooking'
+  if (cookEntry.value.status === 'scheduled') return 'scheduled'
+  if (cookEntry.value.status === 'cooking') return 'cooking'
   if (cookEntry.value.status === 'ready' && !deductionResult.value) return 'receipt'
   return 'done'
 })
@@ -368,6 +443,7 @@ const pageTitle = computed(() => {
   switch (state.value) {
     case 'assign': return 'Become a Cook'
     case 'dish': return 'What\u2019s Cooking?'
+    case 'scheduled': return 'Scheduled'
     case 'cooking': return 'Cooking in Progress'
     case 'receipt': return 'Split the Bill'
     case 'done': return 'Completed'
@@ -406,20 +482,13 @@ async function fetchTodayEntry() {
   loading.value = false
 }
 
-// ── Fetch past dishes for history selection ──
+// ── Fetch past dishes from recipes collection ──
 async function fetchPastDishes() {
   try {
-    const items = await request<CookQueueEntry[]>('get',
-      `/items/cook_queue?filter[date][_lt]=${pageDateStr.value}&filter[dish_name][_nnull]=&sort=-date&limit=10&fields=id,dish_name`
+    const items = await request<HistoryDish[]>('get',
+      '/items/recipes?sort=-date_created&limit=10&fields=id,dish_name,category'
     )
-    const seen = new Set<string>()
-    pastDishes.value = items
-      .filter((i) => {
-        if (!i.dish_name || seen.has(i.dish_name)) return false
-        seen.add(i.dish_name)
-        return true
-      })
-      .map((i) => ({ id: i.id, dish_name: i.dish_name! }))
+    pastDishes.value = items.filter((i) => i.dish_name)
   } catch {
     // ignore
   }
@@ -452,6 +521,16 @@ async function assignAsCook() {
       status: 'scheduled',
     })
     cookEntry.value = newEntry
+
+    // Auto-join: create order for the cook so they appear in participants
+    try {
+      await request('post', '/items/orders', {
+        user: user.value?.id,
+        cook_queue: newEntry.id,
+        status: 'confirmed',
+      })
+    } catch { /* order may already exist */ }
+
     await fetchPastDishes()
   } catch (e) {
     console.error('Failed to assign as cook:', e)
@@ -459,17 +538,61 @@ async function assignAsCook() {
   saving.value = false
 }
 
-async function saveDish() {
-  if (!cookEntry.value || !dishName.value.trim()) return
+async function searchExistingRecipe(name: string): Promise<string | null> {
+  recipeSearchDone.value = false
+  existingRecipeId.value = null
+  try {
+    const results = await request<{ id: string }[]>('get',
+      `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(name)}&limit=1&fields=id`
+    )
+    if (results.length > 0) {
+      existingRecipeId.value = results[0]!.id
+      recipeSearchDone.value = true
+      return results[0]!.id
+    }
+  } catch {
+    // ignore
+  }
+  recipeSearchDone.value = true
+  return null
+}
+
+async function startCooking() {
+  if (!cookEntry.value) return
   saving.value = true
   try {
     await request('PATCH', `/items/cook_queue/${cookEntry.value.id}`, {
-      dish_name: dishName.value.trim(),
       status: 'cooking',
     })
-    cookEntry.value.dish_name = dishName.value.trim()
     cookEntry.value.status = 'cooking'
     await fetchParticipants()
+  } catch (e) {
+    console.error('Failed to start cooking:', e)
+  }
+  saving.value = false
+}
+
+async function saveDish() {
+  if (!cookEntry.value || !dishName.value.trim()) return
+  saving.value = true
+  const isToday = pageDateStr.value === formatDateISO(new Date())
+  const newStatus = isToday ? 'cooking' : 'scheduled'
+  try {
+    await request('PATCH', `/items/cook_queue/${cookEntry.value.id}`, {
+      dish_name: dishName.value.trim(),
+      status: newStatus,
+    })
+    cookEntry.value.dish_name = dishName.value.trim()
+    cookEntry.value.status = newStatus
+    await fetchParticipants()
+    await searchExistingRecipe(dishName.value.trim())
+
+    // Update recipe ownership to current cook
+    if (existingRecipeId.value) {
+      await request('PATCH', `/items/recipes/${existingRecipeId.value}`, {
+        cook: user.value?.id,
+      })
+    }
   } catch (e) {
     console.error('Failed to save dish:', e)
   }
@@ -478,11 +601,17 @@ async function saveDish() {
 
 function selectPastDish(item: HistoryDish) {
   dishName.value = item.dish_name
+  if (item.category) selectedCategory.value = item.category
 }
 
 function editDish() {
-  if (!cookEntry.value) return
-  cookEntry.value.dish_name = null
+  if (!cookEntry.value?.dish_name) return
+  const id = existingRecipeId.value
+  if (id) {
+    router.push(`/recipe/${id}`)
+  } else {
+    router.push(`/recipe/create?name=${encodeURIComponent(cookEntry.value.dish_name)}&date=${pageDateStr.value}&category=${selectedCategory.value}`)
+  }
 }
 
 async function markReady() {
@@ -547,14 +676,32 @@ async function confirmDeduction() {
   deducting.value = false
 }
 
-// ── Init ──
-onMounted(async () => {
+// ── Refresh when page becomes visible ──
+async function refreshCookData() {
   await fetchTodayEntry()
   if (cookEntry.value && !cookEntry.value.dish_name) {
     await fetchPastDishes()
+    return
   }
   if (cookEntry.value && cookEntry.value.dish_name) {
     await fetchParticipants()
+    await searchExistingRecipe(cookEntry.value.dish_name)
   }
+}
+
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    refreshCookData()
+  }
+}
+
+// ── Init ──
+onMounted(async () => {
+  await refreshCookData()
+  document.addEventListener('visibilitychange', onVisibilityChange)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', onVisibilityChange)
 })
 </script>

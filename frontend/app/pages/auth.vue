@@ -195,12 +195,9 @@ const { signUp, login, isTodayCook } = useAuth()
 const router = useRouter()
 
 // ── redirectAfterLogin ──────────────────────────────────────────────────
-// After successful login check if user is today's cook.
-// If yes → /cook (cook panel), if not → / (home).
-// directus api — isTodayCook() → GET /items/cook_queue with filter
+// Always redirect to home — cook panel is only accessible via user click.
 async function redirectAfterLogin() {
-  const cook = await isTodayCook()
-  router.push(cook ? '/cook' : '/')
+  router.push('/')
 }
 
 const isSignUp = ref(true)

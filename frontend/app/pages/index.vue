@@ -29,9 +29,9 @@
           :joined="hasJoined"
           :participant-count="participantCount"
           :total-count="totalCount"
+          :recipe-id="todayRecipeId"
           @join="onJoin"
         @become-cook="onBecomeCook"
-        @view-dish="router.push('/recipe/today')"
         @go-to-cook="router.push('/cook')"
       />
 
@@ -56,7 +56,7 @@
       </div>
 
       <!-- Search bar -->
-      <div class="relative">
+<!--      <div class="relative">
         <PhMagnifyingGlass class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input
           v-model="searchQuery"
@@ -65,25 +65,25 @@
           class="w-full h-12 rounded-2xl bg-white border border-gray-200 pl-12 pr-4 text-[14px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary"
           @focus="onSearchFocus"
         />
-      </div>
+      </div>-->
 
       <!-- Section title -->
       <h2 class="text-[16px] font-semibold text-app-black">Recent Dishes</h2>
 
       <!-- Recipe cards list -->
       <div v-if="recipesLoading" class="space-y-3">
-        <RecipeCard v-for="i in 3" :key="i" :loading="true" />
+        <RecipeCard v-for="i in 3" :key="i" :loading="true" :recipe="undefined" />
       </div>
       <div v-else-if="recipes.length === 0" class="text-center py-8 text-gray-400 text-[14px]">
         No dishes yet
       </div>
-      <div v-else class="space-y-3">
+      <div v-else class="grid grid-cols-2 gap-3">
         <RecipeCard
-          v-for="(recipe, i) in recipes"
-          :key="i"
+          v-for="recipe in recipes"
+          :key="recipe.id"
           :loading="false"
           :recipe="recipe"
-          @view="router.push(`/recipe/${i}`)"
+          @view="router.push(`/recipe/${recipe.id}`)"
         />
       </div>
     </div>
@@ -93,6 +93,16 @@
 <script setup lang="ts">
 import { PhBell, PhUsers, PhMagnifyingGlass } from '@phosphor-icons/vue'
 import type { CookInfo } from '~/components/HeroBlock.vue'
+import type { Recipe } from '~/components/RecipeCard.vue'
+
+interface DirectusRecipe {
+  id: string
+  dish_name: string
+  category: string
+  cook: { id: string; first_name: string; last_name: string }
+  date_created: string
+  photo: string | null
+}
 
 definePageMeta({ layout: 'app' })
 
@@ -103,11 +113,11 @@ const { request } = useDirectus()
 // Hero state
 const heroLoading = ref(true)
 const todayCook = ref<CookInfo | null>(null)
-const hasJoined = ref(false)
+const todayRecipeId = ref<string | undefined>(undefined)
 
-// Participant counter (static for now)
-const participantCount = ref(0)
-const totalCount = ref(0)
+// Participant counter from backend
+const todayEntryId = ref<string | null>(null)
+const { confirmed: participantCount, hasJoined, fetch: fetchParticipants, join: onJoin } = useParticipants(todayEntryId)
 
 // Duty (static for now)
 const dutyLoading = ref(true)
@@ -117,7 +127,9 @@ const searchQuery = ref('')
 
 // Recipes
 const recipesLoading = ref(true)
-const recipes = ref<{ title: string; chef: string; rating: number; time: string }[]>([])
+const recipes = ref<Recipe[]>([])
+
+const totalCount = ref(8)
 
 // Date helpers
 function formatDateISO(d: Date): string {
@@ -132,12 +144,6 @@ const todayISO = formatDateISO(new Date())
 const avatarUrl = computed(() =>
   `https://i.pravatar.cc/200?u=${user.value?.email}`
 )
-
-function onJoin() {
-  if (hasJoined.value) return
-  hasJoined.value = true
-  participantCount.value = Math.min(participantCount.value + 1, totalCount.value)
-}
 
 function onBecomeCook() {
   router.push('/cook?action=become')
@@ -160,13 +166,36 @@ onMounted(async () => {
       || items[0]
 
     if (todayEntry) {
+      todayEntryId.value = todayEntry.id
+      await fetchParticipants()
       const cookName = todayEntry.cook
         ? [todayEntry.cook.first_name, todayEntry.cook.last_name].filter(Boolean).join(' ')
         : 'Unknown'
+
+      // Try to find matching recipe
+      let heroCategory: string | null = null
+      let heroPhoto: string | null = null
+      if (todayEntry.dish_name) {
+        try {
+          const recipeMatch = await request<{ id: string; photo: string | null; category: string }[]>('get',
+            `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(todayEntry.dish_name)}&limit=1&fields=id,photo,category`
+          )
+          const match = recipeMatch[0]
+          if (match) {
+            todayRecipeId.value = match.id
+            heroCategory = match.category
+            heroPhoto = match.photo
+          }
+        } catch {
+          // No matching recipe found
+        }
+      }
+
       todayCook.value = {
         name: cookName,
         dish: todayEntry.dish_name || '',
-        photo: '/images/salat.png',
+        photo: heroPhoto,
+        category: heroCategory,
       }
 
       // Check if current user is today's cook
@@ -179,12 +208,22 @@ onMounted(async () => {
   }
   heroLoading.value = false
 
-  // Mock recipes
-  recipes.value = [
-    { title: 'Spiced Fried Chicken', chef: 'Maria', rating: 4.8, time: '45 min' },
-    { title: 'Creamy Pasta Carbonara', chef: 'John', rating: 4.6, time: '30 min' },
-    { title: 'Thai Green Curry', chef: 'Anna', rating: 4.9, time: '50 min' },
-  ]
+  // Fetch real recipes
+  try {
+    const data = await request<DirectusRecipe[]>('get',
+      '/items/recipes?sort=-date_created&limit=5&fields=id,dish_name,category,photo,cook.id,cook.first_name,cook.last_name,date_created'
+    )
+    recipes.value = data.map((r) => ({
+      id: r.id,
+      title: r.dish_name,
+      chef: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
+      rating: 4.8,
+      category: r.category,
+      photo: r.photo,
+    }))
+  } catch {
+    // Directus may not be available
+  }
   recipesLoading.value = false
 
   dutyLoading.value = false
