@@ -8,13 +8,35 @@
       <div class="h-24 bg-white/60 rounded-2xl animate-pulse" />
     </div>
 
+    <!-- Empty state: no cook assigned -->
+    <div v-else-if="!cook" class="space-y-4">
+      <p class="text-[12px] text-app-black/60 font-semibold uppercase tracking-wide">
+        Today's Kitchen
+      </p>
+      <div class="flex flex-col items-center gap-4 py-4">
+        <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+          <PhChefHat class="w-7 h-7 text-primary" weight="fill" />
+        </div>
+        <div class="text-center">
+          <p class="text-[16px] font-bold text-app-black">No one's cooking yet</p>
+          <p class="text-[13px] text-app-black/60 mt-1">Be today's chef!</p>
+        </div>
+        <button
+          class="h-11 px-8 rounded-full bg-primary text-white font-semibold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+          @click="$emit('become-cook')"
+        >
+          <PhChefHat class="w-4 h-4" weight="fill" />
+          I'm cooking today!
+        </button>
+      </div>
+    </div>
+
+    <!-- Normal content: cook assigned -->
     <div v-else class="space-y-4">
       <!-- Title -->
       <p class="text-[12px] text-app-black/60 font-semibold uppercase tracking-wide">
         Today's Kitchen
       </p>
-
-
 
       <!-- Buttons row -->
       <div class="flex gap-3">
@@ -50,7 +72,7 @@
 
       <!-- Dish block -- only when cook is set -->
 
-      <div v-if="cook" class="relative mt-3 -mx-5 -mb-5 min-h-[140px] cursor-pointer" @click="onDishClick">
+      <div class="relative mt-3 -mx-5 -mb-5 min-h-[140px] cursor-pointer" @click="onDishClick">
         <!-- Text left -->
         <div class="absolute left-5 bottom-5 flex flex-col gap-1 z-10">
           <span class="text-[22px] font-bold text-app-black">

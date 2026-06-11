@@ -84,44 +84,64 @@
               class="rounded-xl bg-white/70 px-4 py-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform"
               @click="selectPastDish(item)"
             >
-              <p class="text-[14px] font-medium text-app-black">{{ item.dish_name }}</p>
-              <PhClockCounterClockwise class="w-4 h-4 text-gray-400" />
+              <div class="flex-1 min-w-0 mr-3">
+                <p class="text-[14px] font-medium text-app-black truncate">{{ item.dish_name }}</p>
+                <p class="text-[12px] text-app-black/60 mt-0.5">
+                  by {{ item.cookName }} &middot; {{ item.dateLabel }}
+                </p>
+              </div>
+              <PhClockCounterClockwise class="w-4 h-4 text-gray-400 shrink-0" />
             </div>
             <div v-if="pastDishes.length === 0" class="text-[13px] text-gray-400 text-center py-3">
               No past dishes yet
             </div>
           </div>
 
-          <template v-if="matchedRecipe">
+          <template v-if="isToday">
             <button
               class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-              :disabled="!dishName.trim() || saving"
-              @click="saveMatchedDish"
-            >
-              <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
-              <span v-else>Add to Schedule</span>
-            </button>
-          </template>
-          <template v-else>
-            <button
-              class="w-full h-14 rounded-full border-2 border-primary text-primary font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50 bg-white"
               :disabled="!dishName.trim() || saving"
               @click="saveDish"
             >
               <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
-              <span v-else>Add to Schedule</span>
-            </button>
-            <button
-              class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-              :disabled="!dishName.trim() || saving"
-              @click="createRecipeAndAdd"
-            >
-              <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
               <template v-else>
-                <PhPlus class="w-5 h-5" weight="bold" />
-                <span>Create Recipe &amp; Add to Schedule</span>
+                <PhCookingPot class="w-5 h-5" weight="fill" />
+                <span>Start Cooking</span>
               </template>
             </button>
+          </template>
+          <template v-else>
+            <template v-if="matchedRecipe">
+              <button
+                class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+                :disabled="!dishName.trim() || saving"
+                @click="saveMatchedDish"
+              >
+                <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
+                <span v-else>Add to Schedule</span>
+              </button>
+            </template>
+            <template v-else>
+              <button
+                class="w-full h-14 rounded-full border-2 border-primary text-primary font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50 bg-white"
+                :disabled="!dishName.trim() || saving"
+                @click="saveDish"
+              >
+                <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
+                <span v-else>Add to Schedule</span>
+              </button>
+              <button
+                class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+                :disabled="!dishName.trim() || saving"
+                @click="createRecipeAndAdd"
+              >
+                <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
+                <template v-else>
+                  <PhPlus class="w-5 h-5" weight="bold" />
+                  <span>Create Recipe &amp; Add to Schedule</span>
+                </template>
+              </button>
+            </template>
           </template>
         </div>
       </template>
@@ -412,6 +432,8 @@ interface HistoryDish {
   id: string
   dish_name: string
   category: string | null
+  cookName: string
+  dateLabel: string
 }
 
 // ── Date helpers ──
@@ -445,6 +467,22 @@ const receiptAmount = ref<string>('')
 const participants = ref<Participant[]>([])
 const pastDishes = ref<HistoryDish[]>([])
 const deductionResult = ref(false)
+
+function formatDateStr(date: Date): string {
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  if (days === 0) {
+    const h = date.getHours()
+    const m = String(date.getMinutes()).padStart(2, '0')
+    return `Today ${h}:${m}`
+  }
+  if (days === 1) return 'Yesterday'
+  if (days < 7) return `${days} days ago`
+  return `${date.getDate()} ${MONTH_NAMES[date.getMonth()]}`
+}
+
+const isToday = computed(() => pageDateStr.value === formatDateISO(new Date()))
 
 const CATEGORIES = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'other'] as const
 
@@ -514,10 +552,18 @@ async function fetchTodayEntry() {
 // ── Fetch past dishes from recipes collection ──
 async function fetchPastDishes() {
   try {
-    const items = await request<HistoryDish[]>('get',
-      '/items/recipes?sort=-date_created&limit=10&fields=id,dish_name,category'
+    const items = await request<any[]>('get',
+      '/items/recipes?sort=-date_created&limit=10&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created'
     )
-    pastDishes.value = items.filter((i) => i.dish_name)
+    pastDishes.value = items
+      .filter((i: any) => i.dish_name)
+      .map((r: any) => ({
+        id: r.id,
+        dish_name: r.dish_name,
+        category: r.category ?? null,
+        cookName: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
+        dateLabel: formatDateStr(new Date(r.date_created)),
+      }))
   } catch {
     // ignore
   }

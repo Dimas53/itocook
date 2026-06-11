@@ -18,8 +18,8 @@
         >
       </div>
 
-      <!-- Content area with top/bottom padding for notch + tab bar -->
-      <div class="h-full overflow-y-auto scrollbar-hide pt-[60px] pb-[100px]">
+      <!-- Content area with top/bottom padding for notch + tab bar + safe area -->
+      <div class="h-full overflow-y-auto scrollbar-hide pb-[100px]" style="padding-top: calc(60px + env(safe-area-inset-top, 0px));">
         <NuxtPage />
       </div>
 

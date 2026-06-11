@@ -69,6 +69,12 @@
 - [x] **Feat: HeroBlock fallback image** — `chef-cook.png` when queue entry has no linked recipe; "Chef is thinking..." placeholder text
 - [x] **Rework: Fork on cook** — replaced shared `recipes.cook` PATCH + `cooked_recipes` junction with fork pattern. When user cooks another's recipe, a fork (copy with `forked_from` pointer, owned by cook) is created. `recipes.update` permission restored to `user_created Equals $CURRENT_USER`. Reuses existing fork on repeat. "My Recipes" back to simple `filter[user_created]` query.
 
+## Fixes — fifth session
+- [x] **UX: Schedule button for today** — `cook.vue` dish state shows single "Start Cooking" button when date is today (via `isToday` computed), immediately transitions to `cooking` state; existing two-button layout preserved for future dates
+- [x] **UX: Author attribution in history picker** — `cook.vue` "Or pick from history" now displays `by <author> · <date>` beneath each recipe name; `fetchPastDishes()` fetches `cook.id,cook.first_name,cook.last_name,date_created` and maps to `cookName`/`dateLabel`
+- [x] **Fix: Safe area top inset** — `app.vue` content area uses `padding-top: calc(60px + env(safe-area-inset-top, 0px))`; `nuxt.config.ts` viewport meta updated to `viewport-fit=cover` so `env()` resolves on devices with notches
+- [x] **UX: HeroBlock empty-state CTA** — `HeroBlock.vue` shows centered empty-state ("No one's cooking yet — Be today's chef!") with "I'm cooking today!" CTA when `cook` is null; existing content preserved when a cook is assigned
+
 ## Next session — plan
 
 ### Phase 4: Feature Screens
@@ -84,6 +90,7 @@
 - [ ] Shopping list from recipe, Receipt photo upload
 
 ## Git log
+- `4ffb29c` — feat(cook): two-button dish selection with recipe match detection
 - `94fc7a4` — feat(onboarding): replace absolute layout with flex, add lang=ts
 - `376d90f` — feat(layout): add BottomTabBar with 5 tabs, wire into default layout
 - `adff924` — feat(auth): add fake login flow, form validation, route protection, darkStatus
