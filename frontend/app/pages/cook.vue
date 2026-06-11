@@ -92,14 +92,37 @@
             </div>
           </div>
 
-          <button
-            class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] active:scale-[0.98] transition-transform disabled:opacity-50"
-            :disabled="!dishName.trim() || saving"
-            @click="saveDish"
-          >
-            <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
-            <span v-else>{{ pageDateStr === formatDateISO(new Date()) ? 'Start Cooking' : 'Add to Schedule' }}</span>
-          </button>
+          <template v-if="matchedRecipe">
+            <button
+              class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+              :disabled="!dishName.trim() || saving"
+              @click="saveMatchedDish"
+            >
+              <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
+              <span v-else>Add to Schedule</span>
+            </button>
+          </template>
+          <template v-else>
+            <button
+              class="w-full h-14 rounded-full border-2 border-primary text-primary font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50 bg-white"
+              :disabled="!dishName.trim() || saving"
+              @click="saveDish"
+            >
+              <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
+              <span v-else>Add to Schedule</span>
+            </button>
+            <button
+              class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+              :disabled="!dishName.trim() || saving"
+              @click="createRecipeAndAdd"
+            >
+              <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
+              <template v-else>
+                <PhPlus class="w-5 h-5" weight="bold" />
+                <span>Create Recipe &amp; Add to Schedule</span>
+              </template>
+            </button>
+          </template>
         </div>
       </template>
 
@@ -425,6 +448,12 @@ const deductionResult = ref(false)
 
 const CATEGORIES = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'other'] as const
 
+const matchedRecipe = computed(() => {
+  if (!dishName.value.trim()) return null
+  const name = dishName.value.toLowerCase()
+  return pastDishes.value.find(d => d.dish_name.toLowerCase().includes(name)) || null
+})
+
 const existingRecipeId = ref<string | null>(null)
 const recipeSearchDone = ref(false)
 
@@ -639,6 +668,21 @@ function selectPastDish(item: HistoryDish) {
   if (item.category) selectedCategory.value = item.category
 }
 
+async function saveMatchedDish() {
+  if (!cookEntry.value) return
+  const recipe = matchedRecipe.value
+  if (!recipe) return
+  dishName.value = recipe.dish_name
+  await saveDish()
+}
+
+function createRecipeAndAdd() {
+  const returnTo = `/cook?date=${pageDateStr.value}`
+  router.push(
+    `/recipe/create?name=${encodeURIComponent(dishName.value.trim())}&date=${pageDateStr.value}&category=${selectedCategory.value}&returnTo=${encodeURIComponent(returnTo)}`
+  )
+}
+
 function editDish() {
   if (!cookEntry.value?.dish_name) return
   const id = existingRecipeId.value
@@ -733,6 +777,22 @@ function onVisibilityChange() {
 // ── Init ──
 onMounted(async () => {
   await refreshCookData()
+
+  // Handle return from recipe/create with a new recipe
+  const newRecipeId = route.query.newRecipe as string | undefined
+  if (newRecipeId && cookEntry.value && !cookEntry.value.dish_name) {
+    try {
+      const recipe = await request<{ dish_name: string }>('get',
+        `/items/recipes/${newRecipeId}?fields=dish_name`
+      )
+      dishName.value = recipe.dish_name
+      await saveDish()
+      await router.replace({ query: { date: pageDateStr.value } })
+    } catch {
+      // ignore
+    }
+  }
+
   document.addEventListener('visibilitychange', onVisibilityChange)
 })
 

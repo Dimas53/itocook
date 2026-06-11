@@ -266,7 +266,13 @@ async function submitRecipe() {
         payload.cook = user.value?.id || null
         payload.source_cook_queue = sourceCookQueue
         const created = await request<{ id: string }>('post', '/items/recipes', payload)
-        router.replace(`/recipe/${created.id}`)
+        const returnTo = route.query.returnTo as string | undefined
+        if (returnTo) {
+          const sep = returnTo.includes('?') ? '&' : '?'
+          router.replace(`${returnTo}${sep}newRecipe=${created.id}`)
+        } else {
+          router.replace(`/recipe/${created.id}`)
+        }
       } else {
       const editId = editingId.value!
       await request('PATCH', `/items/recipes/${editId}`, payload)
