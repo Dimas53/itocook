@@ -24,9 +24,9 @@
       />
 
       <!-- 2. Compact day status -->
-      <template v-if="selectedSlot">
+      <template v-if="selectedSlot?.cookName">
         <!-- Current user is the cook -->
-        <div v-if="selectedSlot.cookName && isCurrentUserCookForSelected" class="rounded-2xl bg-primary-light/50 p-4 flex items-center justify-between">
+        <div v-if="isCurrentUserCookForSelected" class="rounded-2xl bg-primary-light/50 p-4 flex items-center justify-between">
           <div>
             <p class="text-[14px] font-semibold text-app-black">You are the cook</p>
             <p v-if="selectedSlot.dishName" class="text-[12px] text-app-black/60 mt-0.5">
@@ -41,7 +41,7 @@
           </button>
         </div>
         <!-- Someone else is the cook -->
-        <div v-else-if="selectedSlot.cookName" class="rounded-2xl bg-primary-light/50 p-4 flex items-center justify-between">
+        <div v-else class="rounded-2xl bg-primary-light/50 p-4 flex items-center justify-between">
           <div>
             <p class="text-[14px] font-semibold text-app-black">{{ selectedSlot.cookName }} is cooking</p>
             <p v-if="selectedSlot.dishName" class="text-[12px] text-app-black/60 mt-0.5">
@@ -55,14 +55,6 @@
             Cook Panel →
           </button>
         </div>
-        <!-- No cook -->
-        <button v-else-if="!selectedSlot.isPast"
-          class="w-full h-11 rounded-full bg-primary text-white font-semibold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-          @click="onSignUp(selectedSlot.date)"
-        >
-          <PhChefHat class="w-4 h-4" weight="fill" />
-          Become a cook
-        </button>
       </template>
 
       <!-- 3. Today's Kitchen hero -->

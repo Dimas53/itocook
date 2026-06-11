@@ -36,6 +36,7 @@
 - [x] **Fix: hardcoded totalCount** — replaced `ref(8)` in `index.vue` and `kitchen.vue` with `useTotalUsers()` composable via Nuxt server route `/api/users/count` (admin-proxied to Directus `/users` endpoint). Fixes 403 on `/items/directus_users` for authenticated users. Verified: all 3 users have `status: "active"`; `/users?aggregate[count]=*&filter[status][_eq]=active` returns `{"data":[{"count":"3"}]}` (string, not object); parsing uses `parseInt(raw, 10)`.
 - [x] **Fix: missing dutyLoading ref** — `const dutyLoading = ref(true)` was accidentally removed from `index.vue`; added back. Fixes Vue warning "Property 'dutyLoading' was accessed during render but is not defined on instance".
 - [x] **Fix: naming collision in useTotalUsers.ts** — inner function named `fetch()` shadowed global `fetch`, causing `fetch('/api/users/count')` to call itself recursively → caught → `count.value = 0`. Renamed to `fetchCount`; callers unaffected (both destructure only `{ count: totalCount }`).
+- [x] **Task F: Recipe pasta/inventory field** — added `pasta_packages` (integer, nullable) to `recipes` collection; created `app_settings` singleton with `pasta_package_price` (decimal, default 1.00); added number input in recipe create/edit form; created Nuxt server route `GET /api/settings/pasta-price` (admin proxy); created `useMealCost()` composable for computation; integrated pasta cost into `confirmDeduction()` — added to total before split, displayed as separate line in receipt preview and deduction breakdown; kept generic enough for future inventory items.
 
 ## Known issues
 - **Phase 4 screens** — AI Recipe, Duty, Common, Recipe Detail, Finance, Notifications all stubs or unfinished
@@ -95,7 +96,7 @@
 - [x] Task C: Cook cancels cook_queue entry — cancel button + confirm dialog in pre-ready states
 - [ ] Task B': Reminder mechanism for overdue cost entry (groundwork)
 - [ ] Task D: Ghost participants / leave-join logic
-- [ ] Task F: Pasta/inventory logic
+- [x] Task F: Pasta/inventory logic
 - [ ] AI Recipe — chat with AI, JSON recipe render, serving recalculation
 - [ ] Duty screen — duty calendar, confirmation, auto-assignment
 - [ ] Common screen — group purchases, announcements, polls
@@ -105,6 +106,8 @@
 
 ## Git log
 - `3ae6859` — feat(cook): split lunch-ready from receipt entry (Task A')
+- `10cd5b6` — feat(cook): cancel cooking, fix naming collision in useTotalUsers, replace hardcoded user count
+- current — feat(recipe): add pasta_packages field, app_settings singleton, pasta cost in deduction (Task F)
 - `d695b45` — fix(hero): add JS guard on Cook button — disabled attr alone wasn't reliable; remove invert class from status bar as intended
 - `14e2c08` — fix(hero): guard HeroBlock Cook button with JS check — disabled attr alone wasn't blocking navigation
 - `bf2f2bd` — fix(layout): safe-area top bar on app layout, layout assignment, HeroBlock Cook disabled, remove empty today.vue

@@ -328,6 +328,14 @@
 
             <div class="rounded-xl bg-white p-4 space-y-2">
               <div class="flex justify-between text-[14px]">
+                <span class="text-gray-500">Total receipt</span>
+                <span class="font-bold text-app-black text-[16px]">€{{ formattedReceipt }}</span>
+              </div>
+              <div v-if="pastaBreakdown" class="flex justify-between text-[14px]">
+                <span class="text-gray-500">{{ pastaBreakdown.label }}</span>
+                <span class="font-semibold text-app-black">€{{ pastaBreakdown.amount.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between text-[14px]">
                 <span class="text-gray-500">Participants</span>
                 <span class="font-semibold text-app-black">{{ participants.length }}</span>
               </div>
@@ -340,12 +348,16 @@
               <hr class="border-gray-100" />
               <div class="flex justify-between text-[14px]">
                 <span class="text-gray-500">Total</span>
-                <span class="font-bold text-app-black text-[16px]">€{{ formattedReceipt }}</span>
+                <span class="font-bold text-app-black text-[16px]">€{{ grandTotalDisplay }}</span>
               </div>
             </div>
 
             <div class="rounded-xl bg-yellow-pastel p-4">
               <p class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide">Deduction preview</p>
+              <div v-if="pastaBreakdown" class="flex justify-between text-[14px] mt-2">
+                <span class="text-app-black/70">{{ pastaBreakdown.label }}</span>
+                <span class="font-medium text-app-black">€{{ pastaBreakdown.amount.toFixed(2) }}</span>
+              </div>
               <div v-for="p in participants" :key="p.id" class="flex justify-between text-[14px] mt-2">
                 <span class="text-app-black">{{ p.name }}</span>
                 <span class="font-medium text-app-black">−€{{ sharePerPerson }}</span>
@@ -378,8 +390,9 @@
             <p class="text-[14px] text-gray-500 mt-1">{{ cookEntry?.dish_name }} — {{ formattedDate }}</p>
           </div>
           <div class="rounded-xl bg-white/70 p-4">
-            <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Receipt total</p>
-            <p class="text-[24px] font-bold text-app-black mt-1">€{{ formattedReceipt }}</p>
+            <p v-if="pastaBreakdown" class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Grand total (incl. pasta)</p>
+            <p v-else class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Receipt total</p>
+            <p class="text-[24px] font-bold text-app-black mt-1">€{{ grandTotalDisplay }}</p>
             <p class="text-[13px] text-gray-500">{{ participants.length }} participants · €{{ sharePerPerson }} each</p>
           </div>
           <button
@@ -537,6 +550,9 @@ const receiptAmount = ref<string>('')
 const participants = ref<Participant[]>([])
 const pastDishes = ref<HistoryDish[]>([])
 const deductionResult = ref(false)
+const pastaCost = ref(0)
+const pastaBreakdown = ref<{ label: string; amount: number } | null>(null)
+const mealCost = useMealCost()
 
 function formatDateStr(date: Date): string {
   const now = new Date()
@@ -594,9 +610,16 @@ const formattedReceipt = computed(() => {
 })
 
 const sharePerPerson = computed(() => {
-  const val = parseFloat(receiptAmount.value)
-  if (isNaN(val) || participants.value.length === 0) return '0.00'
-  return (val / participants.value.length).toFixed(2)
+  const base = parseFloat(receiptAmount.value)
+  if (isNaN(base) || participants.value.length === 0) return '0.00'
+  const total = base + pastaCost.value
+  return (total / participants.value.length).toFixed(2)
+})
+
+const grandTotalDisplay = computed(() => {
+  const base = parseFloat(receiptAmount.value)
+  const total = (isNaN(base) ? 0 : base) + pastaCost.value
+  return total.toFixed(2)
 })
 
 const receiptOverdue = computed(() => {
@@ -858,11 +881,41 @@ async function cancelCooking() {
   showCancelDialog.value = false
 }
 
+async function loadPastaCost() {
+  if (!existingRecipeId.value) {
+    pastaCost.value = 0
+    pastaBreakdown.value = null
+    return
+  }
+  try {
+    const recipe = await request<{ pasta_packages: number | null }>('get',
+      `/items/recipes/${existingRecipeId.value}?fields=pasta_packages`
+    )
+    const packages = recipe.pasta_packages ?? 0
+    if (packages > 0) {
+      const price = await mealCost.fetchPastaPrice()
+      const cost = mealCost.computePastaCost(packages, price)
+      pastaCost.value = cost
+      pastaBreakdown.value = {
+        label: `Pasta (${packages} package${packages > 1 ? 's' : ''})`,
+        amount: cost,
+      }
+    } else {
+      pastaCost.value = 0
+      pastaBreakdown.value = null
+    }
+  } catch {
+    pastaCost.value = 0
+    pastaBreakdown.value = null
+  }
+}
+
 async function confirmDeduction() {
   if (!cookEntry.value || !receiptAmount.value || participants.value.length === 0) return
   deducting.value = true
-  const total = parseFloat(receiptAmount.value)
-  const share = total / participants.value.length
+  const baseTotal = parseFloat(receiptAmount.value)
+  const grandTotal = baseTotal + pastaCost.value
+  const share = grandTotal / participants.value.length
 
   try {
     for (const p of participants.value) {
@@ -925,6 +978,10 @@ function onVisibilityChange() {
 }
 
 // ── Init ──
+watch(existingRecipeId, () => {
+  loadPastaCost()
+})
+
 onMounted(async () => {
   await refreshCookData()
 

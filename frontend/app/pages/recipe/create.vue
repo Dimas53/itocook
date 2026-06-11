@@ -57,6 +57,22 @@
         />
       </div>
 
+      <!-- Pasta packages -->
+      <div>
+        <label class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide mb-2 block">
+          Pasta packages (optional)
+        </label>
+        <input
+          v-model.number="form.pasta_packages"
+          type="number"
+          min="0"
+          step="1"
+          placeholder="0"
+          class="w-full h-12 rounded-xl bg-white border border-gray-200 px-4 text-[14px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary"
+        />
+        <p class="text-[11px] text-gray-400 mt-1">1 package = 500g. 0 or empty = not used.</p>
+      </div>
+
       <!-- Ingredients -->
       <div>
         <div class="flex items-center justify-between mb-2">
@@ -161,6 +177,7 @@ interface RecipeItem {
   category: string | null
   description: string | null
   photo: string | null
+  pasta_packages: number | null
   ingredients: { name: string; amount: string; unit: string }[] | string | null
   steps: { step: number; description: string }[] | string | null
   cook: string | { id: string }
@@ -174,6 +191,7 @@ const form = reactive({
   category: (route.query.category as string) || '',
   description: '',
   photo: '',
+  pasta_packages: null as number | null,
   ingredients: [] as Ingredient[],
   steps: [] as Step[],
 })
@@ -186,12 +204,13 @@ async function loadRecipe() {
   loadingRecipe.value = true
   try {
     const item = await request<RecipeItem>('get',
-      `/items/recipes/${editingId.value}?fields=id,dish_name,category,description,photo,ingredients,steps,cook.id`
+      `/items/recipes/${editingId.value}?fields=id,dish_name,category,description,photo,pasta_packages,ingredients,steps,cook.id`
     )
     form.dish_name = item.dish_name
     form.category = item.category || ''
     form.description = item.description || ''
     form.photo = item.photo || ''
+    form.pasta_packages = item.pasta_packages ?? null
     if (item.ingredients) {
       const ings = typeof item.ingredients === 'string' ? JSON.parse(item.ingredients) : item.ingredients
       form.ingredients = Array.isArray(ings) ? ings.map((i: { name?: string; amount?: string; unit?: string }) => ({
@@ -258,6 +277,7 @@ async function submitRecipe() {
       category: form.category || null,
       description: form.description || null,
       photo: form.photo || null,
+      pasta_packages: form.pasta_packages ?? null,
       ingredients: form.ingredients.length > 0 ? form.ingredients : null,
       steps: form.steps.length > 0 ? form.steps : null,
     }
