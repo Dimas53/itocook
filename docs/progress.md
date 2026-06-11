@@ -61,6 +61,9 @@
 - [x] **UX: Recipe ownership on cook** — `saveDish()` in cook.vue updates recipe's `cook` field to current user after matching; recipe appears in their "My Recipes" and shows their avatar
 - [x] **UX: Recent Dishes grid** — home page switched to `grid grid-cols-2 gap-3`; RecipeCard redesigned: title → chef → rating → small image, no button, no category
 
+## Fixes — third session
+- [x] **Bug: Orphaned orders in Profile My List** — when a `cook_queue` entry is deleted from admin, linked `orders` entries with null FK no longer render (API filter `_nnull`); clicking "X" on an orphaned card deletes the order directly by ID, skipping the modal flow
+
 ## Next session — plan
 
 ### Phase 4: Feature Screens
@@ -101,5 +104,5 @@
 - `6903498` — chore(docs): add directus api comments, update progress, add notes rule to AGENTS.md
 - `20971d4` — feat(cook): date query support, HeroBlock cook button, CORS fix, ACCESS_TOKEN_TTL
 - `d484638` — chore(docs): update git log in progress.md
-- `(uncommitted)` — fix: participants composable, remove auto-redirect, cook panel date, calendar dot, recipe edit, TS fixes
+- `ebc1235` — fix: participants composable, remove auto-redirect, cook panel date, calendar dot, recipe edit, TS fixes
 

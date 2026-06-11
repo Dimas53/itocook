@@ -61,12 +61,12 @@ export const useDirectus = () => {
     }
 
     // DEBUG LOGGING (in browser console)
-    if (import.meta.dev) {
+/*    if (import.meta.dev) {
       console.group(`%c Directus API: ${method.toUpperCase()} ${path}`, 'color: #007bff; font-weight: bold;');
       console.log('Payload:', body);
       console.log('Response:', text ? (json as { data: T }).data : '(empty)');
       console.groupEnd();
-    }
+    }*/
 
     // directus api — response always wrapped in { data: ... }, unwrap
     return text ? (json as { data: T }).data : undefined as T

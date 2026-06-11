@@ -233,27 +233,29 @@ async function fetchMyOrders() {
   loadingOrders.value = true
   try {
     const orders = await request<any[]>('get',
-      `/items/orders?filter[user][_eq]=${user.value?.id}&filter[status][_eq]=confirmed&fields=*,cook_queue.id,cook_queue.date,cook_queue.dish_name,cook_queue.status,cook_queue.cook.id,cook_queue.cook.first_name,cook_queue.cook.last_name&sort=-cook_queue.date&limit=50`
+      `/items/orders?filter[user][_eq]=${user.value?.id}&filter[status][_eq]=confirmed&filter[cook_queue][_nnull]=true&fields=*,cook_queue.id,cook_queue.date,cook_queue.dish_name,cook_queue.status,cook_queue.cook.id,cook_queue.cook.first_name,cook_queue.cook.last_name&sort=-cook_queue.date&limit=50`
     )
-    myOrders.value = orders.map((o) => {
-      const cq = o.cook_queue
-      let cookName = ''
-      let isCook = false
-      if (cq && cq.cook && typeof cq.cook === 'object') {
-        cookName = [cq.cook.first_name, cq.cook.last_name].filter(Boolean).join(' ') || 'Unknown'
-        isCook = cq.cook.id === user.value?.id
-      }
-      return {
-        id: o.id,
-        dish_name: cq?.dish_name || 'Unknown dish',
-        date: cq?.date || '',
-        dateLabel: formatDateLabel(cq?.date),
-        cookName,
-        isCook,
-        cookQueueId: cq?.id || '',
-        status: cq?.status || '',
-      }
-    })
+    myOrders.value = orders
+      .filter((o) => o.cook_queue != null)
+      .map((o) => {
+        const cq = o.cook_queue
+        let cookName = ''
+        let isCook = false
+        if (cq && cq.cook && typeof cq.cook === 'object') {
+          cookName = [cq.cook.first_name, cq.cook.last_name].filter(Boolean).join(' ') || 'Unknown'
+          isCook = cq.cook.id === user.value?.id
+        }
+        return {
+          id: o.id,
+          dish_name: cq?.dish_name || 'Unknown dish',
+          date: cq?.date || '',
+          dateLabel: formatDateLabel(cq?.date),
+          cookName,
+          isCook,
+          cookQueueId: cq?.id || '',
+          status: cq?.status || '',
+        }
+      })
   } catch {
     // ignore
   }
@@ -274,6 +276,10 @@ async function fetchMyRecipes() {
 }
 
 function promptLeaveQueue(order: MyOrder) {
+  if (!order.cookQueueId) {
+    removeOrphanedOrder(order.id)
+    return
+  }
   const cookingDate = new Date(order.date + 'T12:00:00')
   const now = new Date()
   const hoursUntil = (cookingDate.getTime() - now.getTime()) / (1000 * 60 * 60)
@@ -283,6 +289,15 @@ function promptLeaveQueue(order: MyOrder) {
     : 'You can leave more than 10 hours before cooking. The cost will not be counted on your balance.'
   leavingOrderId.value = order.cookQueueId
   showConfirmLeave.value = true
+}
+
+async function removeOrphanedOrder(orderId: string) {
+  try {
+    await request('delete', `/items/orders/${orderId}`)
+    await fetchMyOrders()
+  } catch (e) {
+    console.error('Failed to remove orphaned order:', e)
+  }
 }
 
 async function confirmLeave() {
