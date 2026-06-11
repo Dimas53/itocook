@@ -542,13 +542,23 @@ async function searchExistingRecipe(name: string): Promise<string | null> {
   recipeSearchDone.value = false
   existingRecipeId.value = null
   try {
-    const results = await request<{ id: string }[]>('get',
+    // Prefer user's own recipe/fork
+    const own = await request<{ id: string }[]>('get',
+      `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(name)}&filter[user_created][_eq]=${user.value?.id}&limit=1&fields=id`
+    )
+    if (own.length > 0) {
+      existingRecipeId.value = own[0]!.id
+      recipeSearchDone.value = true
+      return own[0]!.id
+    }
+    // Fallback to any recipe with that name (will be forked)
+    const any = await request<{ id: string }[]>('get',
       `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(name)}&limit=1&fields=id`
     )
-    if (results.length > 0) {
-      existingRecipeId.value = results[0]!.id
+    if (any.length > 0) {
+      existingRecipeId.value = any[0]!.id
       recipeSearchDone.value = true
-      return results[0]!.id
+      return any[0]!.id
     }
   } catch {
     // ignore
@@ -587,24 +597,36 @@ async function saveDish() {
     await fetchParticipants()
     await searchExistingRecipe(dishName.value.trim())
 
-    // Update recipe ownership to current cook + record in history
+    // Fork on cook: if recipe exists and belongs to another user, fork it
     if (existingRecipeId.value && user.value?.id) {
-      await request('PATCH', `/items/recipes/${existingRecipeId.value}`, {
-        cook: user.value.id,
-      })
-      const existing = await request<{ id: string }[]>('get',
-        `/items/cooked_recipes?filter[recipe][_eq]=${existingRecipeId.value}&filter[user][_eq]=${user.value.id}&limit=1&fields=id`
+      const original = await request<{ user_created: string }>('get',
+        `/items/recipes/${existingRecipeId.value}?fields=user_created`
       )
-      if (existing.length > 0) {
-        await request('PATCH', `/items/cooked_recipes/${existing[0].id}`, {
-          date_cooked: new Date().toISOString(),
-        })
-      } else {
-        await request('post', '/items/cooked_recipes', {
-          recipe: existingRecipeId.value,
-          user: user.value.id,
-        })
+      if (original.user_created !== user.value.id) {
+        // Check for existing fork
+        const forks = await request<{ id: string }[]>('get',
+          `/items/recipes?filter[forked_from][_eq]=${existingRecipeId.value}&filter[user_created][_eq]=${user.value.id}&limit=1&fields=id`
+        )
+        if (forks.length > 0) {
+          existingRecipeId.value = forks[0]!.id
+        } else {
+          const originalFull = await request<any>('get',
+            `/items/recipes/${existingRecipeId.value}?fields=dish_name,category,description,photo,ingredients,steps`
+          )
+          const created = await request<{ id: string }>('post', '/items/recipes', {
+            dish_name: originalFull.dish_name,
+            category: originalFull.category,
+            description: originalFull.description,
+            photo: originalFull.photo,
+            ingredients: originalFull.ingredients,
+            steps: originalFull.steps,
+            cook: user.value.id,
+            forked_from: existingRecipeId.value,
+          })
+          existingRecipeId.value = created.id
+        }
       }
+      // User owns the recipe → use as-is; no PATCH needed
     }
   } catch (e) {
     console.error('Failed to save dish:', e)

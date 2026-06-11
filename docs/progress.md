@@ -64,6 +64,10 @@
 ## Fixes — third session
 - [x] **Bug: Orphaned orders in Profile My List** — when a `cook_queue` entry is deleted from admin, linked `orders` entries with null FK no longer render (API filter `_nnull`); clicking "X" on an orphaned card deletes the order directly by ID, skipping the modal flow
 
+## Fixes — fourth session
+- [x] **Feat: HeroBlock fallback image** — `chef-cook.png` when queue entry has no linked recipe; "Chef is thinking..." placeholder text
+- [x] **Rework: Fork on cook** — replaced shared `recipes.cook` PATCH + `cooked_recipes` junction with fork pattern. When user cooks another's recipe, a fork (copy with `forked_from` pointer, owned by cook) is created. `recipes.update` permission restored to `user_created Equals $CURRENT_USER`. Reuses existing fork on repeat. "My Recipes" back to simple `filter[user_created]` query.
+
 ## Next session — plan
 
 ### Phase 4: Feature Screens
@@ -107,4 +111,5 @@
 - `ebc1235` — fix: participants composable, remove auto-redirect, cook panel date, calendar dot, recipe edit, TS fixes
 - `472cacb` — fix(profile): skip orphaned orders from deleted cook_queue entries
 - `c577090` — feat(hero): show chef-cook.png fallback when queue entry has no linked recipe
+- `6df42de` — feat(recipes): track cooking history via cooked_recipes junction
 

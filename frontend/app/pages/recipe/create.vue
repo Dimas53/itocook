@@ -266,12 +266,6 @@ async function submitRecipe() {
         payload.cook = user.value?.id || null
         payload.source_cook_queue = sourceCookQueue
         const created = await request<{ id: string }>('post', '/items/recipes', payload)
-        if (user.value?.id) {
-          await request('post', '/items/cooked_recipes', {
-            recipe: created.id,
-            user: user.value.id,
-          })
-        }
         router.replace(`/recipe/${created.id}`)
       } else {
       const editId = editingId.value!
