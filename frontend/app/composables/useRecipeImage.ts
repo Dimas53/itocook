@@ -15,13 +15,16 @@ const CATEGORY_IMAGES: Record<string, string> = {
   other: '/images/categories/other.png',
 }
 
-export function useRecipeImage(source: RecipeWithImage | Ref<RecipeWithImage | null>) {
+export function useRecipeImage(
+  source: RecipeWithImage | Ref<RecipeWithImage | null>,
+  fallback?: string
+) {
   const r = isRef(source) ? source : ref(source) as Ref<RecipeWithImage | null>
   return computed(() => {
     const val = r.value
-    if (!val) return CATEGORY_IMAGES.other
+    if (!val) return fallback || CATEGORY_IMAGES.other
     if (val.photo) return val.photo
     if (val.category && CATEGORY_IMAGES[val.category]) return CATEGORY_IMAGES[val.category]
-    return CATEGORY_IMAGES.other
+    return fallback || CATEGORY_IMAGES.other
   })
 }

@@ -54,7 +54,7 @@
         <!-- Text left -->
         <div class="absolute left-5 bottom-5 flex flex-col gap-1 z-10">
           <span class="text-[22px] font-bold text-app-black">
-            {{ cook.dish }}
+            {{ cook.dish || 'Chef is thinking...' }}
           </span>
           <p class="text-[13px] text-app-black/60">by {{ cook.name }}</p>
           <div class="flex items-center gap-1.5 mt-0.5">
@@ -82,7 +82,12 @@
         <img
             :src="dishImage"
             alt="Dish"
-            class="absolute -right-10 -bottom-12 w-56 h-44 object-cover rounded-full shadow-sm z-10"
+            :class="[
+              'absolute -right-10 -bottom-12 rounded-full shadow-sm z-10 transition-all',
+              isNoRecipe
+                ? 'w-48 h-48 object-scale-down -right-6 -bottom-8'
+                : 'w-56 h-44 object-cover'
+            ]"
         />
       </div>
 
@@ -119,9 +124,17 @@ const emit = defineEmits<{
 
 const router = useRouter()
 
+const CHEF_COOK = '/images/onboarding/chef-cook.png'
+
+const isNoRecipe = computed(() => props.cook && !props.cook.photo && !props.cook.category)
+
 const dishImage = computed(() => {
   if (!props.cook) return '/images/categories/other.png'
-  return useRecipeImage({ photo: props.cook.photo ?? null, category: props.cook.category ?? 'other' }).value
+  if (isNoRecipe.value) return CHEF_COOK
+  return useRecipeImage({
+    photo: props.cook.photo ?? null,
+    category: props.cook.category ?? 'other'
+  }).value
 })
 
 function onDishClick() {

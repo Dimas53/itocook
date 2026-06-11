@@ -105,4 +105,5 @@
 - `20971d4` — feat(cook): date query support, HeroBlock cook button, CORS fix, ACCESS_TOKEN_TTL
 - `d484638` — chore(docs): update git log in progress.md
 - `ebc1235` — fix: participants composable, remove auto-redirect, cook panel date, calendar dot, recipe edit, TS fixes
+- `472cacb` — fix(profile): skip orphaned orders from deleted cook_queue entries
 
