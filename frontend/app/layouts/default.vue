@@ -15,7 +15,7 @@
           src="/images/ios_bar.svg"
           alt="status-bar"
           class="h-[12px] object-contain mt-[14px]"
-          :class="{ 'invert': isDarkStatus }">
+        >
       </div>
 
       <div class="flex flex-col h-full">
