@@ -118,6 +118,7 @@ const todayRecipeId = ref<string | undefined>(undefined)
 // Participant counter from backend
 const todayEntryId = ref<string | null>(null)
 const { confirmed: participantCount, hasJoined, fetch: fetchParticipants, join: onJoin } = useParticipants(todayEntryId)
+const { count: totalCount } = useTotalUsers()
 
 // Duty (static for now)
 const dutyLoading = ref(true)
@@ -128,8 +129,6 @@ const searchQuery = ref('')
 // Recipes
 const recipesLoading = ref(true)
 const recipes = ref<Recipe[]>([])
-
-const totalCount = ref(8)
 
 // Date helpers
 function formatDateISO(d: Date): string {

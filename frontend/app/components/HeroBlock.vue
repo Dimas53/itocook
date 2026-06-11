@@ -79,7 +79,7 @@
           <span class="text-[22px] font-bold text-app-black">
             {{ cook.dish || 'Chef is thinking...' }}
           </span>
-          <p class="text-[13px] text-app-black/60">by {{ cook.name }}</p>
+          <p class="text-[15px] font-medium text-app-black/80">by {{ cook.name }}</p>
           <div class="flex items-center gap-1.5 mt-0.5">
             <PhUsers class="w-3.5 h-3.5 text-app-black/50" weight="fill" />
             <p class="text-[12px] text-app-black/50">

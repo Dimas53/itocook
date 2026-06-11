@@ -191,7 +191,7 @@ const activeEntryId = computed(() => {
   return item?.id ?? null
 })
 const { confirmed: participantCount, hasJoined, fetch: fetchParticipants, join: onJoin } = useParticipants(activeEntryId)
-const totalCount = ref(8)
+const { count: totalCount } = useTotalUsers()
 
 // ── Week navigation ──
 const weekOffset = ref(0)

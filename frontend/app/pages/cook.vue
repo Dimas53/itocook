@@ -143,6 +143,15 @@
               </button>
             </template>
           </template>
+
+          <button
+            class="w-full h-12 rounded-full border border-red-200 text-red-500 font-semibold text-[14px] flex items-center justify-center gap-2 bg-white/80 active:scale-[0.98] transition-transform mt-4"
+            :disabled="saving || cancelling"
+            @click="showCancelDialog = true"
+          >
+            <PhXCircle class="w-4 h-4" />
+            Cancel Cooking
+          </button>
         </div>
       </template>
 
@@ -172,6 +181,15 @@
             <PhSpinner v-if="saving" class="w-5 h-5 animate-spin" />
             <PhCookingPot v-else class="w-5 h-5" weight="fill" />
             {{ saving ? 'Starting...' : 'Start Cooking' }}
+          </button>
+
+          <button
+            class="w-full h-12 rounded-full border border-red-200 text-red-500 font-semibold text-[14px] flex items-center justify-center gap-2 bg-white/80 active:scale-[0.98] transition-transform"
+            :disabled="saving || cancelling"
+            @click="showCancelDialog = true"
+          >
+            <PhXCircle class="w-4 h-4" />
+            Cancel Cooking
           </button>
         </div>
       </template>
@@ -254,6 +272,15 @@
               <PhCheckCircle class="w-5 h-5" weight="fill" />
               Lunch is ready!
             </template>
+          </button>
+
+          <button
+            class="w-full h-12 rounded-full border border-red-200 text-red-500 font-semibold text-[14px] flex items-center justify-center gap-2 bg-white/80 active:scale-[0.98] transition-transform"
+            :disabled="saving || cancelling"
+            @click="showCancelDialog = true"
+          >
+            <PhXCircle class="w-4 h-4" />
+            Cancel Cooking
           </button>
         </div>
       </template>
@@ -371,6 +398,39 @@
         <div class="h-14 bg-gray-100 rounded-full animate-pulse" />
       </div>
 
+      <!-- Confirm cancel overlay -->
+      <div
+        v-if="showCancelDialog"
+        class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center pb-20 pointer-events-auto"
+        @click.self="showCancelDialog = false"
+      >
+        <div class="bg-white rounded-2xl mx-5 p-6 w-full max-w-[21rem] shadow-xl">
+          <h3 class="text-[16px] font-bold text-app-black mb-2">Cancel cooking?</h3>
+          <p class="text-[13px] text-app-black/70 leading-relaxed">
+            This will cancel the entire cook entry and remove all participants. This action cannot be undone.
+          </p>
+          <p class="text-[11px] text-app-black/50 mt-2 leading-relaxed">
+            No balances or transactions will be affected.
+          </p>
+          <div class="flex gap-3 mt-5">
+            <button
+              class="flex-1 h-11 rounded-full border border-gray-200 text-app-black font-semibold text-[14px] active:scale-[0.98] transition-transform"
+              @click="showCancelDialog = false"
+            >
+              Keep Cooking
+            </button>
+            <button
+              class="flex-1 h-11 rounded-full bg-red-500 text-white font-semibold text-[14px] active:scale-[0.98] transition-transform"
+              :disabled="cancelling"
+              @click="cancelCooking"
+            >
+              <PhSpinner v-if="cancelling" class="w-4 h-4 animate-spin mx-auto" />
+              <span v-else>Cancel Entry</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -392,6 +452,7 @@ import {
   PhEye,
   PhClock,
   PhWarning,
+  PhXCircle,
 } from '@phosphor-icons/vue'
 
 definePageMeta({
@@ -467,6 +528,8 @@ const formattedDate = computed(() => {
 const loading = ref(true)
 const saving = ref(false)
 const deducting = ref(false)
+const cancelling = ref(false)
+const showCancelDialog = ref(false)
 const cookEntry = ref<CookQueueEntry | null>(null)
 const dishName = ref('')
 const selectedCategory = ref('')
@@ -767,6 +830,32 @@ async function markReady() {
     console.error('Failed to mark ready:', e)
   }
   saving.value = false
+}
+
+async function cancelCooking() {
+  if (!cookEntry.value) return
+  cancelling.value = true
+  try {
+    // Cancel the cook_queue entry
+    await request('PATCH', `/items/cook_queue/${cookEntry.value.id}`, {
+      status: 'cancelled',
+    })
+
+    // Remove all related orders
+    const orders = await request<OrderEntry[]>('get',
+      `/items/orders?filter[cook_queue][_eq]=${cookEntry.value.id}&filter[status][_eq]=confirmed&fields=id`
+    )
+    for (const o of orders) {
+      await request('delete', `/items/orders/${o.id}`)
+    }
+
+    // TODO: Notify participants that this cook entry was cancelled
+    router.push('/kitchen')
+  } catch (e) {
+    console.error('Failed to cancel cooking:', e)
+  }
+  cancelling.value = false
+  showCancelDialog.value = false
 }
 
 async function confirmDeduction() {

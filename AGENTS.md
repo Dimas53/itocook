@@ -161,6 +161,22 @@ for all schema changes — this keeps changes reproducible and documented.
 
 ---
 
+## Directus permissions checklist
+
+Whenever a task involves creating/modifying a Directus collection, field,
+or a new API call against an existing collection (especially aggregate/count
+queries, or collections not previously queried from the frontend):
+
+- Always check Access Policies/Permissions for the role used by the frontend
+  (e.g. Public or the default authenticated role) via Directus MCP.
+- If the required permission (read/create/update/aggregate) is missing, add it
+  as part of the task — don't leave it for the user to discover via a 403 later.
+- For sensitive collections (e.g. `directus_users`), restrict the field-level
+  access to only what's needed (avoid exposing email, password hashes, etc.).
+- Mention in the progress notes/summary which permissions were added or changed.
+
+---
+
 ## Chat Language Rules
 
 - In CLI chat, always respond in Russian by default.
