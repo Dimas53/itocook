@@ -94,6 +94,7 @@
 - [ ] Shopping list from recipe, Receipt photo upload
 
 ## Git log
+- `d695b45` — fix(hero): add JS guard on Cook button — disabled attr alone wasn't reliable; remove invert class from status bar as intended
 - `14e2c08` — fix(hero): guard HeroBlock Cook button with JS check — disabled attr alone wasn't blocking navigation
 - `bf2f2bd` — fix(layout): safe-area top bar on app layout, layout assignment, HeroBlock Cook disabled, remove empty today.vue
 - `30a4658` — feat: today cooking button, history author attribution, safe-area fix, hero empty-state
