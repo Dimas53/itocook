@@ -31,6 +31,7 @@
 - [x] **Fix: Extended edit permission** — `canEdit` computed in `recipe/[id].vue`: edit button visible if recipe owner OR today's cook with linked queue entry
 - [x] **Fix: Status-based bottom controls** — `recipe/[id].vue` shows badges per queue status: "Scheduled for [date]", "Cooking in progress", "Lunch is ready!", "Cancelled"; Join button only for scheduled/cooking; "Lunch is ready!" only for cooking owner
 - [x] **Fix: Calendar today highlight** — `WeekCalendar.vue` today (not selected) uses `bg-purple-100 text-purple-700` instead of plain white
+- [x] **Task A': Split "Lunch is ready" from cost entry** — `markReady()` only sets `status: 'ready'` (no longer auto-transitions to receipt step); receipt form is shown in the `'ready'` state itself, accessible independently; overdue badge appears when past 14:00 same day; `confirmDeduction()` unchanged (split logic preserved, sets status to `'completed'`)
 
 ## Known issues
 - **Phase 4 screens** — AI Recipe, Duty, Common, Recipe Detail, Finance, Notifications all stubs or unfinished
@@ -86,6 +87,10 @@
 
 - [x] Navigation (BottomTabBar), Home, HeroBlock, RecipeCard, BalanceWidget, DutyWidget
 - [x] Kitchen screen, Cook Page, Recipe Detail
+- [x] Task A': Split "Lunch is ready" from cost entry — decoupled into independent steps
+- [ ] Task B': Reminder mechanism for overdue cost entry (groundwork)
+- [ ] Task D: Ghost participants / leave-join logic
+- [ ] Task F: Pasta/inventory logic
 - [ ] AI Recipe — chat with AI, JSON recipe render, serving recalculation
 - [ ] Duty screen — duty calendar, confirmation, auto-assignment
 - [ ] Common screen — group purchases, announcements, polls

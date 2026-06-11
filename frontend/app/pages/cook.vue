@@ -258,8 +258,8 @@
         </div>
       </template>
 
-      <!-- ═══════ RECEIPT STATE ═══════ -->
-      <template v-if="state === 'receipt'">
+      <!-- ═══════ READY STATE (meal eaten, cost entry optional) ═══════ -->
+      <template v-if="state === 'ready'">
         <div class="rounded-2xl bg-primary-light/50 p-5 space-y-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
@@ -268,6 +268,12 @@
             <div>
               <p class="text-[14px] font-semibold text-app-black">Lunch is served!</p>
               <p class="text-[12px] text-gray-500">Enter the receipt to split the bill</p>
+            </div>
+            <div v-if="receiptOverdue" class="ml-auto">
+              <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-[11px] font-semibold text-red-600 whitespace-nowrap">
+                <PhWarning class="w-3 h-3" weight="fill" />
+                Cost entry overdue
+              </span>
             </div>
           </div>
 
@@ -385,6 +391,7 @@ import {
   PhPlus,
   PhEye,
   PhClock,
+  PhWarning,
 } from '@phosphor-icons/vue'
 
 definePageMeta({
@@ -502,7 +509,7 @@ const state = computed(() => {
   if (!cookEntry.value.dish_name) return 'dish'
   if (cookEntry.value.status === 'scheduled') return 'scheduled'
   if (cookEntry.value.status === 'cooking') return 'cooking'
-  if (cookEntry.value.status === 'ready' && !deductionResult.value) return 'receipt'
+  if (cookEntry.value.status === 'ready' && !deductionResult.value) return 'ready'
   return 'done'
 })
 
@@ -512,7 +519,7 @@ const pageTitle = computed(() => {
     case 'dish': return 'What\u2019s Cooking?'
     case 'scheduled': return 'Scheduled'
     case 'cooking': return 'Cooking in Progress'
-    case 'receipt': return 'Split the Bill'
+    case 'ready': return 'Enter Receipt'
     case 'done': return 'Completed'
     default: return 'Cook Panel'
   }
@@ -527,6 +534,13 @@ const sharePerPerson = computed(() => {
   const val = parseFloat(receiptAmount.value)
   if (isNaN(val) || participants.value.length === 0) return '0.00'
   return (val / participants.value.length).toFixed(2)
+})
+
+const receiptOverdue = computed(() => {
+  if (!isToday) return false
+  const now = new Date()
+  const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0, 0)
+  return now > cutoff
 })
 
 // ── Fetch today's cook entry ──
@@ -748,6 +762,7 @@ async function markReady() {
     })
     cookEntry.value.status = 'ready'
     await fetchParticipants()
+    // TODO: Notify participants that lunch is ready
   } catch (e) {
     console.error('Failed to mark ready:', e)
   }
