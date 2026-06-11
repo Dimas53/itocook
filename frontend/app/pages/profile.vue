@@ -266,7 +266,7 @@ async function fetchMyRecipes() {
   loadingRecipes.value = true
   try {
     const recipes = await request<MyRecipe[]>('get',
-      `/items/recipes?filter[cook][_eq]=${user.value?.id}&sort=-date_created&fields=id,dish_name,category,date_created&limit=50`
+      `/items/recipes?filter[cooked_recipes][user][_eq]=${user.value?.id}&sort=-date_created&fields=id,dish_name,category,date_created&limit=50`
     )
     myRecipes.value = recipes
   } catch {

@@ -262,12 +262,18 @@ async function submitRecipe() {
       steps: form.steps.length > 0 ? form.steps : null,
     }
 
-    if (!isEditing.value) {
-      payload.cook = user.value?.id || null
-      payload.source_cook_queue = sourceCookQueue
-      const created = await request<{ id: string }>('post', '/items/recipes', payload)
-      router.replace(`/recipe/${created.id}`)
-    } else {
+      if (!isEditing.value) {
+        payload.cook = user.value?.id || null
+        payload.source_cook_queue = sourceCookQueue
+        const created = await request<{ id: string }>('post', '/items/recipes', payload)
+        if (user.value?.id) {
+          await request('post', '/items/cooked_recipes', {
+            recipe: created.id,
+            user: user.value.id,
+          })
+        }
+        router.replace(`/recipe/${created.id}`)
+      } else {
       const editId = editingId.value!
       await request('PATCH', `/items/recipes/${editId}`, payload)
       router.replace(`/recipe/${editId}`)

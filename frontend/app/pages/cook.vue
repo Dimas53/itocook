@@ -587,11 +587,24 @@ async function saveDish() {
     await fetchParticipants()
     await searchExistingRecipe(dishName.value.trim())
 
-    // Update recipe ownership to current cook
-    if (existingRecipeId.value) {
+    // Update recipe ownership to current cook + record in history
+    if (existingRecipeId.value && user.value?.id) {
       await request('PATCH', `/items/recipes/${existingRecipeId.value}`, {
-        cook: user.value?.id,
+        cook: user.value.id,
       })
+      const existing = await request<{ id: string }[]>('get',
+        `/items/cooked_recipes?filter[recipe][_eq]=${existingRecipeId.value}&filter[user][_eq]=${user.value.id}&limit=1&fields=id`
+      )
+      if (existing.length > 0) {
+        await request('PATCH', `/items/cooked_recipes/${existing[0].id}`, {
+          date_cooked: new Date().toISOString(),
+        })
+      } else {
+        await request('post', '/items/cooked_recipes', {
+          recipe: existingRecipeId.value,
+          user: user.value.id,
+        })
+      }
     }
   } catch (e) {
     console.error('Failed to save dish:', e)

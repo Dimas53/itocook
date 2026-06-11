@@ -106,4 +106,5 @@
 - `d484638` — chore(docs): update git log in progress.md
 - `ebc1235` — fix: participants composable, remove auto-redirect, cook panel date, calendar dot, recipe edit, TS fixes
 - `472cacb` — fix(profile): skip orphaned orders from deleted cook_queue entries
+- `c577090` — feat(hero): show chef-cook.png fallback when queue entry has no linked recipe
 
