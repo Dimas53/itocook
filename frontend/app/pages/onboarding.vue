@@ -48,4 +48,6 @@
 
 <script setup lang="ts">
 import { PhChefHat } from '@phosphor-icons/vue'
+
+definePageMeta({ layout: 'default' })
 </script>

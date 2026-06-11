@@ -8,7 +8,7 @@
         <div class="absolute right-3 top-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full bg-blue-900 opacity-80 shadow-[0_0_4px_1px_rgba(59,130,246,0.8)]"></div>
       </div>
 
-      <!-- Top status bar (time + icons) -->
+      <!-- Status bar (time + icons) — transparent overlay, no white backdrop -->
       <div class="absolute top-0 left-0 right-0 h-12 px-7 z-50 flex justify-between items-center pointer-events-none select-none">
         <span class="text-[15px] text-black font-normal tracking-tight mt-[14px]">9:41</span>
         <img

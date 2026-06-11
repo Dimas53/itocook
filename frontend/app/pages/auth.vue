@@ -188,7 +188,8 @@
 import { PhEye, PhEyeClosed } from '@phosphor-icons/vue'
 
 definePageMeta({
-  darkStatus: true
+  layout: 'default',
+  darkStatus: true,
 })
 
 const { signUp, login, isTodayCook } = useAuth()
