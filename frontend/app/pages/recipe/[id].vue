@@ -16,12 +16,15 @@
     <template v-else>
       <!-- Photo -- fixed top -->
       <div class="bg-primary-light h-[320px] relative shrink-0">
-        <div class="absolute top-10 inset-0 p-2">
+        <div class="absolute top-10 inset-0 p-2 flex items-center justify-center">
           <img
-            :src="recipeImage"
-            :alt="recipe.dish_name"
-            class="w-full h-full object-contain"
-          />
+              :src="recipeImage.src"
+              :alt="recipe.dish_name"
+              :class="[
+                recipeImage.isUploaded
+                  ? 'w-56 h-56 object-cover rounded-full border-[3px]'
+                  : 'w-full h-full object-contain'
+              ]"  />
         </div>
         <button
           class="absolute left-5 top-12 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center active:scale-[0.98]"

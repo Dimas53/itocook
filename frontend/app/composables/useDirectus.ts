@@ -72,5 +72,70 @@ export const useDirectus = () => {
     return text ? (json as { data: T }).data : undefined as T
   }
 
-  return { request, tokenCookie }
+  async function uploadFile(file: File, folder?: string): Promise<{ id: string }> {
+    const token = tokenCookie.value
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('folder', folder || '')
+
+    const res = await fetch(`${baseURL}/files`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    })
+
+    const text = await res.text()
+    const json = text ? JSON.parse(text) : {}
+
+    if (!res.ok) {
+      const err = json as DirectusError
+      throw new Error(err.errors?.[0]?.message || 'Upload failed')
+    }
+
+    const result = (json as { data: { id: string } }).data
+
+    // Ensure folder is set (POST /files folder field may be ignored in some Directus versions)
+    if (folder && result.id) {
+      const patchRes = await fetch(`${baseURL}/files/${result.id}`, {
+        method: 'PATCH',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folder }),
+      })
+      if (!patchRes.ok) {
+        const patchText = await patchRes.text()
+        const patchJson = patchText ? JSON.parse(patchText) : {}
+        const err = patchJson as DirectusError
+        console.warn('Failed to set folder on uploaded file:', err.errors?.[0]?.message)
+      }
+    }
+
+    return result
+  }
+
+  async function deleteFile(id: string): Promise<void> {
+    const token = tokenCookie.value
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    const res = await fetch(`${baseURL}/files/${id}`, {
+      method: 'DELETE',
+      headers,
+    })
+
+    if (!res.ok) {
+      const text = await res.text()
+      const json = text ? JSON.parse(text) : {}
+      const err = json as DirectusError
+      throw new Error(err.errors?.[0]?.message || 'Delete failed')
+    }
+  }
+
+  return { request, uploadFile, deleteFile, tokenCookie }
 }

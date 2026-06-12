@@ -1,10 +1,8 @@
 <template>
-  <!-- Loading skeleton -->
   <div v-if="loading" class="bg-primary-light rounded-2xl overflow-hidden h-44 animate-pulse">
     <div class="h-full bg-white/40" />
   </div>
 
-  <!-- Data -->
   <div v-else-if="recipe" class="bg-primary-light rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform" @click="$emit('view')">
     <div class="p-3">
       <h3 class="text-[14px] font-semibold text-app-black leading-tight line-clamp-2 mb-1">
@@ -17,11 +15,25 @@
         <PhStar class="w-3 h-3 text-secondary" weight="fill" />
         <span class="text-[11px] font-medium text-app-black">{{ recipe.rating }}</span>
       </div>
+
+      <!-- Demo image: full-width -->
       <img
-        :src="cardImage"
+        v-if="!cardImage.isUploaded"
+        :src="cardImage.src"
         :alt="recipe.title"
         class="w-full h-24 rounded-xl object-cover"
       />
+
+      <!-- Uploaded photo: circular thumbnail at bottom-right -->
+      <div v-else class="flex justify-center items-center">
+        <div class="w-24 h-24 rounded-full border-[3px] border-white shadow-md overflow-hidden">
+          <img
+            :src="cardImage.src"
+            :alt="recipe.title"
+            class="w-full h-full object-cover"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>

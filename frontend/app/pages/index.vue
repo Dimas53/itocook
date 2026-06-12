@@ -210,7 +210,7 @@ onMounted(async () => {
   // Fetch real recipes
   try {
     const data = await request<DirectusRecipe[]>('get',
-      '/items/recipes?sort=-date_created&limit=5&fields=id,dish_name,category,photo,cook.id,cook.first_name,cook.last_name,date_created'
+      '/items/recipes?sort=-date_created&limit=6&fields=id,dish_name,category,photo,cook.id,cook.first_name,cook.last_name,date_created'
     )
     recipes.value = data.map((r) => ({
       id: r.id,

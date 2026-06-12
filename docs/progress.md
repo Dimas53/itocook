@@ -37,6 +37,7 @@
 - [x] **Fix: missing dutyLoading ref** — `const dutyLoading = ref(true)` was accidentally removed from `index.vue`; added back. Fixes Vue warning "Property 'dutyLoading' was accessed during render but is not defined on instance".
 - [x] **Fix: naming collision in useTotalUsers.ts** — inner function named `fetch()` shadowed global `fetch`, causing `fetch('/api/users/count')` to call itself recursively → caught → `count.value = 0`. Renamed to `fetchCount`; callers unaffected (both destructure only `{ count: totalCount }`).
 - [x] **Task F: Recipe pasta/inventory field** — added `pasta_packages` (integer, nullable) to `recipes` collection; created `app_settings` singleton with `pasta_package_price` (decimal, default 1.00); added number input in recipe create/edit form; created Nuxt server route `GET /api/settings/pasta-price` (admin proxy); created `useMealCost()` composable for computation; integrated pasta cost into `confirmDeduction()` — added to total before split, displayed as separate line in receipt preview and deduction breakdown; kept generic enough for future inventory items.
+- [x] **Recipe photo upload** — replaced URL text input in `recipe/create.vue` with `RecipeImageUpload` component (file picker / drag & drop / paste from clipboard); client-side resize via canvas (max 1200px, JPEG quality 0.85, max 5MB); uploads to Directus Files (`recipe-photos` folder); stores file UUID in `recipes.photo` field. Added `uploadFile()` to `useDirectus.ts`. Refactored `useRecipeImage` to return `{ src, isUploaded }` object — UUIDs resolved to Directus asset URL. `RecipeCard.vue` and `HeroBlock.vue` show circular thumbnail (68–72px, rounded-full, border-white) for uploaded photos; demo category PNGs keep full-width display. Created `directus_files` create+read permissions for the User policy.
 
 ## Known issues
 - **Phase 4 screens** — AI Recipe, Duty, Common, Recipe Detail, Finance, Notifications all stubs or unfinished
@@ -85,6 +86,15 @@
 - [x] **Fix: Safe area top inset (attempt 3, superseded)** — `app.vue` content area uses `padding-top: calc(60px + env(safe-area-inset-top, 0px))`; `nuxt.config.ts` viewport meta updated to `viewport-fit=cover`.
 - [x] **UX: HeroBlock empty-state CTA** — `HeroBlock.vue` shows centered empty-state ("No one's cooking yet — Be today's chef!") with "I'm cooking today!" CTA when `cook` is null; existing content preserved when a cook is assigned
 
+## Fixes — sixth session
+- [x] **Fix: folder upload** — `POST /files` folder field unreliable; added `PATCH /files/{id}` fallback in `uploadFile()` to ensure `recipe-photos` folder assigned
+- [x] **Fix: deferred upload** — `RecipeImageUpload` emits resized File blob via `selected` event instead of uploading immediately; parent `recipe/create.vue` uploads on `submitRecipe()`; orphaned files eliminated
+- [x] **Fix: cleanup on preview clear** — added `deleteFile(id)` to `useDirectus.ts` for deleting previously uploaded files
+- [x] **Fix: HeroBlock photo priority** — `kitchen.vue` now fetches `photo` field from matching recipe and passes it in `heroCook`; uploaded recipe photo takes priority over category demo image
+- [x] **Fix: recipe detail hero image** — uploaded photos use `object-cover` (fill container) while demo images keep `object-contain` (fit inside)
+- [x] **Fix: duplicate onMounted in RecipeImageUpload** — consolidated paste listener into single `onMounted`
+- [x] **Fix: TS paste handler** — `item.getAsFile()` guarded by null check
+
 ## Next session — plan
 
 ### Phase 4: Feature Screens
@@ -107,7 +117,8 @@
 ## Git log
 - `3ae6859` — feat(cook): split lunch-ready from receipt entry (Task A')
 - `10cd5b6` — feat(cook): cancel cooking, fix naming collision in useTotalUsers, replace hardcoded user count
-- current — feat(recipe): add pasta_packages field, app_settings singleton, pasta cost in deduction (Task F)
+- `04fc50f` — feat(recipe): add pasta_packages field and pasta cost in deduction (Task F); fix(kitchen): remove redundant become-cook button under calendar
+- `04fc50f` — feat(recipe): add pasta_packages field and pasta cost in deduction (Task F); fix(kitchen): remove redundant become-cook button under calendar
 - `d695b45` — fix(hero): add JS guard on Cook button — disabled attr alone wasn't reliable; remove invert class from status bar as intended
 - `14e2c08` — fix(hero): guard HeroBlock Cook button with JS check — disabled attr alone wasn't blocking navigation
 - `bf2f2bd` — fix(layout): safe-area top bar on app layout, layout assignment, HeroBlock Cook disabled, remove empty today.vue

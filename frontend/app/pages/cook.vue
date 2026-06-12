@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col min-h-full">
+  <div class="flex flex-col h-full">
     <!-- Header -->
     <div class="flex items-center justify-between px-5 pb-4">
       <div>
@@ -13,7 +13,7 @@
       </button>
     </div>
 
-    <div class="px-5 pb-[100px] space-y-4">
+    <div class="px-5 pb-4 space-y-4 flex-1">
 
       <!-- ═══════ ASSIGN STATE ═══════ -->
       <template v-if="state === 'assign'">
@@ -78,22 +78,63 @@
             <p class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide">
               Or pick from history
             </p>
-            <div
-              v-for="item in pastDishes"
-              :key="item.id"
-              class="rounded-xl bg-white/70 px-4 py-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform"
-              @click="selectPastDish(item)"
-            >
-              <div class="flex-1 min-w-0 mr-3">
-                <p class="text-[14px] font-medium text-app-black truncate">{{ item.dish_name }}</p>
-                <p class="text-[12px] text-app-black/60 mt-0.5">
-                  by {{ item.cookName }} &middot; {{ item.dateLabel }}
-                </p>
+            <div class="space-y-1">
+              <!-- Up arrow -->
+              <div v-if="pastDishes.length > VISIBLE_COUNT" class="flex justify-center h-6">
+                <button
+                  class="w-6 h-6 flex items-center justify-center transition-colors"
+                  :class="canScrollUp ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
+                  :disabled="!canScrollUp"
+                  @click="scrollUp"
+                >
+                  <PhCaretUp class="w-4 h-4" weight="bold" />
+                </button>
               </div>
-              <PhClockCounterClockwise class="w-4 h-4 text-gray-400 shrink-0" />
-            </div>
-            <div v-if="pastDishes.length === 0" class="text-[13px] text-gray-400 text-center py-3">
-              No past dishes yet
+
+              <div
+                class="space-y-2"
+                @touchstart="onTouchStart"
+                @touchend="onTouchEnd"
+              >
+                <div v-if="pastDishes.length === 0" class="text-[13px] text-gray-400 text-center py-6">
+                  No past dishes yet
+                </div>
+                <template v-else>
+                  <div class="overflow-hidden relative" :style="{ height: sliderHeight + 'px' }">
+                    <div
+                      class="transition-transform duration-300 ease-out will-change-transform"
+                      :style="{ transform: `translateY(${-historyIndex * ITEM_OFFSET}px)` }"
+                    >
+                      <div
+                        v-for="item in pastDishes"
+                        :key="item.id"
+                        class="h-[60px] rounded-xl bg-white/70 px-4 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform mb-2 last:mb-0"
+                        @click="selectPastDish(item)"
+                      >
+                        <div class="flex-1 min-w-0 mr-3">
+                          <p class="text-[14px] font-medium text-app-black truncate leading-tight">{{ item.dish_name }}</p>
+                          <p class="text-[12px] text-app-black/60 mt-0.5 leading-none">
+                            by {{ item.cookName }} &middot; {{ item.dateLabel }}
+                          </p>
+                        </div>
+                        <PhClockCounterClockwise class="w-4 h-4 text-gray-400 shrink-0" />
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+
+              <!-- Down arrow -->
+              <div v-if="pastDishes.length > VISIBLE_COUNT" class="flex justify-center h-6">
+                <button
+                  class="w-6 h-6 flex items-center justify-center transition-colors"
+                  :class="canScrollDown ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
+                  :disabled="!canScrollDown"
+                  @click="scrollDown"
+                >
+                  <PhCaretDown class="w-4 h-4" weight="bold" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -143,15 +184,6 @@
               </button>
             </template>
           </template>
-
-          <button
-            class="w-full h-12 rounded-full border border-red-200 text-red-500 font-semibold text-[14px] flex items-center justify-center gap-2 bg-white/80 active:scale-[0.98] transition-transform mt-4"
-            :disabled="saving || cancelling"
-            @click="showCancelDialog = true"
-          >
-            <PhXCircle class="w-4 h-4" />
-            Cancel Cooking
-          </button>
         </div>
       </template>
 
@@ -466,6 +498,8 @@ import {
   PhClock,
   PhWarning,
   PhXCircle,
+  PhCaretUp,
+  PhCaretDown,
 } from '@phosphor-icons/vue'
 
 definePageMeta({
@@ -550,6 +584,12 @@ const receiptAmount = ref<string>('')
 const participants = ref<Participant[]>([])
 const pastDishes = ref<HistoryDish[]>([])
 const deductionResult = ref(false)
+const historyIndex = ref(0)
+const VISIBLE_COUNT = 3
+const ITEM_HEIGHT = 60
+const ITEM_GAP = 8
+const ITEM_OFFSET = ITEM_HEIGHT + ITEM_GAP
+const sliderHeight = VISIBLE_COUNT * ITEM_HEIGHT + (VISIBLE_COUNT - 1) * ITEM_GAP
 const pastaCost = ref(0)
 const pastaBreakdown = ref<{ label: string; amount: number } | null>(null)
 const mealCost = useMealCost()
@@ -577,6 +617,35 @@ const matchedRecipe = computed(() => {
   const name = dishName.value.toLowerCase()
   return pastDishes.value.find(d => d.dish_name.toLowerCase().includes(name)) || null
 })
+
+const visiblePastDishes = computed(() => {
+  return pastDishes.value.slice(historyIndex.value, historyIndex.value + VISIBLE_COUNT)
+})
+
+const canScrollUp = computed(() => historyIndex.value > 0)
+const canScrollDown = computed(() => historyIndex.value + VISIBLE_COUNT < pastDishes.value.length)
+
+let touchStartY = 0
+
+function scrollUp() {
+  if (canScrollUp.value) historyIndex.value--
+}
+
+function scrollDown() {
+  if (canScrollDown.value) historyIndex.value++
+}
+
+function onTouchStart(e: TouchEvent) {
+  touchStartY = e.touches[0].clientY
+}
+
+function onTouchEnd(e: TouchEvent) {
+  const deltaY = e.changedTouches[0].clientY - touchStartY
+  if (Math.abs(deltaY) > 30) {
+    if (deltaY < 0) scrollDown()
+    else scrollUp()
+  }
+}
 
 const existingRecipeId = ref<string | null>(null)
 const recipeSearchDone = ref(false)
@@ -653,7 +722,7 @@ async function fetchTodayEntry() {
 async function fetchPastDishes() {
   try {
     const items = await request<any[]>('get',
-      '/items/recipes?sort=-date_created&limit=10&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created'
+      '/items/recipes?sort=-date_created&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created'
     )
     pastDishes.value = items
       .filter((i: any) => i.dish_name)
@@ -664,6 +733,7 @@ async function fetchPastDishes() {
         cookName: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
         dateLabel: formatDateStr(new Date(r.date_created)),
       }))
+    historyIndex.value = 0
   } catch {
     // ignore
   }
@@ -859,12 +929,10 @@ async function cancelCooking() {
   if (!cookEntry.value) return
   cancelling.value = true
   try {
-    // Cancel the cook_queue entry
     await request('PATCH', `/items/cook_queue/${cookEntry.value.id}`, {
       status: 'cancelled',
     })
 
-    // Remove all related orders
     const orders = await request<OrderEntry[]>('get',
       `/items/orders?filter[cook_queue][_eq]=${cookEntry.value.id}&filter[status][_eq]=confirmed&fields=id`
     )
@@ -872,7 +940,6 @@ async function cancelCooking() {
       await request('delete', `/items/orders/${o.id}`)
     }
 
-    // TODO: Notify participants that this cook entry was cancelled
     router.push('/kitchen')
   } catch (e) {
     console.error('Failed to cancel cooking:', e)

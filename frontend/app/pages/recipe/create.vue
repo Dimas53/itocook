@@ -46,16 +46,12 @@
         />
       </div>
 
-      <!-- Photo URL -->
-      <div>
-        <label class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide mb-2 block">Photo URL (optional)</label>
-        <input
-          v-model="form.photo"
-          type="url"
-          placeholder="https://example.com/photo.jpg"
-          class="w-full h-12 rounded-xl bg-white border border-gray-200 px-4 text-[14px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary"
-        />
-      </div>
+      <!-- Photo upload -->
+      <RecipeImageUpload
+        :photo="form.photo"
+        @selected="(file: File) => { pendingPhotoFile = file }"
+        @cleared="onPhotoCleared"
+      />
 
       <!-- Pasta packages -->
       <div>
@@ -156,7 +152,7 @@ definePageMeta({ layout: 'default' })
 
 const router = useRouter()
 const route = useRoute()
-const { request } = useDirectus()
+const { request, uploadFile } = useDirectus()
 const { user } = useAuth()
 
 const categories = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'other']
@@ -198,6 +194,8 @@ const form = reactive({
 
 const submitting = ref(false)
 const loadingRecipe = ref(false)
+const pendingPhotoFile = ref<File | null>(null)
+const FOLDER_ID = 'eb01b9c5-b408-40f9-86fd-c8f2045e258d'
 
 async function loadRecipe() {
   if (!editingId.value) return
@@ -237,6 +235,11 @@ onMounted(() => {
   }
 })
 
+function onPhotoCleared() {
+  pendingPhotoFile.value = null
+  form.photo = ''
+}
+
 function addIngredient() {
   form.ingredients.push({ name: '', amount: '', unit: '' })
 }
@@ -257,6 +260,13 @@ async function submitRecipe() {
   if (!form.dish_name.trim() || submitting.value) return
   submitting.value = true
   try {
+    // Upload photo first if a new file was selected
+    if (pendingPhotoFile.value) {
+      const result = await uploadFile(pendingPhotoFile.value, FOLDER_ID)
+      form.photo = result.id
+      pendingPhotoFile.value = null
+    }
+
     const dateParam = route.query.date as string | undefined
     let sourceCookQueue: string | null = null
     if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) && user.value) {

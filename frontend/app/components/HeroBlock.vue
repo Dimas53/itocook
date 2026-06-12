@@ -103,13 +103,15 @@
 
         <!-- Dish image overlay -->
         <img
-            :src="dishImage"
+            :src="dishImage.src"
             alt="Dish"
             :class="[
-              'absolute -right-10 -bottom-12 rounded-full shadow-sm z-10 transition-all',
+              'absolute z-10 transition-all shadow-sm',
               isNoRecipe
-                ? 'w-48 h-48 object-scale-down -right-6 -bottom-8'
-                : 'w-56 h-44 object-cover'
+                ? 'w-48 h-48 object-scale-down -right-6 -bottom-8 rounded-full'
+                : dishImage.isUploaded
+                  ? 'w-48 h-48 object-cover rounded-full border-[3px] border-white -right-7 -bottom-14'
+                  : 'w-56 h-44 object-cover rounded-full -right-10 -bottom-12'
             ]"
         />
       </div>
@@ -152,8 +154,8 @@ const CHEF_COOK = '/images/onboarding/chef-cook.png'
 const isNoRecipe = computed(() => props.cook && !props.cook.photo && !props.cook.category)
 
 const dishImage = computed(() => {
-  if (!props.cook) return '/images/categories/other.png'
-  if (isNoRecipe.value) return CHEF_COOK
+  if (!props.cook) return { src: '/images/categories/other.png', isUploaded: false }
+  if (isNoRecipe.value) return { src: CHEF_COOK, isUploaded: false }
   return useRecipeImage({
     photo: props.cook.photo ?? null,
     category: props.cook.category ?? 'other'

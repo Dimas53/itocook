@@ -25,7 +25,7 @@
       </div>
 
       <!-- Floating bottom tab bar -->
-      <BottomTabBar v-if="!isProfilePage" />
+      <BottomTabBar v-if="!isProfilePage && !isCookPage" />
     </div>
   </div>
 </template>
@@ -35,4 +35,5 @@ const route = useRoute()
 
 const isDarkStatus = computed(() => route.meta.darkStatus === true)
 const isProfilePage = computed(() => route.path === '/profile')
+const isCookPage = computed(() => route.path === '/cook')
 </script>

@@ -271,12 +271,15 @@ const selectedSlot = computed(() =>
   weekSlots.value.find((s) => s.date === selectedDate.value) ?? null
 )
 
+const selectedRecipePhoto = ref<string | null>(null)
+
 const heroCook = computed<CookInfo | null>(() => {
   const slot = selectedSlot.value
   if (!slot || !slot.cookName) return null
   return {
     name: slot.cookName,
     dish: slot.dishName || '',
+    photo: selectedRecipePhoto.value,
     category: selectedCategory.value,
   }
 })
@@ -297,16 +300,18 @@ const isCurrentUserCookForSelected = computed(() => {
 watch(selectedSlot, async (slot) => {
   heroRecipeId.value = undefined
   selectedCategory.value = null
+  selectedRecipePhoto.value = null
   if (!slot?.dishName) return
 
   try {
-    const recipeMatch = await request<{ id: string; category: string | null }[]>('get',
-      `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(slot.dishName)}&limit=1&fields=id,category`
+    const recipeMatch = await request<{ id: string; photo: string | null; category: string | null }[]>('get',
+      `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(slot.dishName)}&limit=1&fields=id,photo,category`
     )
     const match = recipeMatch[0]
     if (match) {
       heroRecipeId.value = match.id
       selectedCategory.value = match.category || null
+      selectedRecipePhoto.value = match.photo ?? null
     }
   } catch { /* ignore */ }
 })
@@ -347,7 +352,7 @@ onMounted(async () => {
   // ── Dish history from real recipes ──
   try {
     const recipeData = await request<any[]>('get',
-      '/items/recipes?sort=-date_created&limit=10&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created'
+      '/items/recipes?sort=-date_created&limit=5&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created'
     )
     console.log('[kitchen] recipe history data:', recipeData)
     historyItems.value = recipeData.map((r) => ({
