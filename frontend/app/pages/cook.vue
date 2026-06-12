@@ -477,6 +477,26 @@
       </div>
 
     </div>
+
+    <!-- Balance block overlay -->
+    <div
+      v-if="cookBlockedReason"
+      class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center pb-20 pointer-events-auto"
+      @click.self="cookBlockedReason = ''"
+    >
+      <div class="bg-white rounded-2xl mx-5 p-6 w-full max-w-[21rem] shadow-xl">
+        <h3 class="text-[16px] font-bold text-app-black mb-2">Action blocked</h3>
+        <p class="text-[13px] text-app-black/70 leading-relaxed">{{ cookBlockedReason }}</p>
+        <div class="flex gap-3 mt-5">
+          <button
+            class="flex-1 h-11 rounded-full bg-primary text-white font-semibold text-[14px] active:scale-[0.98] transition-transform"
+            @click="cookBlockedReason = ''"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -755,9 +775,17 @@ async function fetchParticipants() {
   }
 }
 
+const cookBlockedReason = ref('')
+
 // ── Actions ──
 
 async function assignAsCook() {
+  const { check } = useBalanceCheck()
+  const result = await check()
+  if (!result.allowed) {
+    cookBlockedReason.value = `Your balance is too low (-€${Math.abs(result.balance).toFixed(2)}). Please top up your balance before becoming cook.`
+    return
+  }
   saving.value = true
   try {
     const newEntry = await request<CookQueueEntry>('post', '/items/cook_queue', {

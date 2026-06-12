@@ -1,14 +1,14 @@
 <template>
   <!-- Loading skeleton -->
-  <div v-if="loading" class="bg-primary-pale rounded-2xl p-4">
+  <div v-if="loading" class="rounded-2xl p-4" :class="skeletonBg">
     <div class="h-3 w-16 bg-white/60 rounded-full animate-pulse" />
     <div class="h-6 w-24 bg-white/60 rounded-full animate-pulse mt-2" />
   </div>
 
   <!-- Data -->
-  <div v-else class="bg-primary-pale rounded-2xl p-4">
-    <p class="text-[12px] text-app-black/60 font-medium uppercase tracking-wide">My Balance</p>
-    <p class="text-[20px] font-semibold text-app-black mt-1">{{ formattedAmount }}</p>
+  <div v-else class="rounded-2xl p-4" :class="cardClass">
+    <p class="text-[12px] font-medium uppercase tracking-wide" :class="labelClass">My Balance</p>
+    <p class="text-[20px] font-semibold mt-1" :class="valueClass">{{ formattedAmount }}</p>
   </div>
 </template>
 
@@ -24,10 +24,6 @@ interface BalanceItem {
   amount: string
 }
 
-// ── fetchBalance ────────────────────────────────────────────────────────
-// directus api — GET /items/balances с фильтром по текущему юзеру
-// Берёт первую запись баланса для этого пользователя и показывает её
-// в мини-виджете на главном экране (index.vue).
 async function fetchBalance() {
   if (!user.value) {
     loading.value = false
@@ -48,7 +44,36 @@ async function fetchBalance() {
 
 const formattedAmount = computed(() => {
   const val = balance.value ?? 0
-  return `€${val.toFixed(2)}`
+  const sign = val < 0 ? '-' : ''
+  return `${sign}€${Math.abs(val).toFixed(2)}`
+})
+
+const cardClass = computed(() => {
+  const val = balance.value
+  if (val === null) return 'bg-primary-pale'
+  if (val >= 5) return 'bg-primary-pale'
+  if (val >= 0) return 'bg-red-50'
+  return 'bg-red-100'
+})
+
+const labelClass = computed(() => {
+  const val = balance.value
+  if (val === null) return 'text-app-black/60'
+  if (val >= 5) return 'text-app-black/60'
+  if (val >= 0) return 'text-red-700/60'
+  return 'text-red-700/60'
+})
+
+const valueClass = computed(() => {
+  const val = balance.value
+  if (val === null) return 'text-app-black'
+  if (val >= 5) return 'text-app-black'
+  if (val >= 0) return 'text-red-700'
+  return 'text-red-600'
+})
+
+const skeletonBg = computed(() => {
+  return 'bg-primary-pale'
 })
 
 onMounted(fetchBalance)

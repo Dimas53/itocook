@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhArrowUp, PhCheck, PhFloppyDisk } from '@phosphor-icons/vue'
+import { PhArrowUp, PhCheck, PhFloppyDisk, PhCaretUp, PhCaretDown } from '@phosphor-icons/vue'
 
 definePageMeta({ layout: 'app' })
 
@@ -193,6 +193,39 @@ async function submitTopup() {
   topupSubmitting.value = false
 }
 
+// ── Transaction History slider ─────────────────────────────────────────────
+const transactionsExpanded = ref(false)
+const txHistoryIndex = ref(0)
+const TX_VISIBLE_COUNT = 5
+const TX_ITEM_HEIGHT = 72
+const TX_ITEM_GAP = 8
+const TX_ITEM_OFFSET = TX_ITEM_HEIGHT + TX_ITEM_GAP
+const txSliderHeight = TX_VISIBLE_COUNT * TX_ITEM_HEIGHT + (TX_VISIBLE_COUNT - 1) * TX_ITEM_GAP
+
+const canScrollTxUp = computed(() => txHistoryIndex.value > 0)
+const canScrollTxDown = computed(() => txHistoryIndex.value + TX_VISIBLE_COUNT < transactions.value.length)
+
+function scrollTxUp() {
+  if (canScrollTxUp.value) txHistoryIndex.value--
+}
+function scrollTxDown() {
+  if (canScrollTxDown.value) txHistoryIndex.value++
+}
+
+let txTouchStartY = 0
+function onTxTouchStart(e: TouchEvent) {
+  txTouchStartY = e.touches[0]!.clientY
+}
+function onTxTouchEnd(e: TouchEvent) {
+  const deltaY = e.changedTouches[0]!.clientY - txTouchStartY
+  if (Math.abs(deltaY) > 30) {
+    if (deltaY < 0) scrollTxDown()
+    else scrollTxUp()
+  }
+}
+
+watch(transactions, () => { txHistoryIndex.value = 0 })
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function formatDate(iso: string): string {
   const d = new Date(iso)
@@ -216,34 +249,6 @@ onMounted(async () => {
 
     <div class="space-y-6 pb-8">
 
-      <!-- ── Pasta Package Price ────────────────────────────────────────── -->
-      <div v-if="pastaPrice !== null" class="bg-white rounded-2xl p-4 border border-gray-100">
-        <h2 class="text-[14px] font-semibold text-app-black mb-3">Pasta Package Price</h2>
-        <div class="flex items-center gap-3">
-          <div class="relative flex-1">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[14px] text-gray-400 font-semibold">€</span>
-            <input
-              v-model.number="pastaPriceEdit"
-              type="number"
-              step="0.01"
-              min="0"
-              class="w-full h-12 rounded-xl bg-white border border-gray-200 pl-8 pr-4 text-[14px] text-app-black focus:outline-none focus:border-primary"
-            />
-          </div>
-          <button
-            @click="savePastaPrice"
-            class="h-12 px-5 rounded-xl bg-primary text-white font-semibold text-[14px] flex items-center gap-2 active:scale-[0.98] transition-transform shrink-0"
-          >
-            <PhFloppyDisk :size="18" weight="fill" />
-            Save
-          </button>
-        </div>
-        <p v-if="priceSaved" class="text-[12px] text-green-600 mt-2 flex items-center gap-1">
-          <PhCheck :size="14" weight="bold" />
-          Saved
-        </p>
-      </div>
-
       <!-- ── Balances Overview ──────────────────────────────────────────── -->
       <div>
         <h2 class="text-[20px] font-semibold text-app-black mb-3">Balances</h2>
@@ -266,8 +271,8 @@ onMounted(async () => {
               class="text-[14px] font-semibold"
               :class="isNegative(entry.amount) ? 'text-red-500' : 'text-green-600'"
             >
-              €{{ Math.abs(entry.amount).toFixed(2) }}
-              <span v-if="isNegative(entry.amount)" class="text-[11px] text-red-400 font-normal"> (owed)</span>
+              <template v-if="isNegative(entry.amount)">-€{{ Math.abs(entry.amount).toFixed(2) }}</template>
+              <template v-else>€{{ entry.amount.toFixed(2) }}</template>
             </span>
           </div>
           <div v-if="balanceEntries.length === 0" class="text-center text-[14px] text-gray-400 py-6">
@@ -326,6 +331,34 @@ onMounted(async () => {
         </div>
       </div>
 
+      <!-- ── Pasta Package Price ────────────────────────────────────────── -->
+      <div v-if="pastaPrice !== null" class="bg-white rounded-2xl p-4 border border-gray-100">
+        <h2 class="text-[14px] font-semibold text-app-black mb-3">Pasta Package Price</h2>
+        <div class="flex items-center gap-3">
+          <div class="relative flex-1">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[14px] text-gray-400 font-semibold">€</span>
+            <input
+              v-model.number="pastaPriceEdit"
+              type="number"
+              step="0.01"
+              min="0"
+              class="w-full h-12 rounded-xl bg-white border border-gray-200 pl-8 pr-4 text-[14px] text-app-black focus:outline-none focus:border-primary"
+            />
+          </div>
+          <button
+            @click="savePastaPrice"
+            class="h-12 px-5 rounded-xl bg-primary text-white font-semibold text-[14px] flex items-center gap-2 active:scale-[0.98] transition-transform shrink-0"
+          >
+            <PhFloppyDisk :size="18" weight="fill" />
+            Save
+          </button>
+        </div>
+        <p v-if="priceSaved" class="text-[12px] text-green-600 mt-2 flex items-center gap-1">
+          <PhCheck :size="14" weight="bold" />
+          Saved
+        </p>
+      </div>
+
       <!-- ── Transaction History ────────────────────────────────────────── -->
       <div>
         <h2 class="text-[20px] font-semibold text-app-black mb-3">Transaction History</h2>
@@ -335,32 +368,114 @@ onMounted(async () => {
             <div class="h-3 w-20 bg-gray-100 rounded-full animate-pulse" />
           </div>
         </div>
-        <div v-else class="space-y-2">
-          <div
-            v-for="tx in transactions"
-            :key="tx.id"
-            class="bg-white rounded-2xl border border-gray-100 p-4"
-          >
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-[12px] text-gray-500">{{ formatDate(tx.date) }}</span>
-              <span
-                class="text-[14px] font-semibold"
-                :class="Number(tx.amount) >= 0 ? 'text-green-600' : 'text-red-500'"
+        <div v-else-if="transactions.length === 0" class="text-center text-[14px] text-gray-400 py-6">
+          No transactions yet
+        </div>
+        <div v-else class="space-y-1">
+
+          <!-- Slider mode -->
+          <template v-if="!transactionsExpanded">
+            <!-- Up arrow -->
+            <div v-if="transactions.length > TX_VISIBLE_COUNT" class="flex justify-center h-6">
+              <button
+                class="w-6 h-6 flex items-center justify-center transition-colors"
+                :class="canScrollTxUp ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
+                :disabled="!canScrollTxUp"
+                @click="scrollTxUp"
               >
-                {{ Number(tx.amount) >= 0 ? '+' : '' }}€{{ Number(tx.amount).toFixed(2) }}
-              </span>
+                <PhCaretUp class="w-4 h-4" weight="bold" />
+              </button>
             </div>
-            <div class="flex items-center justify-between">
-              <span class="text-[14px] text-app-black font-medium">
-                {{ tx.user?.first_name }} {{ tx.user?.last_name }}
-              </span>
-              <span class="text-[12px] text-gray-400 capitalize">{{ tx.type }}</span>
+
+            <div
+              @touchstart="onTxTouchStart"
+              @touchend="onTxTouchEnd"
+            >
+              <div class="overflow-hidden relative" :style="{ height: txSliderHeight + 'px' }">
+                <div
+                  class="transition-transform duration-300 ease-out will-change-transform"
+                  :style="{ transform: `translateY(${-txHistoryIndex * TX_ITEM_OFFSET}px)` }"
+                >
+                  <div
+                    v-for="tx in transactions"
+                    :key="tx.id"
+                    class="h-[72px] rounded-xl bg-white border border-gray-100 p-3 flex flex-col justify-center mb-2 last:mb-0"
+                  >
+                    <div class="flex items-center justify-between">
+                      <span class="text-[12px] text-gray-500">{{ formatDate(tx.date) }}</span>
+                      <span
+                        class="text-[14px] font-semibold"
+                        :class="Number(tx.amount) >= 0 ? 'text-green-600' : 'text-red-500'"
+                      >
+                        {{ Number(tx.amount) >= 0 ? '+' : '-' }}€{{ Math.abs(Number(tx.amount)).toFixed(2) }}
+                      </span>
+                    </div>
+                    <div class="flex items-center justify-between mt-1">
+                      <span class="text-[14px] text-app-black font-medium">
+                        {{ tx.user?.first_name }} {{ tx.user?.last_name }}
+                      </span>
+                      <span class="text-[12px] text-gray-400 capitalize">{{ tx.type }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <p v-if="tx.description" class="text-[12px] text-gray-400 mt-1 truncate">{{ tx.description }}</p>
-          </div>
-          <div v-if="transactions.length === 0" class="text-center text-[14px] text-gray-400 py-6">
-            No transactions yet
-          </div>
+
+            <!-- Down arrow -->
+            <div v-if="transactions.length > TX_VISIBLE_COUNT" class="flex justify-center h-6">
+              <button
+                class="w-6 h-6 flex items-center justify-center transition-colors"
+                :class="canScrollTxDown ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
+                :disabled="!canScrollTxDown"
+                @click="scrollTxDown"
+              >
+                <PhCaretDown class="w-4 h-4" weight="bold" />
+              </button>
+            </div>
+
+            <button
+              v-if="transactions.length > TX_VISIBLE_COUNT"
+              class="w-full flex items-center justify-center gap-1 mt-2 text-[13px] text-gray-400 font-medium active:text-app-black transition-colors active:scale-[0.98]"
+              @click="transactionsExpanded = true"
+            >
+              Show all ({{ transactions.length }})
+            </button>
+          </template>
+
+          <!-- Expanded mode -->
+          <template v-else>
+            <div class="space-y-2">
+              <div
+                v-for="tx in transactions"
+                :key="tx.id"
+                class="bg-white rounded-2xl border border-gray-100 p-4"
+              >
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[12px] text-gray-500">{{ formatDate(tx.date) }}</span>
+                  <span
+                    class="text-[14px] font-semibold"
+                    :class="Number(tx.amount) >= 0 ? 'text-green-600' : 'text-red-500'"
+                  >
+                    {{ Number(tx.amount) >= 0 ? '+' : '-' }}€{{ Math.abs(Number(tx.amount)).toFixed(2) }}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[14px] text-app-black font-medium">
+                    {{ tx.user?.first_name }} {{ tx.user?.last_name }}
+                  </span>
+                  <span class="text-[12px] text-gray-400 capitalize">{{ tx.type }}</span>
+                </div>
+                <p v-if="tx.description" class="text-[12px] text-gray-400 mt-1 truncate">{{ tx.description }}</p>
+              </div>
+            </div>
+            <button
+              class="w-full flex items-center justify-center gap-1 mt-3 text-[13px] text-gray-400 font-medium active:text-app-black transition-colors active:scale-[0.98]"
+              @click="transactionsExpanded = false"
+            >
+              Show less
+            </button>
+          </template>
+
         </div>
       </div>
 
