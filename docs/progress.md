@@ -155,4 +155,5 @@
 - `472cacb` — fix(profile): skip orphaned orders from deleted cook_queue entries
 - `c577090` — feat(hero): show chef-cook.png fallback when queue entry has no linked recipe
 - `6df42de` — feat(recipes): track cooking history via cooked_recipes junction
+- `2cdf2fb` — fix(photo): permissions, deferred cleanup, all 7 TS errors
 
