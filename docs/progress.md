@@ -1,6 +1,7 @@
 # ItoCook — Progress Log
 
 ## Current status
+- [x] **Task E: Admin Finances page** — balances overview (all users, color-coded), manual top-up form (select user + amount + note, creates transaction + updates balance), transaction history (last 50, date desc), pasta package price inline edit (reuses existing app_settings from Task F). Created Nuxt server routes: `GET /api/users/list` (admin proxy), `PATCH /api/settings/pasta-price`. Gate already in BottomTabBar (non-User role → ChartBar tab → /finance).
 - [x] **Architecture overview** — `notes/architecture-overview.md` (full structural analysis)
 - [x] **Code walkthrough** — `notes/itocook-full-overview.md` (step-by-step code tour)
 - [x] **Directus API comments** — added `// directus api` comments to all call sites
@@ -112,7 +113,7 @@
 - [ ] AI Recipe — chat with AI, JSON recipe render, serving recalculation
 - [ ] Duty screen — duty calendar, confirmation, auto-assignment
 - [ ] Common screen — group purchases, announcements, polls
-- [ ] Finance page — balance table, alerts, history, report
+- [x] Finance page — balance table, top-up form, transaction history, pasta price setting (Task E)
 - [ ] Notifications — feed, quick actions
 - [ ] Shopping list from recipe, Receipt photo upload
 

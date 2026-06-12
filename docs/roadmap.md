@@ -175,10 +175,10 @@ Navigation: dish card on Home, Kitchen, Cook Page.
 UI: custom. Only for Admin and Accountant.
 Navigation: Tab 3 is replaced by Finance when Admin logs in.
 
-- [ ] All employee balances (table or card list)
+- [x] All employee balances (table or card list)
 - [ ] Alerts: red badge when balance < −10 €
-- [ ] Manual balance top-up (Admin enters amount for the user)
-- [ ] All transaction history with filters (by user, by period)
+- [x] Manual balance top-up (Admin enters amount for the user)
+- [x] All transaction history (basic list, no filters)
 - [ ] Manual expense entry (store purchases)
 - [ ] Period report: total spent, average per person
 
