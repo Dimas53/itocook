@@ -636,11 +636,11 @@ function scrollDown() {
 }
 
 function onTouchStart(e: TouchEvent) {
-  touchStartY = e.touches[0].clientY
+  touchStartY = e.touches[0]!.clientY
 }
 
 function onTouchEnd(e: TouchEvent) {
-  const deltaY = e.changedTouches[0].clientY - touchStartY
+  const deltaY = e.changedTouches[0]!.clientY - touchStartY
   if (Math.abs(deltaY) > 30) {
     if (deltaY < 0) scrollDown()
     else scrollUp()

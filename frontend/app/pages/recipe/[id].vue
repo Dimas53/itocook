@@ -455,8 +455,8 @@ onMounted(async () => {
           `/items/cook_queue?filter[dish_name][_eq]=${encodeURIComponent(item.dish_name)}&filter[date][_gte]=${today}&limit=1&fields=id,status,date,cook.id`
         )
         if (entries.length > 0) {
-          activeCqId.value = entries[0].id
-          queueEntry.value = entries[0]
+          activeCqId.value = entries[0]!.id
+          queueEntry.value = entries[0]!
         }
       } catch { /* ignore */ }
     }

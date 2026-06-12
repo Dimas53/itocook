@@ -29,21 +29,28 @@ export function useRecipeImage(
   const config = useRuntimeConfig()
   const r = isRef(source) ? source : ref(source) as Ref<RecipeWithImage | null>
 
+  function pickSrc(): string {
+    if (fallback) return fallback
+    return CATEGORY_IMAGES.other as string
+  }
+
   return computed((): RecipeImageResult => {
     const val = r.value
-    if (!val) return { src: fallback || CATEGORY_IMAGES.other, isUploaded: false }
+    const src = pickSrc()
+    if (!val) return { src, isUploaded: false }
 
     if (val.photo) {
       if (UUID_RE.test(val.photo)) {
-        return { src: `${config.public.directusUrl}/assets/${val.photo}`, isUploaded: true }
+        const baseUrl = config.public.directusUrl || ''
+        return { src: `${baseUrl}/assets/${val.photo}`, isUploaded: true }
       }
       return { src: val.photo, isUploaded: !val.photo.startsWith('/images/') }
     }
 
     if (val.category && CATEGORY_IMAGES[val.category]) {
-      return { src: CATEGORY_IMAGES[val.category], isUploaded: false }
+      return { src: CATEGORY_IMAGES[val.category]!, isUploaded: false }
     }
 
-    return { src: fallback || CATEGORY_IMAGES.other, isUploaded: false }
+    return { src, isUploaded: false }
   })
 }

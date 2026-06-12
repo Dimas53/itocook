@@ -42,6 +42,7 @@
 ## Known issues
 - **Phase 4 screens** — AI Recipe, Duty, Common, Recipe Detail, Finance, Notifications all stubs or unfinished
 - **Cook Page balance deduction** — uses user token directly, may need Directus permissions or server proxy for /items/balances and /items/transactions on behalf of other users
+- **RecipeImageUpload paste on edit** — paste listener is not blocked when editing an existing recipe with a photo; paste triggers `processFile` which replaces the preview. Workaround: OK — the deferred pattern means nothing is uploaded until save, and old photo is cleaned up on save if replaced.
 
 ## Fixes — current session
 - [x] **Fix: Safe area top inset (attempt 4)** — `app.vue` layout: status bar wrapper now has `bg-white` and `padding-top: env(safe-area-inset-top, 44px)`; content padding changed from `calc(60px + env(..., 0px))` to `calc(48px + env(..., 44px))`. Creates a persistent opaque top bar with solid background, preventing content from scrolling under it.
@@ -86,10 +87,10 @@
 - [x] **Fix: Safe area top inset (attempt 3, superseded)** — `app.vue` content area uses `padding-top: calc(60px + env(safe-area-inset-top, 0px))`; `nuxt.config.ts` viewport meta updated to `viewport-fit=cover`.
 - [x] **UX: HeroBlock empty-state CTA** — `HeroBlock.vue` shows centered empty-state ("No one's cooking yet — Be today's chef!") with "I'm cooking today!" CTA when `cook` is null; existing content preserved when a cook is assigned
 
-## Fixes — sixth session
-- [x] **Fix: folder upload** — `POST /files` folder field unreliable; added `PATCH /files/{id}` fallback in `uploadFile()` to ensure `recipe-photos` folder assigned
-- [x] **Fix: deferred upload** — `RecipeImageUpload` emits resized File blob via `selected` event instead of uploading immediately; parent `recipe/create.vue` uploads on `submitRecipe()`; orphaned files eliminated
-- [x] **Fix: cleanup on preview clear** — added `deleteFile(id)` to `useDirectus.ts` for deleting previously uploaded files
+## Fixes — seventh session
+- [x] **Fix: Permissions 403 on PATCH/DELETE directus_files** — added `update` + `delete` permissions for User Policy on `directus_files` (all fields `*`); resolves the 403 from the PATCH fallback in `uploadFile()` that sets folder after upload
+- [x] **Fix: Orphaned file cleanup on save failure** — `submitRecipe()` in `recipe/create.vue` now tracks `uploadedFileId` and calls `deleteFile()` if recipe save fails after upload
+- [x] **Fix: Old photo cleanup on edit** — `recipe/create.vue` stores `originalPhoto` when loading recipe for editing; on successful save, deletes the old file if photo was replaced or cleared
 - [x] **Fix: HeroBlock photo priority** — `kitchen.vue` now fetches `photo` field from matching recipe and passes it in `heroCook`; uploaded recipe photo takes priority over category demo image
 - [x] **Fix: recipe detail hero image** — uploaded photos use `object-cover` (fill container) while demo images keep `object-contain` (fit inside)
 - [x] **Fix: duplicate onMounted in RecipeImageUpload** — consolidated paste listener into single `onMounted`
@@ -104,9 +105,10 @@
 - [x] Kitchen screen, Cook Page, Recipe Detail
 - [x] Task A': Split "Lunch is ready" from cost entry — decoupled into independent steps
 - [x] Task C: Cook cancels cook_queue entry — cancel button + confirm dialog in pre-ready states
+- [x] Task F: Pasta/inventory logic
+- [x] Photo upload: permissions + deferred upload + cleanup
 - [ ] Task B': Reminder mechanism for overdue cost entry (groundwork)
 - [ ] Task D: Ghost participants / leave-join logic
-- [x] Task F: Pasta/inventory logic
 - [ ] AI Recipe — chat with AI, JSON recipe render, serving recalculation
 - [ ] Duty screen — duty calendar, confirmation, auto-assignment
 - [ ] Common screen — group purchases, announcements, polls
@@ -117,7 +119,7 @@
 ## Git log
 - `3ae6859` — feat(cook): split lunch-ready from receipt entry (Task A')
 - `10cd5b6` — feat(cook): cancel cooking, fix naming collision in useTotalUsers, replace hardcoded user count
-- `04fc50f` — feat(recipe): add pasta_packages field and pasta cost in deduction (Task F); fix(kitchen): remove redundant become-cook button under calendar
+- `b7a7ca1` — fix(cook): deferred recipe photo upload, folder PATCH fallback, scroll history with swipe + arrows, hide tab bar on cook page
 - `04fc50f` — feat(recipe): add pasta_packages field and pasta cost in deduction (Task F); fix(kitchen): remove redundant become-cook button under calendar
 - `d695b45` — fix(hero): add JS guard on Cook button — disabled attr alone wasn't reliable; remove invert class from status bar as intended
 - `14e2c08` — fix(hero): guard HeroBlock Cook button with JS check — disabled attr alone wasn't blocking navigation

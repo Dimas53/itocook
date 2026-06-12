@@ -152,7 +152,7 @@ definePageMeta({ layout: 'default' })
 
 const router = useRouter()
 const route = useRoute()
-const { request, uploadFile } = useDirectus()
+const { request, uploadFile, deleteFile } = useDirectus()
 const { user } = useAuth()
 
 const categories = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'other']
@@ -195,6 +195,7 @@ const form = reactive({
 const submitting = ref(false)
 const loadingRecipe = ref(false)
 const pendingPhotoFile = ref<File | null>(null)
+const originalPhoto = ref<string | null>(null)
 const FOLDER_ID = 'eb01b9c5-b408-40f9-86fd-c8f2045e258d'
 
 async function loadRecipe() {
@@ -208,6 +209,7 @@ async function loadRecipe() {
     form.category = item.category || ''
     form.description = item.description || ''
     form.photo = item.photo || ''
+    originalPhoto.value = item.photo || null
     form.pasta_packages = item.pasta_packages ?? null
     if (item.ingredients) {
       const ings = typeof item.ingredients === 'string' ? JSON.parse(item.ingredients) : item.ingredients
@@ -259,11 +261,13 @@ function removeStep(index: number) {
 async function submitRecipe() {
   if (!form.dish_name.trim() || submitting.value) return
   submitting.value = true
+  let uploadedFileId: string | null = null
   try {
     // Upload photo first if a new file was selected
     if (pendingPhotoFile.value) {
       const result = await uploadFile(pendingPhotoFile.value, FOLDER_ID)
       form.photo = result.id
+      uploadedFileId = result.id
       pendingPhotoFile.value = null
     }
 
@@ -306,10 +310,20 @@ async function submitRecipe() {
       } else {
       const editId = editingId.value!
       await request('PATCH', `/items/recipes/${editId}`, payload)
+
+      // If the photo was replaced or cleared, delete the old file
+      if (originalPhoto.value && form.photo !== originalPhoto.value) {
+        deleteFile(originalPhoto.value).catch(() => {})
+      }
+
       router.replace(`/recipe/${editId}`)
     }
   } catch (e) {
     console.error('Failed to save recipe:', e)
+    // Clean up just-uploaded file if the recipe save failed
+    if (uploadedFileId) {
+      deleteFile(uploadedFileId).catch(() => {})
+    }
   }
   submitting.value = false
 }

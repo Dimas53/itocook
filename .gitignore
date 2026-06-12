@@ -39,3 +39,5 @@ env/
 !.env.example
 docker/db_data/
 postgres_data/
+
+directus/uploads
