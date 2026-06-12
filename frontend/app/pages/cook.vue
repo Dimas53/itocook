@@ -205,6 +205,25 @@
             <p class="text-[20px] font-bold text-app-black mt-1">{{ cookEntry?.dish_name }}</p>
           </div>
 
+          <template v-if="recipeSearchDone">
+            <button
+              v-if="existingRecipeId"
+              class="w-full h-12 rounded-full border border-primary text-primary font-semibold text-[14px] flex items-center justify-center gap-2 bg-white active:scale-[0.98] transition-transform"
+              @click="router.push(`/recipe/create?id=${existingRecipeId}&name=${encodeURIComponent(cookEntry!.dish_name || '')}`)"
+            >
+              <PhPencil class="w-4 h-4" />
+              Edit Recipe
+            </button>
+            <button
+              v-else
+              class="w-full h-12 rounded-full border border-primary text-primary font-semibold text-[14px] flex items-center justify-center gap-2 bg-white active:scale-[0.98] transition-transform"
+              @click="router.push(`/recipe/create?name=${encodeURIComponent(cookEntry!.dish_name || '')}&date=${pageDateStr}&category=${selectedCategory}`)"
+            >
+              <PhPlus class="w-4 h-4" weight="bold" />
+              Add Recipe
+            </button>
+          </template>
+
           <button
             class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
             :disabled="saving"
