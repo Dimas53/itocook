@@ -64,9 +64,10 @@
         :joined="hasJoined"
         :participant-count="participantCount"
         :total-count="totalCount"
+        :recipe-id="heroRecipeId"
+        :has-existing-queue="hasSelectedQueue"
         @join="onJoin"
         @become-cook="onBecomeCook"
-        :recipe-id="heroRecipeId"
         @go-to-cook="router.push('/cook?date=' + selectedDate)"
       />
 
@@ -302,6 +303,13 @@ const heroCook = computed<CookInfo | null>(() => {
     photo: selectedRecipePhoto.value,
     category: selectedCategory.value,
   }
+})
+
+const hasSelectedQueue = computed(() => {
+  if (!selectedDate.value) return false
+  return allItems.value.some(
+    (i) => i.date === selectedDate.value && i.status !== 'cancelled'
+  )
 })
 
 const isCurrentUserCookForSelected = computed(() => {

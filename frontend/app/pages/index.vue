@@ -30,6 +30,7 @@
           :participant-count="participantCount"
           :total-count="totalCount"
           :recipe-id="todayRecipeId"
+          :has-existing-queue="hasTodayQueue"
           @join="onJoin"
         @become-cook="onBecomeCook"
         @go-to-cook="router.push('/cook')"
@@ -134,6 +135,7 @@ const { request } = useDirectus()
 const heroLoading = ref(true)
 const todayCook = ref<CookInfo | null>(null)
 const todayRecipeId = ref<string | undefined>(undefined)
+const hasTodayQueue = ref(false)
 
 // Participant counter from backend
 const todayEntryId = ref<string | null>(null)
@@ -178,6 +180,8 @@ onMounted(async () => {
     const items = await request<any[]>('get',
       `/items/cook_queue?filter[date][_eq]=${todayISO}&filter[status][_nin]=cancelled&sort=date&fields=*,cook.id,cook.first_name,cook.last_name`
     )
+
+    hasTodayQueue.value = items.length > 0
 
     // Priority: cooking > ready > scheduled
     const todayEntry = items.find((i) => i.status === 'cooking')

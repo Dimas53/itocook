@@ -17,6 +17,7 @@ const CATEGORY_IMAGES: Record<string, string> = {
   meat: '/images/categories/meat.png',
   fish: '/images/categories/fish.png',
   dessert: '/images/categories/dessert.png',
+  pizza: '/images/categories/pizza.png',
   other: '/images/categories/other.png',
 }
 

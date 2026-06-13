@@ -155,7 +155,7 @@ const route = useRoute()
 const { request, uploadFile, deleteFile } = useDirectus()
 const { user } = useAuth()
 
-const categories = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'other']
+const categories = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'pizza', 'other']
 
 interface Ingredient {
   name: string
@@ -231,9 +231,46 @@ async function loadRecipe() {
   loadingRecipe.value = false
 }
 
-onMounted(() => {
+async function loadRecipeFromHistory() {
+  const name = route.query.name as string
+  if (!name) return
+  loadingRecipe.value = true
+  try {
+    const items = await request<RecipeItem[]>('get',
+      `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(name)}&limit=1&fields=id,dish_name,category,description,photo,pasta_packages,ingredients,steps`
+    )
+    if (items.length > 0) {
+      const item = items[0]!
+      form.description = item.description || ''
+      form.photo = item.photo || ''
+      originalPhoto.value = item.photo || null
+      form.pasta_packages = item.pasta_packages ?? null
+      if (item.ingredients) {
+        const ings = typeof item.ingredients === 'string' ? JSON.parse(item.ingredients) : item.ingredients
+        form.ingredients = Array.isArray(ings) ? ings.map((i: Ingredient) => ({
+          name: i.name || '',
+          amount: i.amount || '',
+          unit: i.unit || '',
+        })) : []
+      }
+      if (item.steps) {
+        const stps = typeof item.steps === 'string' ? JSON.parse(item.steps) : item.steps
+        form.steps = Array.isArray(stps) ? stps.map((s: { description?: string }) => ({
+          description: s.description || '',
+        })) : []
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load recipe from history:', e)
+  }
+  loadingRecipe.value = false
+}
+
+onMounted(async () => {
   if (editingId.value) {
-    loadRecipe()
+    await loadRecipe()
+  } else if (route.query.name) {
+    await loadRecipeFromHistory()
   }
 })
 

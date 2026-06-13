@@ -22,7 +22,9 @@
           <p class="text-[13px] text-app-black/60 mt-1">Be today's chef!</p>
         </div>
         <button
-          class="h-11 px-8 rounded-full bg-primary text-white font-semibold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+          :disabled="hasExistingQueue"
+          class="h-11 px-8 rounded-full bg-primary text-white font-semibold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+          :class="hasExistingQueue ? '' : 'active:scale-[0.98]'"
           @click="$emit('become-cook')"
         >
           <PhChefHat class="w-4 h-4" weight="fill" />
@@ -50,9 +52,9 @@
         </button>
         <button
             v-else
-            :disabled="!!cook"
+            :disabled="!!cook || hasExistingQueue"
             class="flex-1 h-10 rounded-full flex items-center justify-center gap-2 px-4 transition-all backdrop-blur-md bg-white/30 border border-white/50 shadow-sm z-10"
-            :class="cook ? 'opacity-40 cursor-not-allowed' : 'active:scale-[0.98]'"
+            :class="(cook || hasExistingQueue) ? 'opacity-40 cursor-not-allowed' : 'active:scale-[0.98]'"
             @click="onBecomeCook"
         >
           <PhChefHat class="size-4 text-app-black" weight="fill" />
@@ -75,9 +77,12 @@
 
       <div class="relative mt-3 -mx-5 -mb-5 min-h-[140px] cursor-pointer" @click="onDishClick">
         <!-- Text left -->
-        <div class="absolute left-5 bottom-5 flex flex-col gap-1 z-10">
+        <div class="absolute left-5 bottom-4 flex flex-col gap-1 z-10">
           <span class="text-[22px] font-bold text-app-black">
             {{ cook.dish || 'Chef is thinking...' }}
+          </span>
+          <span v-if="cook.category" class="text-[12px] text-app-black/60 uppercase mb-5 tracking-wide font-medium">
+            {{ cook.category }}
           </span>
           <p class="text-[15px] font-medium text-app-black/80">by {{ cook.name }}</p>
           <div class="flex items-center gap-1.5 mt-0.5">
@@ -138,6 +143,7 @@ const props = defineProps<{
   participantCount?: number
   totalCount?: number
   recipeId?: string
+  hasExistingQueue?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -171,7 +177,7 @@ function onDishClick() {
   }
 
 function onBecomeCook() {
-  if (props.cook) return
+  if (props.cook || props.hasExistingQueue) return
   emit('become-cook')
   }
 </script>

@@ -142,12 +142,12 @@
             <button
               class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
               :disabled="!dishName.trim() || saving"
-              @click="saveDish"
+              @click="createRecipeAndAdd"
             >
               <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
               <template v-else>
-                <PhCookingPot class="w-5 h-5" weight="fill" />
-                <span>Start Cooking</span>
+                <PhPlus class="w-5 h-5" weight="bold" />
+                <span>Create Recipe &amp; Add to Schedule</span>
               </template>
             </button>
           </template>
@@ -649,7 +649,7 @@ function formatDateStr(date: Date): string {
 
 const isToday = computed(() => pageDateStr.value === formatDateISO(new Date()))
 
-const CATEGORIES = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'other'] as const
+const CATEGORIES = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'pizza', 'other'] as const
 
 const matchedRecipe = computed(() => {
   if (!dishName.value.trim()) return null
@@ -877,15 +877,13 @@ async function startCooking() {
 async function saveDish() {
   if (!cookEntry.value || !dishName.value.trim()) return
   saving.value = true
-  const isToday = pageDateStr.value === formatDateISO(new Date())
-  const newStatus = isToday ? 'cooking' : 'scheduled'
   try {
     await request('PATCH', `/items/cook_queue/${cookEntry.value.id}`, {
       dish_name: dishName.value.trim(),
-      status: newStatus,
+      status: 'scheduled',
     })
     cookEntry.value.dish_name = dishName.value.trim()
-    cookEntry.value.status = newStatus
+    cookEntry.value.status = 'scheduled'
     await fetchParticipants()
     await searchExistingRecipe(dishName.value.trim())
 
