@@ -70,6 +70,7 @@ function toggleCategory(index: number) {
   if (expandedCategories.has(index)) {
     expandedCategories.delete(index)
   } else {
+    expandedCategories.clear()
     expandedCategories.add(index)
   }
 }
