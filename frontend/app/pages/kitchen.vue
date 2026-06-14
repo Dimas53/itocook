@@ -156,6 +156,7 @@ interface CookQueueItem {
   id: string
   date: string
   dish_name: string | null
+  category: string | null
   status: string | null
   cook: {
     id: string
@@ -340,6 +341,14 @@ watch(selectedSlot, async (slot) => {
       heroRecipeId.value = match.id
       selectedCategory.value = match.category || null
       selectedRecipePhoto.value = match.photo ?? null
+    } else {
+      const dayItems = allItems.value.filter(
+        (i) => i.date === selectedDate.value && i.status !== 'cancelled'
+      )
+      const queueItem = dayItems.find((i) => i.dish_name === slot.dishName) || dayItems[0]
+      if (queueItem?.category) {
+        selectedCategory.value = queueItem.category
+      }
     }
   } catch { /* ignore */ }
 })
@@ -356,7 +365,7 @@ watch(activeEntryId, async (id) => {
 // ── Data fetching ──
 onMounted(async () => {
   const params = new URLSearchParams({
-    fields: '*,cook.id,cook.first_name,cook.last_name',
+    fields: 'id,date,dish_name,status,category,cook.id,cook.first_name,cook.last_name',
     sort: 'date',
   })
 

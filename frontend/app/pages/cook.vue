@@ -140,8 +140,8 @@
 
           <template v-if="isToday">
             <button
-              class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-              :disabled="!dishName.trim() || saving"
+              class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+              :disabled="!canSchedule || saving"
               @click="createRecipeAndAdd"
             >
               <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
@@ -154,8 +154,8 @@
           <template v-else>
             <template v-if="matchedRecipe">
               <button
-                class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-                :disabled="!dishName.trim() || saving"
+                class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+                :disabled="!canSchedule || saving"
                 @click="saveMatchedDish"
               >
                 <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
@@ -164,16 +164,16 @@
             </template>
             <template v-else>
               <button
-                class="w-full h-14 rounded-full border-2 border-primary text-primary font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50 bg-white"
-                :disabled="!dishName.trim() || saving"
+                class="w-full h-14 rounded-full border-2 border-primary text-primary font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-40 disabled:cursor-not-allowed bg-white"
+                :disabled="!canSchedule || saving"
                 @click="saveDish"
               >
                 <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
                 <span v-else>Add to Schedule</span>
               </button>
               <button
-                class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-                :disabled="!dishName.trim() || saving"
+                class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+                :disabled="!canSchedule || saving"
                 @click="createRecipeAndAdd"
               >
                 <PhSpinner v-if="saving" class="w-5 h-5 animate-spin mx-auto" />
@@ -557,6 +557,7 @@ interface CookQueueEntry {
   id: string
   date: string
   dish_name: string | null
+  category: string | null
   status: string | null
   cook: string | { id: string; first_name: string; last_name: string }
 }
@@ -650,6 +651,10 @@ function formatDateStr(date: Date): string {
 const isToday = computed(() => pageDateStr.value === formatDateISO(new Date()))
 
 const CATEGORIES = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'pizza', 'other'] as const
+
+const canSchedule = computed(() =>
+  dishName.value.trim().length > 0 && !!selectedCategory.value
+)
 
 const matchedRecipe = computed(() => {
   if (!dishName.value.trim()) return null
@@ -880,9 +885,11 @@ async function saveDish() {
   try {
     await request('PATCH', `/items/cook_queue/${cookEntry.value.id}`, {
       dish_name: dishName.value.trim(),
+      category: selectedCategory.value || null,
       status: 'scheduled',
     })
     cookEntry.value.dish_name = dishName.value.trim()
+    cookEntry.value.category = selectedCategory.value || null
     cookEntry.value.status = 'scheduled'
     await fetchParticipants()
     await searchExistingRecipe(dishName.value.trim())

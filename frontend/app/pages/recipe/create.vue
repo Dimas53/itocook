@@ -145,8 +145,8 @@
 
       <!-- Submit -->
       <button
-        class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-        :disabled="!form.dish_name.trim() || submitting || loadingRecipe"
+        class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+        :disabled="!form.dish_name.trim() || !form.category || submitting || loadingRecipe"
         @click="submitRecipe"
       >
         <PhSpinner v-if="submitting" class="w-5 h-5 animate-spin" />

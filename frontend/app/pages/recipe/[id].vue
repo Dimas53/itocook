@@ -32,16 +32,11 @@
         >
           <PhCaretLeft class="w-5 h-5 text-app-black" weight="bold" />
         </button>
-        <button v-if="canEdit"
+        <button
           class="absolute right-5 top-12 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center active:scale-[0.98]"
-          @click="editRecipe"
+          @click="router.push('/kitchen')"
         >
-          <PhPencil class="w-5 h-5 text-app-black" />
-        </button>
-        <button v-else
-          class="absolute right-5 top-12 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center"
-        >
-          <PhHeart class="w-5 h-5 text-app-black" weight="regular" />
+          <PhX class="w-5 h-5 text-app-black" weight="bold" />
         </button>
       </div>
 
@@ -237,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-import { PhCaretLeft, PhHeart, PhStar, PhChefHat, PhForkKnife, PhCaretDown, PhSpinner, PhPencil, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock } from '@phosphor-icons/vue'
+import { PhCaretLeft, PhStar, PhChefHat, PhForkKnife, PhCaretDown, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock } from '@phosphor-icons/vue'
 import { getIngredientIcon } from '~/utils/ingredientIcons'
 
 definePageMeta({ layout: 'default' })
