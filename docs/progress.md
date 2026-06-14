@@ -60,7 +60,8 @@
 - [x] **UX: HeroBlock Cook button date fix** — `@go-to-cook` passes `?date=` param instead of bare `/cook`
 - [x] **UX: Cooking pot status icon** — recipe/[id].vue header shows `PhCookingPot` in status color when queue entry linked; `PhClock` added to scheduled badge
 - [x] **UX: Profile My List** — dishes user participated in; red X → confirmation with 10h rule → delete order from DB; darker bg + "You are the cook" when user is cook
-- [x] **UX: Profile My Recipes** — recipes created by user; items use random pastel colors from design palette
+ - [x] **UX: Profile My Recipes** — recipes created by user; items use random pastel colors from design palette
+ - [x] **Fix: RecipeGridItem image binding** — changed template to use `image.src` (Vue template unwraps refs) and added `alt` attribute for accessibility.
 
 ## Fixes — second session
 - [x] **Bug: Recipe page heart hidden** — reverted cooking pot from header to bottom controls section; `PhHeart` restored unconditionally in top right corner;
@@ -112,6 +113,10 @@
 - [x] **Popover & Form fixes** — Fix 1: popover rendered inside phone frame (removed Teleport, `absolute` positioning in `relative` container). Fix 2: restructured `popularIngredients.ts` into 5 categorized `INGREDIENT_CATEGORIES`; popover now uses accordion (first category expanded, single-column list). Fix 3: `existingIngredients` prop greys out already-added items with ✓ badge. Fix 4: unit text input replaced with `<select>` (g/kg/ml/l/pcs/tbsp/tsp/bunch/to taste) with legacy value preservation. Fix 5: ingredient row widths fixed with `w-full overflow-hidden` and proper `flex-1 min-w-0`/`shrink-0` distribution.
 - [x] **Fix: HeroBlock category image — root cause was missing category field on cook_queue** — added `category` string field to `cook_queue` collection (Directus); `cook.vue` `saveDish()` now persists `selectedCategory` to the queue entry; `kitchen.vue` `watch(selectedSlot)` fallback reads `category` from cook_queue item when no recipe match; Directus fields query updated to explicitly list `category`. HeroBlock now shows category image (e.g. pasta.png) when cook set name + category but no recipe yet.
 - [x] **Fix: cook.vue requires both dish name AND category before enabling buttons** — added `canSchedule` computed (`dishName.trim().length > 0 && !!selectedCategory`); applied to all 4 schedule buttons in 'dish' state template; disabled styling changed to `opacity-40 cursor-not-allowed`.
+- [x] **All Recipes page + Add to Queue flow** — new `/recipes` page (search + RecipeCard list with loading skeleton + empty state); "All Recipes →" link in kitchen.vue Dish History header; "🍳 Cook This" button on recipe detail with date picker bottom-sheet (14-day grid, taken dates disabled, navigates to `/cook?action=become&date=...&recipeId=...`); `cook.vue` reads `recipeId` query param and prefills dish name + category on entry into dish state.
+- [x] **Fix: RecipeGridItem images on /recipes** — `RecipeGridItem.vue` prop `title` → `dish_name` to match Directus field; `useRecipeImage.ts` category lookup now lowercases key before matching (DB stores capitalized like "Salad" but map keys are lowercase like "salad").
+- [x] **Fix: Like counts on Home + Kitchen** — `RecipeCard.vue` replaced `rating`+`PhStar` with optional `likeCount` prop + `PhHeart`; removed duplicate like badge from `recipe/[id].vue`; `index.vue` batch-fetches `recipe_likes` after loading recipes, passes per-recipe count to `RecipeCard`; `kitchen.vue` same batch-fetch for dish history items, renders `PhHeart` + count in each row.
+- [x] **Fix: Category filter case-insensitive** — `recipes.vue` filter now lowercases both selected category and recipe category for comparison; search field also uses correct `dish_name` field.
 
 ## Next session — plan
 
@@ -125,6 +130,7 @@
 - [x] Task F: Pasta/inventory logic
 - [x] Photo upload: permissions + deferred upload + cleanup
 - [x] Ingredient emoji icons + quick-pick dropdown
+- [x] All Recipes page + Add to Queue flow
 - [ ] Task B': Reminder mechanism for overdue cost entry (groundwork)
 - [ ] Task D: Ghost participants / leave-join logic
 - [ ] AI Recipe — chat with AI, JSON recipe render, serving recalculation
@@ -135,6 +141,7 @@
 - [ ] Shopping list from recipe, Receipt photo upload
 
 ## Git log
+- `80afb1d` — feat(cook): persist category to cook_queue, show category image in HeroBlock, require category for schedule/save
 - `3ae6859` — feat(cook): split lunch-ready from receipt entry (Task A')
 - `10cd5b6` — feat(cook): cancel cooking, fix naming collision in useTotalUsers, replace hardcoded user count
 - `b7a7ca1` — fix(cook): deferred recipe photo upload, folder PATCH fallback, scroll history with swipe + arrows, hide tab bar on cook page

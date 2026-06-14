@@ -48,8 +48,9 @@ export function useRecipeImage(
       return { src: val.photo, isUploaded: !val.photo.startsWith('/images/') }
     }
 
-    if (val.category && CATEGORY_IMAGES[val.category]) {
-      return { src: CATEGORY_IMAGES[val.category]!, isUploaded: false }
+    const catKey = val.category?.toLowerCase() ?? ''
+    if (catKey && CATEGORY_IMAGES[catKey]) {
+      return { src: CATEGORY_IMAGES[catKey]!, isUploaded: false }
     }
 
     return { src, isUploaded: false }

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-full">
+  <div class="flex flex-col h-full relative">
 
     <!-- Loading -->
     <div v-if="loading" class="flex-1 flex items-center justify-center">
@@ -38,6 +38,12 @@
         >
           <PhX class="w-5 h-5 text-app-black" weight="bold" />
         </button>
+        <button
+          @click="toggleLike"
+          class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-white/80 flex items-center justify-center active:scale-90 transition-transform shadow-sm"
+        >
+          <PhHeart :size="20" :weight="isLiked ? 'fill' : 'regular'" :class="isLiked ? 'text-red-500' : 'text-gray-400'" />
+        </button>
       </div>
 
       <!-- White card -- scrollable middle -->
@@ -51,9 +57,9 @@
                 {{ recipe.category }}
               </span>
             </div>
-            <div v-if="recipe.rating" class="flex items-center gap-1 shrink-0">
-              <PhStar class="w-4 h-4 text-secondary" weight="fill" />
-              <span class="text-[14px] font-semibold text-app-black">{{ recipe.rating }}</span>
+            <div class="flex items-center gap-1 shrink-0">
+              <PhHeart class="w-4 h-4" :class="isLiked ? 'text-red-500' : 'text-gray-400'" :weight="isLiked ? 'fill' : 'regular'" />
+              <span class="text-[14px] font-semibold text-app-black">{{ likeCount }}</span>
             </div>
           </div>
 
@@ -136,8 +142,7 @@
       <!-- Bottom controls -->
       <div class="shrink-0 bg-white px-5 py-4 border-t border-gray-100">
         <template v-if="queueEntry && statusConfig">
-          <div class="space-y-3">
-            <!-- Status row -->
+          <div class="space-y-3 mb-5">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="statusConfig.bg">
@@ -153,18 +158,16 @@
               </button>
             </div>
 
-            <!-- Participants -->
             <div class="flex items-center gap-2 text-[13px] text-gray-500">
               <PhUsers class="w-4 h-4" />
               <span>{{ participants.length }} joined</span>
             </div>
 
-            <!-- Entry cook: start cooking (scheduled) -->
             <button
-              v-if="isEntryCook && queueStatus === 'scheduled'"
-              class="w-full h-14 rounded-2xl bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg"
-              :disabled="saving"
-              @click="startCooking"
+                v-if="isEntryCook && queueStatus === 'scheduled'"
+                class="w-full h-14 rounded-2xl bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg"
+                :disabled="saving"
+                @click="startCooking"
             >
               <PhSpinner v-if="saving" class="w-5 h-5 animate-spin" />
               <template v-else>
@@ -173,12 +176,11 @@
               </template>
             </button>
 
-            <!-- Entry cook: mark ready (cooking) -->
             <button
-              v-else-if="isEntryCook && queueStatus === 'cooking'"
-              class="w-full h-14 rounded-2xl bg-green-pastel text-app-black font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-              :disabled="saving"
-              @click="markReady"
+                v-else-if="isEntryCook && queueStatus === 'cooking'"
+                class="w-full h-14 rounded-2xl bg-green-pastel text-app-black font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                :disabled="saving"
+                @click="markReady"
             >
               <PhSpinner v-if="saving" class="w-5 h-5 animate-spin" />
               <template v-else>
@@ -186,33 +188,43 @@
                 Lunch is ready!
               </template>
             </button>
-
-            <!-- Non-owner non-cook: Join (active for scheduled/cooking, disabled for others) -->
-            <button
-              v-else-if="!joined"
-              class="w-full h-14 rounded-2xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-              :class="canJoin ? 'bg-primary text-white font-semibold shadow-lg' : 'bg-gray-100 text-gray-400 font-medium cursor-not-allowed'"
-              :disabled="!canJoin"
-              @click="onJoin"
-            >
-              <PhForkKnife class="w-5 h-5" weight="fill" />
-              Join lunch
-            </button>
-
-            <!-- Non-owner: Joined -->
-            <div v-else class="flex items-center justify-center gap-2 py-3">
-              <PhCheckCircle class="w-5 h-5 text-green-600" weight="fill" />
-              <span class="text-[14px] font-semibold text-green-700">Joined</span>
-            </div>
           </div>
         </template>
+
+        <!-- Smart adaptive button -->
+        <button
+          v-if="!hasActiveQueue"
+          class="w-full h-14 rounded-2xl border border-primary text-primary font-semibold text-[16px] bg-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+          @click="showDatePicker = true"
+        >
+          🍳 Cook This
+        </button>
+        <button
+          v-else-if="joined"
+          class="w-full h-14 rounded-2xl bg-gray-100 text-gray-400 font-semibold text-[16px] flex items-center justify-center gap-2 cursor-not-allowed mb-3"
+          disabled
+        >
+          <PhCheckCircle class="w-5 h-5" weight="fill" />
+          Joined
+        </button>
+        <button
+          v-else
+          class="w-full h-14 rounded-2xl bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform mb-3"
+          :disabled="!canJoin"
+          @click="onJoin"
+        >
+          <PhForkKnife class="w-5 h-5" weight="fill" />
+          Join Lunch
+        </button>
+
+
       </div>
     </template>
 
     <!-- Balance block overlay -->
     <div
       v-if="joinBlockedReason"
-      class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center pb-20 pointer-events-auto"
+      class="absolute inset-0 z-50 bg-black/40 flex items-center justify-center pb-20 pointer-events-auto"
       @click.self="joinBlockedReason = ''"
     >
       <div class="bg-white rounded-2xl mx-5 p-6 w-full max-w-[21rem] shadow-xl">
@@ -228,11 +240,41 @@
         </div>
       </div>
     </div>
+
+    <!-- Date picker modal -->
+    <div
+      v-if="showDatePicker"
+      class="absolute inset-0 z-50 flex flex-col justify-end"
+    >
+      <div class="absolute inset-0 bg-black/40" @click="showDatePicker = false" />
+      <div class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[70%] flex flex-col">
+        <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-4 shrink-0" />
+        <h3 class="text-[16px] font-semibold text-app-black mb-4 shrink-0">Pick a date to cook</h3>
+
+        <div v-if="datePickerLoading" class="flex items-center justify-center py-8">
+          <PhSpinner class="w-6 h-6 text-primary animate-spin" />
+        </div>
+
+        <div v-else class="grid grid-cols-4 gap-3 overflow-y-auto scrollbar-hide">
+          <div v-for="d in availableDates" :key="d.iso">
+            <button
+              class="w-full flex flex-col items-center justify-center py-3 rounded-xl transition-all duration-150"
+              :class="dateCellClass(d)"
+              @click="selectDate(d.iso)"
+            >
+              <span class="text-[11px] font-medium">{{ d.isToday ? 'Today' : d.label }}</span>
+              <span class="text-[16px] font-semibold mt-0.5" :class="d.isToday && !d.isTaken && !d.isPast ? 'text-primary' : 'text-app-black'">{{ d.dateNum }}</span>
+              <span v-if="d.isTaken" class="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { PhCaretLeft, PhStar, PhChefHat, PhForkKnife, PhCaretDown, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock } from '@phosphor-icons/vue'
+import { PhCaretLeft, PhHeart, PhChefHat, PhForkKnife, PhCaretDown, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock } from '@phosphor-icons/vue'
 import { getIngredientIcon } from '~/utils/ingredientIcons'
 
 definePageMeta({ layout: 'default' })
@@ -252,7 +294,6 @@ interface RecipeData {
   steps: { step: number; description: string }[] | null
   cook_name: string | null
   cook_id: string | null
-  rating: number | null
   source_cook_queue: string | null
 }
 
@@ -288,11 +329,78 @@ const participants = ref<Participant[]>([])
 const activeCqId = ref<string | null>(null)
 const queueEntry = ref<QueueEntry | null>(null)
 
+const showDatePicker = ref(false)
+const datePickerLoading = ref(false)
+const availableDates = ref<{ label: string; dateNum: number; iso: string; isTaken: boolean; isPast: boolean; isToday: boolean }[]>([])
+
+const isLiked = ref(false)
+const likeCount = ref(0)
+const myLikeId = ref<string | null>(null)
+
+const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
+
+function dateCellClass(d: { isPast: boolean; isToday: boolean; isTaken: boolean }): string {
+  if (d.isPast) return 'opacity-30 pointer-events-none cursor-not-allowed bg-app-bg'
+  if (d.isTaken) return 'opacity-50 pointer-events-none cursor-not-allowed bg-app-bg relative'
+  if (d.isToday) return 'bg-primary text-primary font-semibold active:scale-[0.98] transition-transform cursor-pointer'
+  return 'bg-white border border-gray-200 text-app-black active:bg-primary-light active:scale-[0.98] transition-transform cursor-pointer'
+}
+
+function fmtISO(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+watch(showDatePicker, async (open) => {
+  if (!open) return
+  datePickerLoading.value = true
+  const today = fmtISO(new Date())
+  let takenSet = new Set<string>()
+  try {
+    const taken = await request<{ date: string }[]>('get',
+      `/items/cook_queue?fields=date&filter[status][_neq]=cancelled&filter[date][_gte]=${today}`
+    )
+    takenSet = new Set(taken.map(t => t.date))
+  } catch { /* ignore */ }
+
+  const todayStr = fmtISO(new Date())
+  const dates: { label: string; dateNum: number; iso: string; isTaken: boolean; isPast: boolean; isToday: boolean }[] = []
+  for (let i = 0; i < 14; i++) {
+    const d = new Date()
+    d.setDate(d.getDate() + i)
+    const iso = fmtISO(d)
+    dates.push({
+      label: DAY_SHORT[d.getDay()]!,
+      dateNum: d.getDate(),
+      iso,
+      isTaken: takenSet.has(iso),
+      isPast: iso < todayStr,
+      isToday: iso === todayStr,
+    })
+  }
+  availableDates.value = dates
+  datePickerLoading.value = false
+})
+
+function selectDate(date: string) {
+  const entry = availableDates.value.find(d => d.iso === date)
+  if (!entry || entry.isPast || entry.isTaken || !recipe.value?.id) return
+  showDatePicker.value = false
+  router.push(`/cook?action=become&date=${date}&recipeId=${recipe.value.id}`)
+}
+
 const cqParam = computed(() => route.query.cq as string | undefined)
 const participantsCqId = computed(() => cqParam.value ?? activeCqId.value ?? null)
 const { confirmed: participantCount, hasJoined: joined, joinBlockedReason, join: onJoin, fetch: refreshParticipants } = useParticipants(participantsCqId)
 
 const hasActiveEntry = computed(() => !!(cqParam.value ?? activeCqId.value))
+
+const hasActiveQueue = computed(() => {
+  if (!queueEntry.value) return false
+  return ['scheduled', 'cooking', 'ready'].includes(queueStatus.value ?? '')
+})
 
 const queueStatus = computed(() => queueEntry.value?.status ?? null)
 const queueDateStr = computed(() => {
@@ -359,6 +467,44 @@ const canEdit = computed(() => {
 
 function editRecipe() {
   router.push(`/recipe/create?id=${recipe.value?.id}&name=${encodeURIComponent(recipe.value?.dish_name || '')}`)
+}
+
+async function fetchLikes() {
+  const recipeId = recipe.value?.id
+  if (!recipeId) return
+  try {
+    const likes = await request<any[]>('get',
+      `/items/recipe_likes?filter[recipe][_eq]=${recipeId}&fields=id,user`
+    )
+    likeCount.value = likes.length
+    const mine = likes.find(l => l.user === user.value?.id)
+    isLiked.value = !!mine
+    myLikeId.value = mine?.id ?? null
+  } catch {
+    // collection may not exist yet
+  }
+}
+
+async function toggleLike() {
+  if (!recipe.value?.id || !user.value?.id) return
+  if (isLiked.value && myLikeId.value) {
+    try {
+      await request('delete', `/items/recipe_likes/${myLikeId.value}`)
+      isLiked.value = false
+      likeCount.value--
+      myLikeId.value = null
+    } catch { /* ignore */ }
+  } else {
+    try {
+      const newLike = await request<any>('post', '/items/recipe_likes', {
+        recipe: recipe.value.id,
+        user: user.value.id,
+      })
+      isLiked.value = true
+      likeCount.value++
+      myLikeId.value = newLike.id
+    } catch { /* ignore */ }
+  }
 }
 
 async function fetchParticipants(id: string) {
@@ -451,7 +597,6 @@ onMounted(async () => {
       steps,
       cook_name: cookName,
       cook_id: cookId,
-      rating: 4.8,
       source_cook_queue: item.source_cook_queue,
     }
 
@@ -482,6 +627,8 @@ onMounted(async () => {
       await fetchParticipants(targetId)
       await refreshParticipants()
     }
+
+    await fetchLikes()
   } catch (e) {
     console.error('Failed to fetch recipe:', e)
   }

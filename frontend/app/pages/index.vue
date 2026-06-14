@@ -84,6 +84,7 @@
           :key="recipe.id"
           :loading="false"
           :recipe="recipe"
+          :like-count="recipe.likeCount"
           @view="router.push(`/recipe/${recipe.id}`)"
         />
       </div>
@@ -116,6 +117,10 @@ import { PhBell, PhUsers, PhMagnifyingGlass } from '@phosphor-icons/vue'
 import type { CookInfo } from '~/components/HeroBlock.vue'
 import type { Recipe } from '~/components/RecipeCard.vue'
 
+interface RecipeWithLikes extends Recipe {
+  likeCount: number
+}
+
 interface DirectusRecipe {
   id: string
   dish_name: string
@@ -123,6 +128,10 @@ interface DirectusRecipe {
   cook: { id: string; first_name: string; last_name: string }
   date_created: string
   photo: string | null
+}
+
+interface DirectusLike {
+  recipe: string
 }
 
 definePageMeta({ layout: 'app' })
@@ -150,7 +159,7 @@ const searchQuery = ref('')
 
 // Recipes
 const recipesLoading = ref(true)
-const recipes = ref<Recipe[]>([])
+const recipes = ref<(Recipe & { likeCount: number })[]>([])
 
 // Date helpers
 function formatDateISO(d: Date): string {
@@ -236,14 +245,26 @@ onMounted(async () => {
     const data = await request<DirectusRecipe[]>('get',
       '/items/recipes?sort=-date_created&limit=6&fields=id,dish_name,category,photo,cook.id,cook.first_name,cook.last_name,date_created'
     )
-    recipes.value = data.map((r) => ({
+    const mapped = data.map((r) => ({
       id: r.id,
       title: r.dish_name,
       chef: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
-      rating: 4.8,
       category: r.category,
       photo: r.photo,
     }))
+
+    // Batch-fetch likes
+    const ids = mapped.map((r) => r.id)
+    const likes = ids.length > 0
+      ? await request<DirectusLike[]>('get',
+        `/items/recipe_likes?fields=recipe&filter[recipe][_in]=${ids.join(',')}&limit=500`
+      )
+      : []
+    const countMap: Record<string, number> = {}
+    for (const like of likes) {
+      countMap[like.recipe] = (countMap[like.recipe] || 0) + 1
+    }
+    recipes.value = mapped.map((r) => ({ ...r, likeCount: countMap[r.id] ?? 0 }))
   } catch {
     // Directus may not be available
   }

@@ -73,7 +73,12 @@
 
       <!-- 4. Dish history -->
       <div>
-        <h2 class="text-[16px] font-semibold text-app-black mb-3">Dish History</h2>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-[16px] font-semibold text-app-black">Dish History</h2>
+          <NuxtLink to="/recipes" class="text-primary text-[14px] font-medium">
+            All Recipes →
+          </NuxtLink>
+        </div>
 
         <div class="relative mb-3">
           <PhMagnifyingGlass class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -106,14 +111,13 @@
                 by {{ item.cookName }} &middot; {{ item.dateLabel }}
               </p>
             </div>
-            <div class="flex items-center gap-1 shrink-0">
-              <PhStar class="w-3.5 h-3.5 text-secondary" weight="fill" />
-              <span class="text-[12px] font-medium text-app-black">{{ item.rating }}</span>
-            </div>
+            <span class="flex items-center gap-1 text-[11px] text-gray-400 shrink-0">
+              <PhHeart :size="12" weight="fill" class="text-red-300" />
+              {{ item.likeCount }}
+            </span>
           </div>
-        </div>
       </div>
-
+      </div>
     </div>
 
     <!-- Balance block overlay -->
@@ -139,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { PhBell, PhChefHat, PhStar, PhMagnifyingGlass } from '@phosphor-icons/vue'
+import { PhBell, PhChefHat, PhHeart, PhMagnifyingGlass } from '@phosphor-icons/vue'
 import type { CalendarDay } from '~/components/WeekCalendar.vue'
 import type { CookInfo } from '~/components/HeroBlock.vue'
 
@@ -180,7 +184,7 @@ interface HistoryItem {
   dish_name: string
   cookName: string
   dateLabel: string
-  rating: number
+  likeCount: number
 }
 
 // ── State ──
@@ -286,6 +290,7 @@ const calendarDays = computed<CalendarDay[]>(() =>
     dateNum: new Date(s.date + 'T12:00:00').getDate(),
     hasActivity: !!s.cookName,
     isToday: s.isToday,
+    isPast: s.isPast,
   }))
 )
 
@@ -391,15 +396,25 @@ onMounted(async () => {
     const recipeData = await request<any[]>('get',
       '/items/recipes?sort=-date_created&limit=5&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created'
     )
-    console.log('[kitchen] recipe history data:', recipeData)
-    historyItems.value = recipeData.map((r) => ({
+    const mapped = recipeData.map((r) => ({
       id: r.id,
       dish_name: r.dish_name,
       cookName: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
       dateLabel: formatDateStr(new Date(r.date_created)),
-      rating: 4.8,
     }))
-    console.log('[kitchen] mapped history:', historyItems.value)
+
+    // Batch-fetch likes
+    const ids = mapped.map((r) => r.id)
+    const likes = ids.length > 0
+      ? await request<{ recipe: string }[]>('get',
+        `/items/recipe_likes?fields=recipe&filter[recipe][_in]=${ids.join(',')}&limit=500`
+      )
+      : []
+    const countMap: Record<string, number> = {}
+    for (const like of likes) {
+      countMap[like.recipe] = (countMap[like.recipe] || 0) + 1
+    }
+    historyItems.value = mapped.map((r) => ({ ...r, likeCount: countMap[r.id] ?? 0 }))
   } catch {
     // Directus may not be available
   }
