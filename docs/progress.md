@@ -100,6 +100,17 @@
 - [x] **Fix: duplicate onMounted in RecipeImageUpload** — consolidated paste listener into single `onMounted`
 - [x] **Fix: TS paste handler** — `item.getAsFile()` guarded by null check
 
+## Fixes — eighth session
+- [x] **Feat: Pizza category** — added `'pizza'` to CATEGORIES in `cook.vue` and `recipe/create.vue`; added `pizza.png` to `CATEGORY_IMAGES` in `useRecipeImage.ts`; added Pizza choice to Directus `recipes.category` field
+- [x] **Fix: Today cook flow → scheduled first** — `saveDish()` in `cook.vue` now always sets `status: 'scheduled'` (was `'cooking'` for today); dish state template shows same buttons for all dates (no more "Start Cooking" shortcut for today); user goes through scheduled state with Edit/Start/Cancel options
+- [x] **Fix: Prefill recipe form from history** — `recipe/create.vue` now searches for existing recipe by name (via `loadRecipeFromHistory`) when opened with `?name=` but no `?id=`; pre-fills description, photo, pasta_packages, ingredients, steps
+- [x] **Fix: HeroBlock category display** — added `<span v-if="cook.category">` between dish name and "by cook.name" in `HeroBlock.vue` dish info
+- [x] **Fix: HeroBlock cook button disabled for all when queue exists** — added `hasExistingQueue` prop to `HeroBlock.vue`; disables "I'm cooking today!" and "Cook" buttons both via `:disabled` + `pointer-events-none` + JS guard in `onBecomeCook()`; `index.vue` tracks `hasTodayQueue` explicitly from `items.length > 0`; `kitchen.vue` added `hasSelectedQueue` computed
+
+## Current session
+- [x] **Ingredient emoji icons + Add Ingredient quick-pick dropdown** — created `frontend/app/utils/ingredientIcons.ts` (emoji dictionary with 130+ entries + fuzzy `getIngredientIcon()` matcher) and `frontend/app/utils/popularIngredients.ts` (35 popular ingredients with default units); created shared `frontend/app/components/AddIngredientPopover.vue` (bottom-sheet with 2-column ingredient grid + "Custom ingredient" option); updated `recipe/create.vue` (popover opens from "+ Add" button, selects prefill name+unit, live emoji preview next to name input); updated `recipe/[id].vue` (replaced bullet dot with emoji icon in ingredient list). Shared component ready for AI Recipe page use.
+- [x] **Popover & Form fixes** — Fix 1: popover rendered inside phone frame (removed Teleport, `absolute` positioning in `relative` container). Fix 2: restructured `popularIngredients.ts` into 5 categorized `INGREDIENT_CATEGORIES`; popover now uses accordion (first category expanded, single-column list). Fix 3: `existingIngredients` prop greys out already-added items with ✓ badge. Fix 4: unit text input replaced with `<select>` (g/kg/ml/l/pcs/tbsp/tsp/bunch/to taste) with legacy value preservation. Fix 5: ingredient row widths fixed with `w-full overflow-hidden` and proper `flex-1 min-w-0`/`shrink-0` distribution.
+
 ## Next session — plan
 
 ### Phase 4: Feature Screens
@@ -111,6 +122,7 @@
 - [x] Task C: Cook cancels cook_queue entry — cancel button + confirm dialog in pre-ready states
 - [x] Task F: Pasta/inventory logic
 - [x] Photo upload: permissions + deferred upload + cleanup
+- [x] Ingredient emoji icons + quick-pick dropdown
 - [ ] Task B': Reminder mechanism for overdue cost entry (groundwork)
 - [ ] Task D: Ghost participants / leave-join logic
 - [ ] AI Recipe — chat with AI, JSON recipe render, serving recalculation
@@ -161,4 +173,5 @@
 - `6df42de` — feat(recipes): track cooking history via cooked_recipes junction
 - `2cdf2fb` — fix(photo): permissions, deferred cleanup, all 7 TS errors
 - `84db77c` — feat(finance): admin finance page with balances, top-up, history, pasta price setting (Task E)
+- `f4ebfec` — feat: add pizza category, fix today cook flow, prefill recipe from history, disable hero cook when queue exists
 

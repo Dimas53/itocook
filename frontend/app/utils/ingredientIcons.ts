@@ -1,0 +1,147 @@
+export const INGREDIENT_ICONS: Record<string, string> = {
+  'chicken': '🐔',
+  'chicken breast': '🐔',
+  'chicken fillet': '🐔',
+  'chicken thigh': '🐔',
+  'turkey': '🦃',
+  'beef': '🥩',
+  'steak': '🥩',
+  'pork': '🐖',
+  'bacon': '🥓',
+  'ham': '🍖',
+  'lamb': '🐑',
+  'ground meat': '🥩',
+  'minced meat': '🥩',
+  'ground beef': '🥩',
+  'ground pork': '🥩',
+  'sausage': '🌭',
+  'sausages': '🌭',
+  'meatballs': '🍖',
+
+  'fish': '🐟',
+  'salmon': '🐟',
+  'tuna': '🐟',
+  'shrimp': '🦐',
+  'prawns': '🦐',
+  'squid': '🦑',
+  'seafood': '🦞',
+
+  'egg': '🥚',
+  'eggs': '🥚',
+  'milk': '🥛',
+  'cheese': '🧀',
+  'mozzarella': '🧀',
+  'parmesan': '🧀',
+  'gouda': '🧀',
+  'butter': '🧈',
+  'cream': '🥛',
+  'sour cream': '🥛',
+  'yogurt': '🥛',
+
+  'olive oil': '🫒',
+  'vegetable oil': '🫗',
+  'sunflower oil': '🫗',
+
+  'onion': '🧅',
+  'garlic': '🧄',
+  'tomato': '🍅',
+  'tomatoes': '🍅',
+  'cucumber': '🥒',
+  'potato': '🥔',
+  'potatoes': '🥔',
+  'carrot': '🥕',
+  'carrots': '🥕',
+  'pepper': '🌶️',
+  'chili': '🌶️',
+  'chili pepper': '🌶️',
+  'bell pepper': '🫑',
+  'red pepper': '🫑',
+  'cabbage': '🥬',
+  'lettuce': '🥬',
+  'broccoli': '🥦',
+  'eggplant': '🍆',
+  'aubergine': '🍆',
+  'mushroom': '🍄',
+  'mushrooms': '🍄',
+  'corn': '🌽',
+  'pumpkin': '🎃',
+  'avocado': '🥑',
+  'beans': '🫘',
+  'green beans': '🫛',
+  'peas': '🫛',
+  'ginger': '🫚',
+  'leek': '🥬',
+  'spinach': '🥬',
+  'olives': '🫒',
+  'capers': '🫒',
+  'lemon zest': '🍋',
+
+  'parsley': '🌿',
+  'dill': '🌿',
+  'basil': '🌿',
+  'cilantro': '🌿',
+  'coriander': '🌿',
+  'mint': '🍃',
+  'rosemary': '🌱',
+  'thyme': '🌱',
+  'bay leaf': '🍃',
+  'salt': '🧂',
+  'black pepper': '⚫',
+  'paprika powder': '🟠',
+  'cinnamon': '🟤',
+  'curry powder': '🟡',
+  'turmeric': '🟡',
+  'vanilla': '🤎',
+  'sugar': '🤍',
+  'honey': '🍯',
+
+  'rice': '🍚',
+  'pasta': '🍝',
+  'spaghetti': '🍝',
+  'noodles': '🍜',
+  'bread': '🍞',
+  'baguette': '🥖',
+  'flour': '🌾',
+  'oats': '🌾',
+  'tortilla': '🫓',
+  'pita': '🫓',
+
+  'lemon': '🍋',
+  'lime': '🍋',
+  'apple': '🍎',
+  'pear': '🍐',
+  'banana': '🍌',
+  'orange': '🍊',
+  'grapes': '🍇',
+  'strawberry': '🍓',
+  'coconut': '🥥',
+
+  'water': '🥤',
+  'canned tomatoes': '🥫',
+  'canned beans': '🥫',
+  'tomato paste': '🥫',
+  'stock': '🥫',
+  'broth': '🥫',
+  'vegetable broth': '🥫',
+  'soy sauce': '🍶',
+  'vinegar': '🍶',
+  'wine': '🍷',
+}
+
+export const DEFAULT_INGREDIENT_ICON = '🍽️'
+
+export function getIngredientIcon(name: string): string {
+  if (!name) return DEFAULT_INGREDIENT_ICON
+  const normalized = name.trim().toLowerCase()
+
+  if (INGREDIENT_ICONS[normalized]) return INGREDIENT_ICONS[normalized]!
+
+  const keys = Object.keys(INGREDIENT_ICONS).sort((a, b) => b.length - a.length)
+  for (const key of keys) {
+    if (normalized.includes(key) || key.includes(normalized)) {
+      return INGREDIENT_ICONS[key]!
+    }
+  }
+
+  return DEFAULT_INGREDIENT_ICON
+}

@@ -103,11 +103,12 @@
             </button>
             <ul v-if="showIngredients" class="space-y-2">
               <li v-for="(ing, i) in recipe.ingredients" :key="i" class="flex items-center gap-3 text-[14px] text-app-black/70">
-                <span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                <span v-if="ing.amount || ing.unit" class="font-medium text-app-black shrink-0">
+                <span class="text-lg w-6 text-center shrink-0">{{ getIngredientIcon(ing.name) }}</span>
+                <span>{{ ing.name }}</span>
+                <span v-if="ing.amount || ing.unit" class="font-medium text-app-black shrink-0 ml-auto">
                   {{ ing.amount }}{{ ing.unit ? ' ' + ing.unit : '' }}
                 </span>
-                <span>{{ ing.name }}</span>
+
               </li>
             </ul>
           </div>
@@ -237,6 +238,7 @@
 
 <script setup lang="ts">
 import { PhCaretLeft, PhHeart, PhStar, PhChefHat, PhForkKnife, PhCaretDown, PhSpinner, PhPencil, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock } from '@phosphor-icons/vue'
+import { getIngredientIcon } from '~/utils/ingredientIcons'
 
 definePageMeta({ layout: 'default' })
 

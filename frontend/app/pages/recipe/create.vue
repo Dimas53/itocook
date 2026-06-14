@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-full">
+  <div class="flex flex-col h-full relative">
     <!-- Header -->
     <div class="flex items-center justify-between px-5 pt-[60px] pb-4 bg-white">
       <button class="w-10 h-10 flex items-center justify-center" @click="router.back()">
@@ -73,32 +73,45 @@
       <div>
         <div class="flex items-center justify-between mb-2">
           <label class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide">Ingredients</label>
-          <button class="text-[12px] text-primary font-semibold flex items-center gap-1 active:scale-[0.98]" @click="addIngredient">
+          <button class="text-[12px] text-primary font-semibold flex items-center gap-1 active:scale-[0.98]" @click="showAddPopover = true">
             <PhPlus class="w-3.5 h-3.5" weight="bold" /> Add
           </button>
         </div>
-        <div v-for="(ing, i) in form.ingredients" :key="i" class="flex items-center gap-2 mb-2">
-          <input
-            v-model="ing.name"
-            type="text"
-            placeholder="Name"
-            class="flex-1 h-10 rounded-lg bg-white border border-gray-200 px-3 text-[13px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary"
-          />
-          <input
-            v-model="ing.amount"
-            type="text"
-            placeholder="Qty"
-            class="w-16 h-10 rounded-lg bg-white border border-gray-200 px-2 text-[13px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary text-center"
-          />
-          <input
-            v-model="ing.unit"
-            type="text"
-            placeholder="Unit"
-            class="w-16 h-10 rounded-lg bg-white border border-gray-200 px-2 text-[13px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary text-center"
-          />
-          <button class="w-8 h-8 flex items-center justify-center shrink-0" @click="removeIngredient(i)">
-            <PhTrash class="w-4 h-4 text-red-400" />
-          </button>
+        <div class="w-full overflow-hidden">
+          <div v-for="(ing, i) in form.ingredients" :key="i" class="flex items-center gap-2 mb-2 w-full">
+            <span class="w-8 shrink-0 text-center text-lg">{{ getIngredientIcon(ing.name) }}</span>
+            <input
+              v-model="ing.name"
+              type="text"
+              placeholder="Name"
+              class="flex-1 min-w-0 h-10 rounded-lg bg-white border border-gray-200 px-3 text-[13px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary"
+            />
+            <input
+              v-model="ing.amount"
+              type="text"
+              placeholder="Qty"
+              class="w-16 shrink-0 h-10 rounded-lg bg-white border border-gray-200 px-2 text-[13px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary text-center"
+            />
+            <select
+              v-model="ing.unit"
+              class="w-20 shrink-0 h-10 rounded-lg bg-white border border-gray-200 px-1 text-[13px] text-app-black text-center focus:outline-none focus:border-primary appearance-none"
+            >
+              <option value=""></option>
+              <option value="g">g</option>
+              <option value="kg">kg</option>
+              <option value="ml">ml</option>
+              <option value="l">l</option>
+              <option value="pcs">pcs</option>
+              <option value="tbsp">tbsp</option>
+              <option value="tsp">tsp</option>
+              <option value="bunch">bunch</option>
+              <option value="to taste">to taste</option>
+              <option v-if="ing.unit && !['g','kg','ml','l','pcs','tbsp','tsp','bunch','to taste',''].includes(ing.unit)" :value="ing.unit">{{ ing.unit }}</option>
+            </select>
+            <button class="w-8 shrink-0 h-8 flex items-center justify-center" @click="removeIngredient(i)">
+              <PhTrash class="w-4 h-4 text-red-400" />
+            </button>
+          </div>
         </div>
         <p v-if="form.ingredients.length === 0" class="text-[12px] text-gray-400 italic">No ingredients added</p>
       </div>
@@ -142,11 +155,21 @@
       </button>
 
     </div>
+
+    <AddIngredientPopover
+      :show="showAddPopover"
+      :existing-ingredients="form.ingredients.map(i => i.name.toLowerCase())"
+      @close="showAddPopover = false"
+      @select="onSelectPopularIngredient"
+      @custom="addIngredient"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { PhCaretLeft, PhPlus, PhTrash, PhSpinner, PhCheck } from '@phosphor-icons/vue'
+import { getIngredientIcon } from '~/utils/ingredientIcons'
+import type { PopularIngredient } from '~/utils/popularIngredients'
 
 definePageMeta({ layout: 'default' })
 
@@ -193,6 +216,7 @@ const form = reactive({
 })
 
 const submitting = ref(false)
+const showAddPopover = ref(false)
 const loadingRecipe = ref(false)
 const pendingPhotoFile = ref<File | null>(null)
 const originalPhoto = ref<string | null>(null)
@@ -281,6 +305,10 @@ function onPhotoCleared() {
 
 function addIngredient() {
   form.ingredients.push({ name: '', amount: '', unit: '' })
+}
+
+function onSelectPopularIngredient(ing: PopularIngredient) {
+  form.ingredients.push({ name: ing.name, amount: '', unit: ing.unit || '' })
 }
 
 function removeIngredient(index: number) {
