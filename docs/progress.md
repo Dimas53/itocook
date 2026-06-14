@@ -142,6 +142,7 @@
 - [ ] Shopping list from recipe, Receipt photo upload
 
 ## Git log
+- `9d42482` — chore: uncommitted changes from previous sessions
 - `b7ddd47` — fix(recipe): reactive image in RecipeGridItem, batch-fetch likes on all pages
 - `80afb1d` — feat(cook): persist category to cook_queue, show category image in HeroBlock, require category for schedule/save
 - `3ae6859` — feat(cook): split lunch-ready from receipt entry (Task A')
