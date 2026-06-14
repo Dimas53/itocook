@@ -800,6 +800,7 @@ async function fetchParticipants() {
 }
 
 const cookBlockedReason = ref('')
+const recipeIdFromQuery = route.query.recipeId as string | undefined
 
 // ── Actions ──
 
@@ -1102,6 +1103,12 @@ watch(existingRecipeId, () => {
 })
 
 onMounted(async () => {
+  // Past-date guard: redirect to kitchen
+  if (pageDateStr.value < formatDateISO(new Date())) {
+    await router.replace('/kitchen')
+    return
+  }
+
   await refreshCookData()
 
   // Handle return from recipe/create with a new recipe
@@ -1117,6 +1124,26 @@ onMounted(async () => {
     } catch {
       // ignore
     }
+  }
+
+  // Prefill from recipeId when entering dish state
+  if (recipeIdFromQuery) {
+    const prefillWatcher = watch(state, async (s) => {
+      if (s === 'dish' && cookEntry.value && !cookEntry.value.dish_name) {
+        prefillWatcher()
+        try {
+          const recipe = await request<{ dish_name: string; category: string | null }>('get',
+            `/items/recipes/${recipeIdFromQuery}?fields=dish_name,category`
+          )
+          dishName.value = recipe.dish_name
+          if (recipe.category) selectedCategory.value = recipe.category
+          await saveDish()
+          await router.replace({ query: { date: pageDateStr.value } })
+        } catch {
+          // ignore
+        }
+      }
+    })
   }
 
   document.addEventListener('visibilitychange', onVisibilityChange)

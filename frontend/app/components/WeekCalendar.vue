@@ -43,6 +43,7 @@ export interface CalendarDay {
   dateNum: number
   hasActivity: boolean
   isToday: boolean
+  isPast: boolean
 }
 
 const props = defineProps<{
@@ -57,6 +58,9 @@ defineEmits<{
 }>()
 
 function getDayClasses(day: CalendarDay) {
+  if (day.isPast) {
+    return 'bg-gray-100 text-gray-400 opacity-40 pointer-events-none cursor-default'
+  }
   if (day.date === props.selectedDate) {
     return 'bg-primary text-white'
   }

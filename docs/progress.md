@@ -117,6 +117,7 @@
 - [x] **Fix: RecipeGridItem images on /recipes** — `RecipeGridItem.vue` prop `title` → `dish_name` to match Directus field; `useRecipeImage.ts` category lookup now lowercases key before matching (DB stores capitalized like "Salad" but map keys are lowercase like "salad").
 - [x] **Fix: Like counts on Home + Kitchen** — `RecipeCard.vue` replaced `rating`+`PhStar` with optional `likeCount` prop + `PhHeart`; removed duplicate like badge from `recipe/[id].vue`; `index.vue` batch-fetches `recipe_likes` after loading recipes, passes per-recipe count to `RecipeCard`; `kitchen.vue` same batch-fetch for dish history items, renders `PhHeart` + count in each row.
 - [x] **Fix: Category filter case-insensitive** — `recipes.vue` filter now lowercases both selected category and recipe category for comparison; search field also uses correct `dish_name` field.
+- [x] **Fix: Reactive image in RecipeGridItem** — `const image = useRecipeImage(...)` → `:src="image.value.src"` (classic computed ref trap: destructuring `{ src }` loses reactivity). Added `likeCount` display + batch-fetch on `/recipes` page.
 
 ## Next session — plan
 
@@ -141,6 +142,7 @@
 - [ ] Shopping list from recipe, Receipt photo upload
 
 ## Git log
+- `b7ddd47` — fix(recipe): reactive image in RecipeGridItem, batch-fetch likes on all pages
 - `80afb1d` — feat(cook): persist category to cook_queue, show category image in HeroBlock, require category for schedule/save
 - `3ae6859` — feat(cook): split lunch-ready from receipt entry (Task A')
 - `10cd5b6` — feat(cook): cancel cooking, fix naming collision in useTotalUsers, replace hardcoded user count
