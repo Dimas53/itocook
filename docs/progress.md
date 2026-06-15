@@ -190,4 +190,5 @@
 - `f4ebfec` — feat: add pizza category, fix today cook flow, prefill recipe from history, disable hero cook when queue exists
 - `97871ba` — feat(recipe): add weekday-only date picker with 3-week pagination and month indicator
 - `b28a32c` — feat(recipe): add share shopping list with native share + clipboard fallback
+- `d5eebb6` — feat(profile): add balance display and transaction history
 

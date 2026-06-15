@@ -81,29 +81,22 @@
               No transactions yet
             </div>
             <div v-else class="mt-3">
-              <div
-                v-for="tx in txDisplayList"
-                :key="tx.id"
-                class="flex justify-between items-start py-2 border-b border-gray-100"
-              >
-                <div class="flex-1 min-w-0 mr-2">
-                  <p class="text-[13px] text-app-black truncate">{{ tx.description }}</p>
-                  <p class="text-[11px] text-gray-400 mt-0.5">{{ formatTxDate(tx.date) }}</p>
-                </div>
-                <span
-                  class="text-[13px] font-semibold shrink-0"
-                  :class="tx.amount >= 0 ? 'text-green-600' : 'text-red-500'"
-                >
-                  {{ tx.amount >= 0 ? '+' : '-' }}€{{ Math.abs(tx.amount).toFixed(2) }}
-                </span>
-              </div>
-              <button
-                v-if="transactions.length > TX_VISIBLE_COUNT"
-                class="w-full text-center text-[12px] text-gray-400 font-medium mt-2 active:text-app-black transition-colors"
-                @click="transactionsExpanded = !transactionsExpanded"
-              >
-                {{ transactionsExpanded ? 'Show less' : `Show all (${transactions.length})` }}
-              </button>
+              <SliderList :items="transactions" :visibleCount="5" :itemHeight="48" :itemGap="0">
+                <template #item="{ item: tx }">
+                  <div class="flex justify-between items-start h-full px-0.5 py-2 border-b border-gray-100">
+                    <div class="flex-1 min-w-0 mr-2">
+                      <p class="text-[13px] text-app-black truncate">{{ tx.description }}</p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">{{ formatTxDate(tx.date) }}</p>
+                    </div>
+                    <span
+                      class="text-[13px] font-semibold shrink-0"
+                      :class="tx.amount >= 0 ? 'text-green-600' : 'text-red-500'"
+                    >
+                      {{ tx.amount >= 0 ? '+' : '-' }}€{{ Math.abs(tx.amount).toFixed(2) }}
+                    </span>
+                  </div>
+                </template>
+              </SliderList>
             </div>
           </template>
         </div>
@@ -140,30 +133,32 @@
         <div v-else-if="myOrders.length === 0" class="text-center py-8 text-gray-400 text-[14px]">
           You haven't joined any dishes yet
         </div>
-        <div v-else class="space-y-2">
-          <div
-            v-for="(order, i) in myOrders"
-            :key="order.id"
-            class="rounded-xl p-4 flex items-center justify-between"
-            :class="order.isCook ? 'bg-primary-light/80' : getColor(i)"
-          >
-            <div class="flex-1 min-w-0 mr-3">
-              <p class="text-[14px] font-semibold text-app-black truncate">{{ order.dish_name }}</p>
-              <p class="text-[12px] text-app-black/60 mt-0.5">
-                {{ order.dateLabel }} &middot; by {{ order.cookName }}
-              </p>
-              <p v-if="order.isCook" class="text-[12px] font-bold text-primary mt-0.5">
-                You are the cook
-              </p>
-              <p class="text-[12px] text-app-black/40 mt-0.5">Price: —</p>
-            </div>
-            <button
-              class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0 active:scale-[0.95] transition-transform"
-              @click="promptLeaveQueue(order)"
-            >
-              <PhX class="w-4 h-4 text-red-500" weight="bold" />
-            </button>
-          </div>
+        <div v-else>
+          <SliderList :items="myOrders" :visibleCount="5" :itemHeight="88" :itemGap="8">
+            <template #item="{ item: order, index: i }">
+              <div
+                class="rounded-xl p-4 flex items-center justify-between h-full"
+                :class="order.isCook ? 'bg-primary-light/80' : getColor(i)"
+              >
+                <div class="flex-1 min-w-0 mr-3">
+                  <p class="text-[14px] font-semibold text-app-black truncate">{{ order.dish_name }}</p>
+                  <p class="text-[12px] text-app-black/60 mt-0.5">
+                    {{ order.dateLabel }} &middot; by {{ order.cookName }}
+                  </p>
+                  <p v-if="order.isCook" class="text-[12px] font-bold text-primary mt-0.5">
+                    You are the cook
+                  </p>
+                  <p class="text-[12px] text-app-black/40 mt-0.5">Price: —</p>
+                </div>
+                <button
+                  class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0 active:scale-[0.95] transition-transform"
+                  @click="promptLeaveQueue(order)"
+                >
+                  <PhX class="w-4 h-4 text-red-500" weight="bold" />
+                </button>
+              </div>
+            </template>
+          </SliderList>
         </div>
       </template>
 
@@ -175,22 +170,24 @@
         <div v-else-if="myRecipes.length === 0" class="text-center py-8 text-gray-400 text-[14px]">
           You haven't created any recipes yet
         </div>
-        <div v-else class="space-y-2">
-          <div
-            v-for="(recipe, i) in myRecipes"
-            :key="recipe.id"
-            class="rounded-xl p-4 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform"
-            :class="getColor(i)"
-            @click="router.push(`/recipe/${recipe.id}`)"
-          >
-            <div class="flex-1 min-w-0 mr-3">
-              <p class="text-[14px] font-semibold text-app-black truncate">{{ recipe.dish_name }}</p>
-              <p class="text-[12px] text-app-black/60 mt-0.5">
-                {{ recipe.category || 'Uncategorized' }}
-              </p>
-            </div>
-            <PhCaretRight class="w-4 h-4 text-app-black/40 shrink-0" />
-          </div>
+        <div v-else>
+          <SliderList :items="myRecipes" :visibleCount="5" :itemHeight="76" :itemGap="8">
+            <template #item="{ item: recipe, index: i }">
+              <div
+                class="rounded-xl p-4 flex items-center justify-between h-full cursor-pointer active:scale-[0.98] transition-transform"
+                :class="getColor(i)"
+                @click="router.push(`/recipe/${recipe.id}`)"
+              >
+                <div class="flex-1 min-w-0 mr-3">
+                  <p class="text-[14px] font-semibold text-app-black truncate">{{ recipe.dish_name }}</p>
+                  <p class="text-[12px] text-app-black/60 mt-0.5">
+                    {{ recipe.category || 'Uncategorized' }}
+                  </p>
+                </div>
+                <PhCaretRight class="w-4 h-4 text-app-black/40 shrink-0" />
+              </div>
+            </template>
+          </SliderList>
         </div>
       </template>
 
@@ -276,8 +273,6 @@ const transactions = ref<TransactionItem[]>([])
 const loadingBalance = ref(true)
 const loadingTransactions = ref(true)
 const showTransactions = ref(false)
-const transactionsExpanded = ref(false)
-const TX_VISIBLE_COUNT = 5
 
 interface TransactionItem {
   id: string
@@ -285,11 +280,6 @@ interface TransactionItem {
   description: string
   date: string
 }
-
-const txDisplayList = computed(() => {
-  if (transactionsExpanded.value) return transactions.value
-  return transactions.value.slice(0, TX_VISIBLE_COUNT)
-})
 
 async function fetchBalance() {
   loadingBalance.value = true
