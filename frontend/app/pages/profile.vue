@@ -26,6 +26,26 @@
       </div>
     </div>
 
+    <!-- Department -->
+    <div class="bg-white rounded-2xl px-4 py-3 mx-5 mb-4">
+      <p class="text-[11px] text-gray-400 mb-1">Department</p>
+      <select
+        :value="user?.department || ''"
+        class="bg-primary-pale text-app-black text-[13px] font-medium rounded-xl px-3 py-2 border-none outline-none w-full"
+        @change="updateDepartment(($event.target as HTMLSelectElement).value)"
+      >
+        <option value="" disabled>— Abteilung wählen —</option>
+        <option value="Buchhaltung">Buchhaltung</option>
+        <option value="Vertrieb">Vertrieb</option>
+        <option value="IT-Security">IT-Security</option>
+        <option value="Infrastruktur">Infrastruktur</option>
+        <option value="Entwicklung">Entwicklung</option>
+        <option value="HR">HR</option>
+        <option value="MARKET">MARKET</option>
+        <option value="CONTR">CONTR</option>
+      </select>
+    </div>
+
     <!-- Preferences -->
     <div class="px-5 pb-5">
       <div class="flex items-center justify-between bg-primary-pale rounded-2xl px-5 py-4">
@@ -442,6 +462,17 @@ async function confirmLeave() {
   }
   showConfirmLeave.value = false
   leavingOrderId.value = null
+}
+
+async function updateDepartment(value: string) {
+  try {
+    await request('patch', '/users/me', { department: value || null })
+    if (user.value) {
+      user.value.department = value || null
+    }
+  } catch (e) {
+    console.error('Failed to update department:', e)
+  }
 }
 
 async function handleLogout() {

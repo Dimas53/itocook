@@ -194,4 +194,5 @@
 - `b28a32c` — feat(recipe): add share shopping list with native share + clipboard fallback
 - `d5eebb6` — feat(profile): add balance display and transaction history
 - `f42c115` — feat(profile): extract SliderList component, refactor all profile lists
+- `51d9fa3` — feat(schema): add department field to users, create cleaning_schedule collection
 

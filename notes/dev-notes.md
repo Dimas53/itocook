@@ -134,51 +134,52 @@ Commit: `feat(schema): add department field to users, create cleaning_schedule c
 
 ## Task 2 — Department selector in profile.vue
 
-Add a department selector to `app/pages/profile.vue` directly below the
-email line in the avatar/name section.
-
-**Department list (exact values):**
-```
-Buchhaltung, Vertrieb, IT-Security, Infrastruktur, Entwicklung, HR, MARKET, CONTR
-```
+Move the department field to the top of the user info section in
+`app/pages/profile.vue` — place it directly below the name/email block,
+ABOVE the Preferences card (not at the bottom of the page).
 
 **UI:**
 - Label: `text-[11px] text-gray-400 mb-1` → "Department"
-- `<select>` styled as: `bg-primary-pale text-app-black text-[13px]
-  font-medium rounded-xl px-3 py-2 border-none outline-none w-full`
-- First option: `<option value="">— Select department —</option>` (disabled)
+- Use `<select>` (not a text input) styled as:
+  `bg-primary-pale text-app-black text-[13px] font-medium rounded-xl
+  px-3 py-2 border-none outline-none w-full`
+- Options (exact values, keep German names):
+  `Buchhaltung, Vertrieb, IT-Security, Infrastruktur, Entwicklung, HR, MARKET, CONTR`
+- First option: `<option value="">— Abteilung wählen —</option>` (disabled)
 - On change: immediately PATCH `/users/me` with `{ department: selectedValue }`
   via existing `useDirectus` request()
-- On mount: fetch current user's department from `user.value.department`
-  and set as selected value
+- On mount: read `user.value.department` and pre-select matching option
+- Wrapper: `bg-white rounded-2xl px-4 py-3 mx-5 mb-4`
 
-Commit: `feat(profile): add department selector with auto-save`
-
----
-
-## Task 3 — Seed cleaning_schedule with mock data
-
-Create realistic mock entries in `cleaning_schedule` for the current month
-(June–July 2026) so the UI has data to display.
-
-Use the Directus MCP to insert entries. Assign existing users to dates.
-Cover at least 4 weeks with one entry per weekday.
-Use all 8 departments spread across the weeks:
-Buchhaltung, Vertrieb, IT-Security, Infrastruktur, Entwicklung, HR, MARKET, CONTR.
-
-Pattern: one department per week (Mon–Fri), rotating.
-Example:
-- Week Jun 9–13: Entwicklung
-- Week Jun 16–20: IT-Security
-- Week Jun 23–27: Infrastruktur
-- Week Jun 30–Jul 4: Vertrieb
-
-For each day assign one of the existing users (use whatever users exist in the DB).
-Set `confirmed: false` for all entries except a few past dates (set those to true).
-
-Commit: `chore(seed): add cleaning_schedule mock data for June–July 2026`
+Commit: `feat(profile): move department selector to top, use select dropdown`
 
 ---
+
+## Task 3 — Create test users with departments via Directus MCP
+
+Use the Directus MCP to create 6 test users. Do NOT create mock
+cleaning_schedule entries — real users will be assigned manually later.
+
+Create these users (POST /users as admin):
+
+| first_name | last_name  | email          | department    | role        | password |
+|------------|------------|----------------|---------------|-------------|----------|
+| Klaus      | Müller     | u1@dev.com     | Entwicklung   | User        | 123456   |
+| Anna       | Schneider  | u2@dev.com     | IT-Security   | User        | 123456   |
+| Thomas     | Weber      | u3@dev.com     | Buchhaltung   | User        | 123456   |
+| Sabine     | Fischer    | u4@dev.com     | Vertrieb      | User        | 123456   |
+| Michael    | Bauer      | u5@dev.com     | Infrastruktur | User        | 123456   |
+| Laura      | Koch       | u6@dev.com     | HR            | User        | 123456   |
+
+Role UUID for User: same UUID used elsewhere in the project
+(check existing users or AGENTS.md for the correct UUID).
+
+After creating users, also create `cleaning_schedule` entries for
+the current 2 weeks (Jun 16–27 2026, weekdays only), one entry per day,
+rotating through the new users. Set `confirmed: false` for future dates,
+`confirmed: true` for past dates.
+
+Commit: `chore(seed): create 6 test users with departments + cleaning_schedule entries`
 
 ## Task 4 — Update DutyWidget.vue
 
