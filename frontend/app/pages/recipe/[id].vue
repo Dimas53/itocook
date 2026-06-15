@@ -108,7 +108,7 @@
                 @click="shareShoppingList"
                 title="Share shopping list"
               >
-                <PhShareNetwork class="w-5 h-5 text-gray-500" />
+                <PhUploadSimple class="w-5 h-5 text-gray-500" />
               </button>
             </div>
             <ul v-if="showIngredients" class="space-y-2">
@@ -308,7 +308,7 @@
 </template>
 
 <script setup lang="ts">
-import { PhCaretLeft, PhHeart, PhChefHat, PhForkKnife, PhCaretDown, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock, PhShareNetwork } from '@phosphor-icons/vue'
+import { PhCaretLeft, PhHeart, PhChefHat, PhForkKnife, PhCaretDown, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock, PhUploadSimple } from '@phosphor-icons/vue'
 import { getIngredientIcon } from '~/utils/ingredientIcons'
 
 definePageMeta({ layout: 'default' })
