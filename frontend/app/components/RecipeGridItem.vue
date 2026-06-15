@@ -22,9 +22,9 @@ const image = useRecipeImage(computed(() => props.recipe))
       <img :src="image.src" :alt="recipe.dish_name" class="w-full h-full object-cover" />
     </div>
     <div class="p-2 flex justify-between  items-start gap-0.5">
-      <div>
+      <div class="flex flex-col flex-1">
+        <p class="text-[10px] text-gray-500 truncate mt-auto">{{ recipe.chef }}</p>
         <p class="text-[11px] font-semibold text-app-black leading-tight line-clamp-2">{{ recipe.dish_name }}</p>
-        <p class="text-[10px] text-gray-500 truncate">{{ recipe.chef }}</p>
       </div>
 
       <span v-if="recipe.likeCount !== undefined" class="flex items-center gap-0.5 text-[9px] text-gray-400">

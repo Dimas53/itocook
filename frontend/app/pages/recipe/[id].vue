@@ -249,13 +249,31 @@
       <div class="absolute inset-0 bg-black/40" @click="showDatePicker = false" />
       <div class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[70%] flex flex-col">
         <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-4 shrink-0" />
-        <h3 class="text-[16px] font-semibold text-app-black mb-4 shrink-0">Pick a date to cook</h3>
+        <div class="flex items-center justify-between mb-4 shrink-0">
+          <h3 class="text-[16px] font-semibold text-app-black">Pick a date to cook</h3>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-medium text-gray-500">{{ currentMonthLabel }}</span>
+            <button
+              class="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 active:scale-[0.95] transition-transform disabled:opacity-30"
+              :disabled="dateOffset === 0"
+              @click="prevWeekPage"
+            >
+              <PhCaretLeft class="w-4 h-4 text-app-black" />
+            </button>
+            <button
+              class="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 active:scale-[0.95] transition-transform"
+              @click="nextWeekPage"
+            >
+              <PhCaretLeft class="w-4 h-4 text-app-black rotate-180" />
+            </button>
+          </div>
+        </div>
 
         <div v-if="datePickerLoading" class="flex items-center justify-center py-8">
           <PhSpinner class="w-6 h-6 text-primary animate-spin" />
         </div>
 
-        <div v-else class="grid grid-cols-4 gap-3 overflow-y-auto scrollbar-hide">
+        <div v-else class="grid grid-cols-5 gap-3 overflow-y-auto scrollbar-hide">
           <div v-for="d in availableDates" :key="d.iso">
             <button
               class="w-full flex flex-col items-center justify-center py-3 rounded-xl transition-all duration-150"
@@ -264,7 +282,7 @@
             >
               <span class="text-[11px] font-medium">{{ d.isToday ? 'Today' : d.label }}</span>
               <span class="text-[16px] font-semibold mt-0.5" :class="d.isToday && !d.isTaken && !d.isPast ? 'text-primary' : 'text-app-black'">{{ d.dateNum }}</span>
-              <span v-if="d.isTaken" class="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1" />
+<!--              <span v-if="d.isTaken" class="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1" />-->
             </button>
           </div>
         </div>
@@ -331,7 +349,8 @@ const queueEntry = ref<QueueEntry | null>(null)
 
 const showDatePicker = ref(false)
 const datePickerLoading = ref(false)
-const availableDates = ref<{ label: string; dateNum: number; iso: string; isTaken: boolean; isPast: boolean; isToday: boolean }[]>([])
+const dateOffset = ref(0)
+const availableDates = ref<{ label: string; dateNum: number; iso: string; isTaken: boolean; isPast: boolean; isToday: boolean; isMonthStart: boolean }[]>([])
 
 const isLiked = ref(false)
 const likeCount = ref(0)
@@ -339,10 +358,11 @@ const myLikeId = ref<string | null>(null)
 
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
-function dateCellClass(d: { isPast: boolean; isToday: boolean; isTaken: boolean }): string {
+function dateCellClass(d: { isPast: boolean; isToday: boolean; isTaken: boolean; isMonthStart: boolean }): string {
   if (d.isPast) return 'opacity-30 pointer-events-none cursor-not-allowed bg-app-bg'
-  if (d.isTaken) return 'opacity-50 pointer-events-none cursor-not-allowed bg-app-bg relative'
-  if (d.isToday) return 'bg-primary text-primary font-semibold active:scale-[0.98] transition-transform cursor-pointer'
+  if (d.isToday) return 'bg-primary-light text-primary font-semibold active:scale-[0.98] transition-transform cursor-pointer'
+  if (d.isMonthStart) return 'bg-[#CBFFCF] text-app-black border border-gray-200 active:scale-[0.98] transition-transform cursor-pointer'
+  if (d.isTaken) return 'pointer-events-none cursor-not-allowed bg-app-bg relative'
   return 'bg-white border border-gray-200 text-app-black active:bg-primary-light active:scale-[0.98] transition-transform cursor-pointer'
 }
 
@@ -353,8 +373,27 @@ function fmtISO(d: Date): string {
   return `${y}-${m}-${day}`
 }
 
-watch(showDatePicker, async (open) => {
-  if (!open) return
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const
+
+function prevWeekPage() {
+  const step = Math.min(15, dateOffset.value)
+  dateOffset.value -= step
+  loadDates()
+}
+
+function nextWeekPage() {
+  dateOffset.value += 15
+  loadDates()
+}
+
+const currentMonthLabel = computed(() => {
+  const first = availableDates.value[0]
+  if (!first) return ''
+  const d = new Date(first.iso + 'T12:00:00')
+  return `${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`
+})
+
+async function loadDates() {
   datePickerLoading.value = true
   const today = fmtISO(new Date())
   let takenSet = new Set<string>()
@@ -366,22 +405,39 @@ watch(showDatePicker, async (open) => {
   } catch { /* ignore */ }
 
   const todayStr = fmtISO(new Date())
-  const dates: { label: string; dateNum: number; iso: string; isTaken: boolean; isPast: boolean; isToday: boolean }[] = []
-  for (let i = 0; i < 14; i++) {
+  const dates: { label: string; dateNum: number; iso: string; isTaken: boolean; isPast: boolean; isToday: boolean; isMonthStart: boolean }[] = []
+  let i = 0
+  let weekdaysSkipped = 0
+  while (dates.length < 15) {
     const d = new Date()
     d.setDate(d.getDate() + i)
-    const iso = fmtISO(d)
-    dates.push({
-      label: DAY_SHORT[d.getDay()]!,
-      dateNum: d.getDate(),
-      iso,
-      isTaken: takenSet.has(iso),
-      isPast: iso < todayStr,
-      isToday: iso === todayStr,
-    })
+    const dow = d.getDay()
+    if (dow !== 0 && dow !== 6) {
+      if (weekdaysSkipped < dateOffset.value) {
+        weekdaysSkipped++
+      } else {
+        const iso = fmtISO(d)
+        dates.push({
+          label: DAY_SHORT[dow],
+          dateNum: d.getDate(),
+          iso,
+          isTaken: takenSet.has(iso),
+          isPast: iso < todayStr,
+          isToday: iso === todayStr,
+          isMonthStart: d.getDate() === 1,
+        })
+      }
+    }
+    i++
   }
   availableDates.value = dates
   datePickerLoading.value = false
+}
+
+watch(showDatePicker, (open) => {
+  if (!open) return
+  dateOffset.value = 0
+  loadDates()
 })
 
 function selectDate(date: string) {
