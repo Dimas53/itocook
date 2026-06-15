@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
 
   // Query active user count using /users endpoint (system collections via /items returns 403)
   const countRes = await fetch(
-    `${config.directusUrl}/users?aggregate[count]=*&filter[status][_eq]=active&filter[first_name][_neq]=MCP`,
+    `${config.directusUrl}/users?aggregate[count]=*&filter[status][_eq]=active&filter[first_name][_nstarts_with]=MCP`,
     {
       headers: { 'Authorization': `Bearer ${adminToken}` },
     }
