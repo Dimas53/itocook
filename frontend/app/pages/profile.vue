@@ -22,28 +22,24 @@
         <div class="flex-1">
           <p class="text-[18px] font-medium text-app-black">{{ displayName }}</p>
           <p class="text-[14px] text-gray-500 mt-0.5">{{ user?.email }}</p>
+          <p class="text-[11px] text-gray-400 mt-3 mb-1">Department</p>
+          <select
+            :value="user?.department || ''"
+            class="bg-primary-pale text-app-black text-[13px] font-medium rounded-xl px-3 py-2 border-none outline-none w-auto min-w-[160px] cursor-pointer"
+            @change="updateDepartment(($event.target as HTMLSelectElement).value)"
+          >
+            <option value="" disabled>— Abteilung wählen —</option>
+            <option value="Buchhaltung">Buchhaltung</option>
+            <option value="Vertrieb">Vertrieb</option>
+            <option value="IT-Security">IT-Security</option>
+            <option value="Infrastruktur">Infrastruktur</option>
+            <option value="Entwicklung">Entwicklung</option>
+            <option value="HR">HR</option>
+            <option value="MARKET">MARKET</option>
+            <option value="CONTR">CONTR</option>
+          </select>
         </div>
       </div>
-    </div>
-
-    <!-- Department -->
-    <div class="bg-white rounded-2xl px-4 py-3 mx-5 mb-4">
-      <p class="text-[11px] text-gray-400 mb-1">Department</p>
-      <select
-        :value="user?.department || ''"
-        class="bg-primary-pale text-app-black text-[13px] font-medium rounded-xl px-3 py-2 border-none outline-none w-full"
-        @change="updateDepartment(($event.target as HTMLSelectElement).value)"
-      >
-        <option value="" disabled>— Abteilung wählen —</option>
-        <option value="Buchhaltung">Buchhaltung</option>
-        <option value="Vertrieb">Vertrieb</option>
-        <option value="IT-Security">IT-Security</option>
-        <option value="Infrastruktur">Infrastruktur</option>
-        <option value="Entwicklung">Entwicklung</option>
-        <option value="HR">HR</option>
-        <option value="MARKET">MARKET</option>
-        <option value="CONTR">CONTR</option>
-      </select>
     </div>
 
     <!-- Preferences -->
