@@ -197,4 +197,5 @@
 - `f42c115` — feat(profile): extract SliderList component, refactor all profile lists
 - `51d9fa3` — feat(schema): add department field to users, create cleaning_schedule collection
 - `9ae8bf2` — feat(profile): move department selector to top, use select dropdown
+- `2a0c684` — fix(profile): compact department select styling
 

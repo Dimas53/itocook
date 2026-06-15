@@ -22,32 +22,30 @@
         <div class="flex-1">
           <p class="text-[18px] font-medium text-app-black">{{ displayName }}</p>
           <p class="text-[14px] text-gray-500 mt-0.5">{{ user?.email }}</p>
-          <p class="text-[11px] text-gray-400 mt-3 mb-1">Department</p>
-          <select
-            :value="user?.department || ''"
-            class="bg-primary-pale text-app-black text-[13px] font-medium rounded-xl px-3 py-2 border-none outline-none w-auto min-w-[160px] cursor-pointer"
-            @change="updateDepartment(($event.target as HTMLSelectElement).value)"
-          >
-            <option value="" disabled>— Abteilung wählen —</option>
-            <option value="Buchhaltung">Buchhaltung</option>
-            <option value="Vertrieb">Vertrieb</option>
-            <option value="IT-Security">IT-Security</option>
-            <option value="Infrastruktur">Infrastruktur</option>
-            <option value="Entwicklung">Entwicklung</option>
-            <option value="HR">HR</option>
-            <option value="MARKET">MARKET</option>
-            <option value="CONTR">CONTR</option>
-          </select>
         </div>
       </div>
     </div>
 
     <!-- Preferences -->
     <div class="px-5 pb-5">
-      <div class="flex items-center justify-between bg-primary-pale rounded-2xl px-5 py-4">
+      <div
+        class="flex items-center justify-between bg-primary-pale rounded-2xl px-5 py-4 cursor-pointer active:scale-[0.98] transition-transform"
+        @click="showPreferences = true"
+      >
         <div>
           <p class="text-[16px] font-medium text-app-black">Preferences</p>
-          <p class="text-[12px] text-gray-500 mt-0.5">Goals, food preferences and more</p>
+          <p
+            v-if="user?.department"
+            class="text-[12px] text-primary mt-0.5"
+          >
+            {{ user.department }}
+          </p>
+          <p
+            v-else
+            class="text-[12px] text-gray-500 mt-0.5"
+          >
+            Goals, food preferences and more
+          </p>
         </div>
         <PhCaretRight class="w-5 h-5 text-gray-400" />
       </div>
@@ -212,6 +210,42 @@
 
     </div>
 
+    <!-- Preferences bottom sheet -->
+    <div
+      v-if="showPreferences"
+      class="fixed inset-0 z-50 flex flex-col justify-end"
+    >
+      <div class="absolute inset-0 bg-black/40" @click="showPreferences = false" />
+      <div class="relative bg-white rounded-t-3xl pb-8 px-5 pt-5">
+        <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
+        <h3 class="text-[18px] font-semibold text-app-black mb-4">Preferences</h3>
+
+        <p class="text-[11px] text-gray-400 mb-1">Department</p>
+        <select
+          :value="user?.department || ''"
+          class="bg-primary-pale text-app-black text-[13px] font-medium rounded-xl px-3 py-2 border-none outline-none w-full cursor-pointer"
+          @change="updateDepartment(($event.target as HTMLSelectElement).value)"
+        >
+          <option value="" disabled>— Abteilung wählen —</option>
+          <option value="Buchhaltung">Buchhaltung</option>
+          <option value="Vertrieb">Vertrieb</option>
+          <option value="IT-Security">IT-Security</option>
+          <option value="Infrastruktur">Infrastruktur</option>
+          <option value="Entwicklung">Entwicklung</option>
+          <option value="HR">HR</option>
+          <option value="MARKET">MARKET</option>
+          <option value="CONTR">CONTR</option>
+        </select>
+
+        <button
+          class="bg-primary-pale text-primary h-12 rounded-2xl w-full text-[14px] font-semibold mt-6 active:scale-[0.98] transition-transform"
+          @click="showPreferences = false"
+        >
+          Done
+        </button>
+      </div>
+    </div>
+
     <!-- Confirm leave overlay -->
     <div
       v-if="showConfirmLeave"
@@ -283,6 +317,7 @@ const myOrders = ref<MyOrder[]>([])
 const myRecipes = ref<MyRecipe[]>([])
 const loadingOrders = ref(true)
 const loadingRecipes = ref(true)
+const showPreferences = ref(false)
 const showConfirmLeave = ref(false)
 const leavingOrderId = ref<string | null>(null)
 const confirmLeaveText = ref('')
