@@ -56,7 +56,7 @@
           </div>
           <span
             v-if="balance < 5"
-            class="bg-red-50 text-red-400 text-[11px] font-medium rounded-full px-3 py-1"
+            class="bg-red-50 text-red-400 text-[11px] mt-auto font-medium rounded-full px-3 py-1"
           >
             Limit: -€{{ Math.abs(MIN_BALANCE).toFixed(0) }}
           </span>
@@ -84,7 +84,7 @@
               No transactions yet
             </div>
             <div v-else class="mt-3">
-              <SliderList :items="transactions" :visibleCount="3" :itemHeight="48" :itemGap="0">
+              <SliderList :items="transactions" :visibleCount="4" :itemHeight="48" :itemGap="0">
                 <template #item="{ item: tx }">
                   <div class="flex justify-between items-start h-full px-0.5 py-2 border-b border-gray-100">
                     <div class="flex-1 min-w-0 mr-2">

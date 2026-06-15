@@ -95,3 +95,253 @@ Do not write any code yet — analysis and planning only.
 Как только обновишь файл docs/progress.md — покажи мне итоговую крупноблочную дорожную карту (Roadmap) здесь в чате. Код проекта пока не трогай, только файлы документации.
 
 
+
+
+=================================
+
+# Duty Feature — Full Plan (Session 1 + Session 2)
+
+---
+
+# SESSION 1: Schema + Department Field + DutyWidget
+
+Read `docs/progress.md`, `docs/design.md` and `AGENTS.md` before starting.
+Complete and commit each task separately before moving to the next.
+
+---
+
+## Task 1 — Add `department` field to users + Directus schema
+
+Use the Directus MCP to make these schema changes:
+
+1. Add field `department` (type: string, nullable) to `directus_users` collection.
+
+2. Create collection `cleaning_schedule` with these fields:
+    - `date` (type: date, required)
+    - `user` (type: M2O → directus_users, required)
+    - `department` (type: string, required)
+    - `confirmed` (type: boolean, default: false)
+
+3. Set permissions for `cleaning_schedule`:
+    - User policy: read all items (no filter)
+    - User policy: update own items only (filter: user = $CURRENT_USER),
+      only field `confirmed`
+    - Admin policy: full CRUD
+
+Commit: `feat(schema): add department field to users, create cleaning_schedule collection`
+
+---
+
+## Task 2 — Department selector in profile.vue
+
+Add a department selector to `app/pages/profile.vue` directly below the
+email line in the avatar/name section.
+
+**Department list (exact values):**
+```
+Buchhaltung, Vertrieb, IT-Security, Infrastruktur, Entwicklung, HR, MARKET, CONTR
+```
+
+**UI:**
+- Label: `text-[11px] text-gray-400 mb-1` → "Department"
+- `<select>` styled as: `bg-primary-pale text-app-black text-[13px]
+  font-medium rounded-xl px-3 py-2 border-none outline-none w-full`
+- First option: `<option value="">— Select department —</option>` (disabled)
+- On change: immediately PATCH `/users/me` with `{ department: selectedValue }`
+  via existing `useDirectus` request()
+- On mount: fetch current user's department from `user.value.department`
+  and set as selected value
+
+Commit: `feat(profile): add department selector with auto-save`
+
+---
+
+## Task 3 — Seed cleaning_schedule with mock data
+
+Create realistic mock entries in `cleaning_schedule` for the current month
+(June–July 2026) so the UI has data to display.
+
+Use the Directus MCP to insert entries. Assign existing users to dates.
+Cover at least 4 weeks with one entry per weekday.
+Use all 8 departments spread across the weeks:
+Buchhaltung, Vertrieb, IT-Security, Infrastruktur, Entwicklung, HR, MARKET, CONTR.
+
+Pattern: one department per week (Mon–Fri), rotating.
+Example:
+- Week Jun 9–13: Entwicklung
+- Week Jun 16–20: IT-Security
+- Week Jun 23–27: Infrastruktur
+- Week Jun 30–Jul 4: Vertrieb
+
+For each day assign one of the existing users (use whatever users exist in the DB).
+Set `confirmed: false` for all entries except a few past dates (set those to true).
+
+Commit: `chore(seed): add cleaning_schedule mock data for June–July 2026`
+
+---
+
+## Task 4 — Update DutyWidget.vue
+
+Rewrite `app/components/DutyWidget.vue` to show real data from `cleaning_schedule`.
+
+**Data fetch (on mount):**
+```
+GET /items/cleaning_schedule
+  ?filter[date][_gte]=YYYY-MM-DD  (today)
+  &filter[date][_lte]=YYYY-MM-DD  (end of current week, Friday)
+  &fields=date,department,confirmed,user.id,user.first_name,user.last_name
+  &sort[]=date
+  &limit=10
+```
+
+**What to display:**
+
+Top line (caption, gray-500, text-[11px]):
+"This week: {department of this week}"
+(take department from the first entry of the week)
+
+Middle line (title, app-black, text-[14px] font-semibold):
+If today has an entry → show full name of assigned user
+If no entry today → "No duty assigned"
+
+Bottom line (caption):
+- If today's entry user === current user:
+  Show "🧹 Your turn today!" in `text-primary font-medium`
+- If today's entry exists but it's someone else:
+  Show "Today, 12:00" in gray-400
+- If next duty for current user exists this week:
+  Show "Your next duty: {weekday}" in gray-400
+
+**Highlight:**
+If today's entry user === current user:
+Widget background changes to `bg-primary-pale` (was `bg-green-pastel`)
+
+Keep the same outer wrapper size and padding as current DutyWidget.
+
+Commit: `feat(duty): update DutyWidget with real cleaning_schedule data`
+
+---
+---
+
+# SESSION 2: Full Duty Page
+
+Read `docs/progress.md`, `docs/design.md` and `AGENTS.md` before starting.
+Complete and commit each task separately before moving to the next.
+
+---
+
+## Task 5 — Today's duty block (top of duty.vue)
+
+Build the top section of `app/pages/duty.vue`.
+
+**Data fetch (on mount):**
+```
+GET /items/cleaning_schedule
+  ?filter[date][_eq]=TODAY
+  &fields=date,department,confirmed,user.id,user.first_name,user.last_name
+  &limit=1
+```
+
+**UI — "On duty today" card:**
+Wrapper: `bg-white rounded-2xl mx-5 mt-4 px-4 py-4 shadow-sm`
+
+If entry exists:
+- Top label: `text-[11px] text-gray-400 uppercase tracking-wide` → "On duty today"
+- Department pill: `bg-primary-pale text-primary text-[12px] font-medium
+  rounded-full px-3 py-1` → department name
+- Name: `text-[20px] font-semibold text-app-black mt-1` → full name
+- If entry.user.id === current user AND confirmed === false:
+  Show button "✓ Confirm Duty" → `bg-primary text-white h-10 rounded-xl
+  w-full mt-3 text-[14px] font-semibold`
+  On click: PATCH `/items/cleaning_schedule/{id}` → `{ confirmed: true }`
+  After confirm: button changes to "✓ Confirmed" in `bg-green-pastel
+  text-green-700`, disabled
+- If entry.user.id === current user AND confirmed === true:
+  Show "✓ Confirmed" badge, no button
+- If entry.user.id !== current user:
+  No button, just info
+
+If no entry today:
+- Show "No duty assigned for today" in gray-400
+
+Commit: `feat(duty): add today's duty block with confirm button`
+
+---
+
+## Task 6 — Monthly calendar (duty.vue)
+
+Add a monthly calendar below the today block in `app/pages/duty.vue`.
+Reuse the same grid layout as the date picker in `app/pages/recipes.vue`
+(the "Pick a date to cook" bottom sheet) — same cell size, same grid structure,
+but shown inline (not in a bottom sheet).
+
+**Header:**
+- Month + year: `text-[16px] font-semibold text-app-black`
+- Prev/Next month arrows: `PhCaretLeft` / `PhCaretRight`, size-5, text-gray-400
+- Show weekday labels row: Mon Tue Wed Thu Fri (no weekends)
+
+**Calendar grid — weekdays only (Mon–Fri):**
+Each cell `rounded-xl text-center py-2`:
+- Default: `bg-white border border-gray-100 text-app-black`
+- Today: `bg-primary text-white`
+- Has entry (someone assigned): show dot indicator below the date number
+  (4px circle, `bg-primary-light`)
+- Entry is current user: `bg-primary-pale text-primary font-semibold`
+- Entry confirmed: dot changes to `bg-green-400`
+- Past date: `text-gray-300`
+
+On cell tap: show a small popover below the cell with:
+- Assigned user full name + department
+- "Confirmed" badge if confirmed
+- If Admin: show "Edit" button (see Task 7)
+
+**Data fetch:**
+```
+GET /items/cleaning_schedule
+  ?filter[date][_gte]=YYYY-MM-01  (first day of displayed month)
+  &filter[date][_lte]=YYYY-MM-31  (last day of displayed month)
+  &fields=date,department,confirmed,user.id,user.first_name,user.last_name
+  &limit=100
+```
+
+Re-fetch when month changes.
+
+Commit: `feat(duty): add monthly calendar with cleaning_schedule data`
+
+---
+
+## Task 7 — Admin edit mode (duty.vue)
+
+Add inline edit capability for Admin users in `app/pages/duty.vue`.
+
+**Condition:** only show edit UI if `user.value.role !== USER_ROLE_UUID`
+(same check used in BottomTabBar for Finance tab).
+
+**Edit flow:**
+When Admin taps a calendar cell:
+- Popover shows existing assignment (or "No assignment")
+- Plus an "Edit" button
+- On "Edit" tap: popover expands to show:
+    - Department `<select>` (same 8 departments as in profile.vue)
+    - User `<select>` — fetch users list via existing `/api/users/list`
+      Nuxt server route, filter shown users by selected department
+      (client-side filter: `users.filter(u => u.department === selectedDept)`)
+    - "Save" button
+
+On Save:
+- If entry exists for that date: PATCH `/items/cleaning_schedule/{id}`
+  with `{ user: userId, department: dept, confirmed: false }`
+- If no entry exists: POST `/items/cleaning_schedule`
+  with `{ date, user: userId, department: dept, confirmed: false }`
+- Close popover, re-fetch calendar data for current month
+
+Commit: `feat(duty): add admin edit mode for cleaning_schedule assignments`
+
+---
+
+## After all tasks (Session 2):
+- Update `docs/progress.md` with full summary of all duty feature changes
+- Final commit if anything left uncommitted:
+  `feat(duty): complete duty page — today block, calendar, admin edit`
+
+

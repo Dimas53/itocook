@@ -119,6 +119,8 @@
 - [x] **Fix: Category filter case-insensitive** — `recipes.vue` filter now lowercases both selected category and recipe category for comparison; search field also uses correct `dish_name` field.
 - [x] **Fix: Reactive image in RecipeGridItem** — `const image = useRecipeImage(...)` → `:src="image.value.src"` (classic computed ref trap: destructuring `{ src }` loses reactivity). Added `likeCount` display + batch-fetch on `/recipes` page.
 - [x] **Profile balance + transactions** — balance block (amount, Active pill, color-coded ±€X.XX) between Preferences and tabs; collapsible transaction history (5 rows default, Show all) with formatted date/description/amount
+- [x] **SliderList component + profile refactor** — extracted reusable `SliderList.vue` (translateY slider with up/down arrows, slot-based items, touch/swipe support); refactored profile transactions, My List, and My Recipes to use SliderList with appropriate item heights and gaps
+- [x] **Task 1: Schema + Department field + cleaning_schedule** — added `department` (string, nullable) to `directus_users` via Directus MCP; created `cleaning_schedule` collection (date, user→M2O, department, confirmed) with UUID PK; set User Policy permissions (read all, update own confirmed only); added `department` to User Policy `directus_users` read fields
 
 ## Next session — plan
 
@@ -191,4 +193,5 @@
 - `97871ba` — feat(recipe): add weekday-only date picker with 3-week pagination and month indicator
 - `b28a32c` — feat(recipe): add share shopping list with native share + clipboard fallback
 - `d5eebb6` — feat(profile): add balance display and transaction history
+- `f42c115` — feat(profile): extract SliderList component, refactor all profile lists
 

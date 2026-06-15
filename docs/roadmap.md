@@ -45,71 +45,66 @@
 ## Phase 3: Directus Schema Setup ✅ 2026-06-03
 **Goal:** create all collections via Directus MCP before starting screen layout. Schema-first approach.
 
-- [x] `cook_queue` collection (fields: date, cook user relation, dish name, status)
+- [x] `cook_queue` collection (fields: date, cook user relation, dish name, status, category)
 - [x] `orders` collection (fields: user relation, cook_queue relation, status)
 - [x] `order_items` collection (fields: order relation, quantity)
 - [x] `transactions` collection (fields: user relation, amount, type, description, date)
 - [x] `balances` collection (fields: user relation, amount)
+- [x] `recipes` collection (fields: dish_name, category, description, ingredients, steps, photo, pasta_packages, forked_from)
+- [x] `app_settings` singleton (fields: pasta_package_price)
+- [x] `recipe_likes` collection (fields: recipe, user)
 
 ---
 
-## Phase 4: Feature Screens
+## Phase 4: Feature Screens 🟡 (in progress)
 **Goal:** Final layout of all app screens according to the current screen map.
 Each screen is adapted to the real data structure from Directus.
 Agent reads `docs/design.md` before laying out each screen.
 
 ---
 
-### Navigation (Bottom Tab Bar) — update icons and routing ✅
-
+### Navigation (Bottom Tab Bar) ✅
 - [x] Tab 1 — Home: icon `ph:cooking-pot`
 - [x] Tab 2 — Kitchen: icon `ph:calendar-blank`
-- [x] Tab 3 — AI Recipe: icon `ph:sparkle` (for Admin it's replaced with `ph:chart-bar` → Finance Page)
+- [x] Tab 3 — AI Recipe: icon `ph:sparkle` (Admin → `ph:chart-bar` → Finance Page)
 - [x] Tab 4 — Duty: icon `ph:broom`
 - [x] Tab 5 — Common: icon `ph:users`
-- [x] Tab replacement logic when Admin/Accountant logs in: `ph:sparkle` → `ph:chart-bar`
+- [x] Tab replacement logic when Admin/Accountant logs in
 
 ---
 
 ### Main Screens (Tabs)
 
-#### Tab 1 — Home (`pages/index.vue`) ✅
-UI: top part custom, bottom part (cards + search) — from ekilu Home screen reference.
-
+#### Tab 1 — Home ✅
 - [x] Header: greeting + user name + avatar (→ Profile)
 - [x] Hero block: who's cooking today + dish name + lunch status
-- [x] Button "I'm having lunch" / "Skip" (with timer — only until 24h before lunch)
-- [x] Button "Become a cook" — shown only if no cook is assigned for today
+- [x] Button "I'm having lunch" / "Skip"
+- [x] Button "Become a cook" — shown only if no cook assigned for today
 - [x] Lunch participant counter (X of N confirmed)
 - [x] Widget: my balance (mini, tap → Profile)
 - [x] Widget: upcoming kitchen duty (tap → Duty tab)
-- [x] Search dish history (tap opens Kitchen tab with search focus)
-- [x] Office's latest dish cards — `RecipeCard.vue` (tap → Recipe Detail)
+- [x] Search dish history
+- [x] Office's latest dish cards — `RecipeCard.vue` with like counts
 
-#### Tab 2 — Kitchen (`app/pages/kitchen.vue`) ✅
-UI: custom. Combines cook queue + dish history.
-
+#### Tab 2 — Kitchen ✅
 - [x] "Today" block: cook + dish + status + participant counter
 - [x] Button "Become a cook" (if not assigned)
-- [x] Weekly cook queue — slots by day, "Sign up" button
+- [x] Weekly cook queue — slots by day
+- [x] Dish history: list with search, cook name, date, like counts
+- [x] "All Recipes →" link → `/recipes` page
 - [ ] Weekly menu (if planned by cook in advance)
-- [x] Dish history: list with search, cook name, date, rating
-- [x] Select a dish from history → navigate to Recipe Detail (stub)
-- [ ] Anonymous dish ratings (stars + text, directly in the card)
+- [ ] Anonymous dish ratings (stars + text)
 
-#### Tab 3 — AI Recipe (`pages/ai-recipe.vue`)
-UI: from ekilu AI Recipe screen reference — take almost 1-to-1.
-
+#### Tab 3 — AI Recipe (`pages/ai-recipe.vue`) ⬜
 - [ ] Chat interface with AI (cooking questions only)
-- [ ] Render recipe from JSON response: title, servings, time, ingredients, steps
+- [ ] Render recipe from JSON response: title, servings, time, ingredients (with emoji icons), steps
 - [ ] Button "Add to recipes" → creates a draft in Kitchen
-- [ ] Button "Add to shopping list" → ingredients go to the list on Cook Page
+- [ ] Button "Share shopping list" → native share sheet
 - [ ] Portion recalculation: input field for quantity → new request to AI with recipe context
 - [ ] Ingredient substitution via AI → button "Replace in recipe"
+- [ ] Uses `AddIngredientPopover.vue` for ingredient selection (already built)
 
-#### Tab 4 — Duty (`pages/duty.vue`)
-UI: custom. Duty calendar.
-
+#### Tab 4 — Duty (`pages/duty.vue`) ⬜
 - [ ] "On duty today" block: name + department
 - [ ] "Confirm duty" button — only for the assigned user
 - [ ] Monthly calendar — viewable by everyone
@@ -117,9 +112,7 @@ UI: custom. Duty calendar.
 - [ ] Auto-assignment by department — button for Admin
 - [ ] Notifications to assigned users (trigger from Directus Flow)
 
-#### Tab 5 — Common (`pages/common.vue`)
-UI: custom. Office pool collections, announcements, votes.
-
+#### Tab 5 — Common (`pages/common.vue`) ⬜
 - [ ] Company announcements feed (text + date, Admin creates)
 - [ ] Active pool collections: name, goal (amount), collected, participants
 - [ ] "Participate" button + contribution amount input
@@ -133,124 +126,142 @@ UI: custom. Office pool collections, announcements, votes.
 ### Inner Screens (No Tab)
 
 #### Profile (`pages/profile.vue`) 🟡
-UI: from ekilu Profile reference — basic layout, add balance block.
-Navigation: avatar in the header on any screen.
-
 - [x] Avatar, name, position, department
-- [ ] Balance block: current balance + "Request top-up" button (amount input)
-- [ ] My transaction history (list: date, dish, amount)
-- [ ] Notification settings: push / email / WhatsApp (toggle)
-- [ ] My ratings and reviews
-- [ ] Statistics: how many times cooked, been on duty
+- [x] My List (dishes participated in) with leave confirmation + 10h rule
+- [x] My Recipes (created by user, pastel colors)
 - [x] Log out
+- [ ] Balance block: current balance + transaction history list
+- [ ] Notification settings: push / email / WhatsApp (toggle)
+- [ ] Statistics: how many times cooked, been on duty
 
 #### Cook Page (`pages/cook.vue`) 🟡
-UI: entirely custom. The most important business screen.
-Navigation: "Become a cook" button from Home or Kitchen. Auto-opens on login if user = today's cook.
-Middleware: `cook.ts` — blocks non-admin/non-cook users. `?action=become` query param bypass.
-
 - [x] Status: "You're the cook today" + date
-- [x] Dish selection: from history (Kitchen) or enter a new name
+- [x] Dish selection: from history or enter a new name + category
 - [x] Participant counter: who confirmed + list of names
-- [x] "Lunch is ready" button → status change
-- [x] Enter receipt amount
+- [x] "Lunch is ready" button → status: 'ready' (decoupled from billing)
+- [x] Enter receipt amount + pasta packages add-on
 - [x] Auto-calculation of each participant's share and deduction preview
-- [x] "Confirm deduction" button → transactions + balance updates in Directus
+- [x] "Confirm deduction" button → transactions + balance updates
+- [x] Cancel Cooking button (Task C) — pre-ready states only
+- [x] Edit Recipe / Add Recipe in scheduled state
+- [x] Balance gate — blocked if balance < -30 €
 - [ ] Upload receipt photo
-- [ ] Shopping list from recipe (if a recipe from history is selected)
+- [ ] Shopping list from recipe
 
-#### Recipe Detail (`pages/recipe/today.vue`) 🟡
-UI: from ekilu Recipe Detail reference (Spiced Fried Chicken) — almost 1-to-1.
-Navigation: dish card on Home, Kitchen, Cook Page.
+#### All Recipes (`pages/recipes.vue`) ✅
+- [x] Search + category filter
+- [x] RecipeCard grid with like counts
+- [x] Loading skeleton + empty state
+- [x] "Cook This" button → date picker → `/cook` with prefilled dish
 
-- [x] Dish photo (fullscreen at the top)
-- [x] Name, cook, date, rating
-- [x] Ingredients + collapsible
-- [ ] Cooking steps
-- [ ] "Cooking this today" button (cook only — if user = Cook)
+#### Recipe Detail (`pages/recipe/[id].vue`) 🟡
+- [x] Dish photo (fullscreen hero, object-cover for uploads / object-contain for demos)
+- [x] Name, cook, status badge (scheduled / cooking / ready / cancelled)
+- [x] Ingredients with emoji icons (collapsible, default open)
+- [x] Join button (scheduled/cooking only), "Lunch is ready!" (cooking owner only)
+- [x] Edit recipe (owner or entry cook)
+- [x] Like button
+- [ ] Cooking steps display
+- [ ] Share shopping list button (share ingredients via native share sheet)
 - [ ] Ratings and reviews (anonymous)
-- [ ] Edit recipe — only author-cook or Admin
 
-#### Finance Page (`pages/finance.vue`)
-UI: custom. Only for Admin and Accountant.
-Navigation: Tab 3 is replaced by Finance when Admin logs in.
+#### Recipe Create/Edit (`pages/recipe/create.vue`) ✅
+- [x] Photo upload (drag & drop / file picker / paste from clipboard)
+- [x] Client-side image resize (max 1200px, JPEG 0.85, max 5MB)
+- [x] Ingredient input with emoji preview + `AddIngredientPopover` quick-pick
+- [x] Ingredient unit selector (g/kg/ml/l/pcs/tbsp/tsp/bunch/to taste)
+- [x] Pasta packages field
+- [x] Category selector (Salad / Soup / Pasta / Meat / Fish / Vegan / Pizza)
+- [x] `returnTo` query param support (returns to cook page after save)
+- [x] Prefill from history by name (via `?name=` param)
+- [x] Deferred upload + orphaned file cleanup on save failure / edit
 
-- [x] All employee balances (table or card list)
-- [ ] Alerts: red badge when balance < −10 €
-- [x] Manual balance top-up (Admin enters amount for the user)
-- [x] All transaction history (basic list, no filters)
-- [ ] Manual expense entry (store purchases)
-- [ ] Period report: total spent, average per person
+#### Finance Page (`pages/finance.vue`) ✅ (Admin/Accountant only)
+- [x] All employee balances (color-coded: default / mild red / strong red)
+- [x] Manual balance top-up form (user + amount + note)
+- [x] Transaction history (last 50, slider pattern with up/down arrows + "Show all")
+- [x] Pasta package price inline edit
+- [x] Low-balance restriction gate (< -30 €) via `useBalanceCheck`
 
-#### Notifications (`pages/notifications.vue`)
-UI: lightweight screen, not a separate tab.
-Navigation: `ph:bell` icon in the header (with unread badge).
-
+#### Notifications (`pages/notifications.vue`) ⬜
 - [ ] Notification feed (date, type, text)
-- [ ] Quick actions directly from notification: "I agree", "Confirm duty"
+- [ ] Quick actions from notification: "I agree", "Confirm duty"
 - [ ] Mark all as read
 
 ---
 
-### Reusable Components ✅
-
-- [x] `RecipeCard.vue` — dish card (photo, name, cook, rating, date)
-- [ ] `CategoryPill.vue` — category / filter pill
-- [x] `HeroBlock.vue` — "who's cooking today" block (Home + Kitchen)
-- [x] `BalanceWidget.vue` — mini balance widget
-- [ ] `ParticipantCounter.vue` — lunch participant counter (embedded in HeroBlock)
+### Reusable Components
+- [x] `RecipeCard.vue` — dish card (photo, name, cook, like count)
+- [x] `RecipeGridItem.vue` — grid variant with reactive image
+- [x] `HeroBlock.vue` — "who's cooking today" block (Home + Kitchen), 3 states
+- [x] `BalanceWidget.vue` — mini balance with tiered color coding
 - [x] `DutyWidget.vue` — upcoming duty widget
+- [x] `WeekCalendar.vue` — horizontal week pills, dot indicators, week navigation
+- [x] `RecipeImageUpload.vue` — file picker / drag & drop / paste, canvas resize
+- [x] `AddIngredientPopover.vue` — bottom-sheet with categorized ingredient grid + emoji icons
+- [ ] `CategoryPill.vue` — category / filter pill
+- [ ] `ParticipantCounter.vue` — lunch participant counter
 
 ---
 
-## Phase 5: Core Business Logic
-**Goal:** can complete one full workday through the app — from "who's cooking" to balance deduction.
-> Schema setup: use Directus MCP to create all collections before writing frontend code.
-> Agent should read current schema first, then create: cook_queue, orders, order_items, transactions, balances.
-- [ ] "I'm cooking today" — record in `cook_queue`, notify everyone
-- [ ] Dish selection — from history or new name
-- [ ] "I'm having lunch" — record in `order_items`, cancel within 24h
-- [ ] "Lunch is ready" — status changes, notify participants
-- [ ] Enter receipt amount → calculate each participant's share
-- [ ] Deduct from each participant's balance → record in `transactions`
-- [ ] User's balance updates on Home screen
+### Billing / Balance Tasks
+- [x] **Task A'** — "Lunch is ready" decoupled from cost entry; receipt form in 'ready' state; overdue badge after 14:00
+- [x] **Task C** — Cook cancels entire cook_queue entry; all orders deleted; no transactions touched
+- [x] **Task E** — Admin Finances page: balances overview, manual top-up, transaction history, pasta price setting
+- [x] **Task F** — Recipe pasta_packages field + app_settings singleton + useMealCost composable; pasta cost in deduction
+- [ ] **Task B'** — Reminder for overdue cost entry; auto-expire of stale cook_queue entries → **deferred to Phase 6 (Notifications)**
+- [ ] **Task D** — Ghost participants / leave-join logic with <10h/<1h thresholds; cook approval flow → **deferred to Phase 6 (Notifications)**
+- [ ] **Task G** — Recipe estimated_price field (optional, non-blocking) → **deferred, low priority**
+
+---
+
+## Phase 5: Remaining Feature Screens 🟡
+**Goal:** Complete all tab screens, add shopping list export, finish Profile balance view.
+
+- [ ] **Share shopping list** — `navigator.share()` with ingredient list as text; button on Recipe Detail and AI Recipe; no backend needed
+- [ ] **Profile balance + transaction history** — fetch from `balances` + `transactions` collections; show current balance + list (date, description, ±amount, color-coded)
+- [ ] **Recipe Detail — cooking steps** — steps already stored in DB; render below ingredients
+- [ ] **AI Recipe screen** — chat UI, JSON recipe render with emoji ingredients, "Add to recipes" / "Share list" buttons
+- [ ] **Duty screen** — monthly calendar, "Confirm duty", Admin edit + auto-assignment
+- [ ] **Common screen** — announcements feed, pool collections with progress bars
 
 ---
 
 ## Phase 6: FastAPI + Notifications
-**Goal:** business logic is moved to a microservice, notifications work automatically.
+**Goal:** business logic notifications work automatically; ghost-participant billing logic added.
 
-- [ ] FastAPI endpoint: calculate amount per participant
+- [ ] Directus Flows for email: "cook assigned", "lunch ready", morning reminder
 - [ ] FastAPI endpoint: trigger notifications (email)
 - [ ] Morning reminder if no cook is assigned (8:00–10:00)
 - [ ] "Lunch ready" notification to participants
 - [ ] Alert for negative balance (< −10 €)
 - [ ] Kitchen duty reminder
+- [ ] **Task B'** — Reminder for cook with stale scheduled entry; auto-expire after threshold
+- [ ] **Task D** — Ghost-participant logic: <1h leave penalty, cook approval for late join/leave; deferred-charge on confirmDeduction
 
 ---
 
 ## Phase 7: Additional Features
 **Goal:** the app is convenient to use every day, with financial control.
 
-- [ ] AI assistant (OpenRouter, `gemini-2.0-flash-lite`) — cooking questions only
-- [ ] Recipes — create, edit, photo
-- [ ] Dish history — list with search
-- [ ] Recalculate recipe for a new number of participants
-- [ ] Shopping list — from recipe / manually
 - [ ] Anonymous ratings and reviews on dishes
-- [ ] Duty calendar — viewable by everyone, editable by admin
-- [ ] Finance page — all balances and transactions (admin/accountant)
+- [ ] Recalculate recipe for a new number of participants (AI)
+- [ ] Shopping list — from recipe / manually, export
+- [ ] Receipt photo upload on Cook Page
+- [ ] Task G — Recipe estimated_price field
+- [ ] Weekly vote: best dish / best cook
 
 ---
 
-## Phase 8: MVP Launch
-**Goal:** 10 colleagues use the app for a week, feedback is collected.
+## Phase 8: IHK Documentation + MVP Launch
+**Goal:** 10 colleagues use the app for a week; IHK documentation complete.
 
 - [ ] Test week with real users
-- [ ] Collect feedback
-- [ ] UX fixes based on results
+- [ ] Collect feedback, UX fixes
 - [ ] Mini guide for users
 - [ ] Full access for accounting
+- [ ] IHK docs: Ist-Analyse, Soll-Konzept, Wirtschaftliche Betrachtung, Gantt, Testkonzept, Fazit, UML diagrams
+- [ ] Code documentation: architecture-overview.md update, inline comments, README
 
 ---
 
@@ -258,6 +269,6 @@ Navigation: `ph:bell` icon in the header (with unread badge).
 - [ ] Receipt OCR — auto-read amount from photo
 - [ ] Add products from receipt to database
 - [ ] Integration with Recipe API
-- [ ] Export shopping list
-- [ ] Weekly vote: best dish / best cook
 - [ ] Scaling: business trips, corporate events, office purchases
+- [ ] PWA manifest + mobile browser safe areas
+- [ ] Staging deployment on Hetzner VPS

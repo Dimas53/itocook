@@ -55,7 +55,7 @@ const props = withDefaults(defineProps<{
   itemHeight?: number
   itemGap?: number
 }>(), {
-  visibleCount: 5,
+  visibleCount: 3,
   itemHeight: 60,
   itemGap: 8,
 })
