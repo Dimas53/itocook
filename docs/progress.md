@@ -202,4 +202,5 @@
 - `be230b5` — feat(profile): move department to Preferences bottom sheet
 - `703c66f` — fix(profile): preferences sheet inside frame, height, select padding
 - `fed5e9b` — fix(profile): proxy PATCH /users/me via server route to bypass CORS
+- `c1f0aa1` — chore(seed): create 6 test users with departments + cleaning_schedule entries
 
