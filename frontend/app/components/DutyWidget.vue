@@ -1,19 +1,39 @@
 <template>
-  <div v-if="loading" class="rounded-2xl p-4" style="background: linear-gradient(to bottom, #D2C5FF, #E9D085, #FFDF00)">
+<!--  <div v-if="loading" class="rounded-2xl p-4" style="background: linear-gradient(to bottom, #D2C5FF, #E9D085, #FFDF00)">-->
+  <div v-if="loading" class="bg-green-pastel rounded-2xl p-4 relative overflow-hidden">
+    <svg
+      class="absolute -left-1 -top-1 w-56 h-56 z-0 opacity-10 text-primary"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 512 512"
+      fill="currentColor"
+    >
+      <polygon points="501.539,169.221 453.886,86.7 303.669,173.449 303.669,0 208.365,0 208.365,173.479 58.114,86.73 10.461,169.261 160.674,255.99 10.501,342.71 58.154,425.231 208.365,338.482 208.365,512 303.669,512 303.669,338.542 453.846,425.271 501.499,342.74 351.267,255.99"/>
+    </svg>
     <div class="h-3 w-20 bg-white/60 rounded-full animate-pulse" />
     <div class="h-5 w-28 bg-white/60 rounded-full animate-pulse mt-2" />
   </div>
 
   <div
     v-else
-    class="rounded-2xl p-4 cursor-pointer active:scale-[0.98] transition-transform"
-    :style="{
-      background: isHighlighted
-        ? 'linear-gradient(to bottom, #CBFFCF, #A8E890, #7DD87A)'
-        : 'linear-gradient(to bottom, #D2C5FF, #E9D085, #FFDF00)'
-    }"
+    class="rounded-2xl p-4 cursor-pointer active:scale-[0.98] transition-transform relative overflow-hidden"
+    :class="isHighlighted ? 'bg-yellow-pastel' : 'bg-green-pastel'"
+
+
     @click="$emit('view')"
   >
+    <svg
+      class="absolute -left-1 -top-1 w-56 h-56 z-0 opacity-10 text-primary"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 512 512"
+      fill="currentColor"
+    >
+      <polygon points="501.539,169.221 453.886,86.7 303.669,173.449 303.669,0 208.365,0 208.365,173.479 58.114,86.73 10.461,169.261 160.674,255.99 10.501,342.71 58.154,425.231 208.365,338.482 208.365,512 303.669,512 303.669,338.542 453.846,425.271 501.499,342.74 351.267,255.99"/>
+    </svg>
+    <!--    :style="{
+      background: isHighlighted
+        ? 'linear-gradient(to bottom, #CBFFCF, #A8E890, #7DD87A)'
+        : 'linear-gradient(to bottom, #D2C5FF 30%, #E9D085 80%, #FFDF00 100%)'
+    }"-->
     <p class="text-[12px] text-app-black/60 font-medium uppercase tracking-wide">Next Duty</p>
     <p
       v-if="hasUpcomingDuty"
