@@ -8,7 +8,7 @@
   <!-- Data -->
   <div v-else class="rounded-2xl p-4" :class="cardClass">
     <p class="text-[12px] font-medium uppercase tracking-wide" :class="labelClass">My Balance</p>
-    <p class="text-[20px] font-semibold mt-1" :class="valueClass">{{ formattedAmount }}</p>
+    <p class="text-3xl  font-semibold mt-1" :class="valueClass">{{ formattedAmount }}</p>
   </div>
 </template>
 

@@ -7,10 +7,17 @@
   <div
     v-else
     class="rounded-2xl p-4 cursor-pointer active:scale-[0.98] transition-transform"
-    :class="isMyTurn ? 'bg-primary-pale' : 'bg-green-pastel'"
+    :class="isHighlighted ? 'bg-primary-pale' : 'bg-green-pastel'"
     @click="$emit('view')"
   >
-    <p class="text-[11px] text-gray-500">
+    <p class="text-[12px] text-app-black/60 font-medium uppercase tracking-wide">Next Duty</p>
+    <p
+      v-if="hasUpcomingDuty"
+      class="text-[11px] font-semibold text-primary"
+    >
+      You're next!
+    </p>
+    <p v-else class="text-[11px] text-gray-500">
       This week: {{ weekDepartment || '—' }}
     </p>
     <p class="text-[14px] font-semibold text-app-black mt-1">
@@ -73,6 +80,12 @@ const isMyTurn = computed(() => {
   const e = todayEntry.value
   return e?.user.id === user.value?.id
 })
+
+const hasUpcomingDuty = computed(() =>
+  entries.value.some((e) => e.user.id === user.value?.id && e.date > todayStr)
+)
+
+const isHighlighted = computed(() => isMyTurn.value || hasUpcomingDuty.value)
 
 const nextDutyDay = computed(() => {
   const myEntries = entries.value.filter((e) => e.user.id === user.value?.id && e.date > todayStr)
