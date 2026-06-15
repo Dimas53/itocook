@@ -216,7 +216,7 @@
       class="absolute inset-0 z-50 flex flex-col justify-end"
     >
       <div class="absolute inset-0 bg-black/40" @click="showPreferences = false" />
-      <div class="relative bg-white rounded-t-3xl pb-8 px-5 pt-5 max-h-[70%] overflow-y-auto">
+      <div class="relative bg-white rounded-t-3xl pb-8 px-5 pt-5 h-2/4 max-h-[70%] overflow-y-auto">
         <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
         <h3 class="text-[18px] font-semibold text-app-black mb-4">Preferences</h3>
 
@@ -497,7 +497,7 @@ async function confirmLeave() {
 
 async function updateDepartment(value: string) {
   try {
-    await request('patch', '/users/me', { department: value || null })
+    await $fetch('/api/users/update-me', { method: 'PATCH', body: { department: value || null } })
     if (user.value) {
       user.value.department = value || null
     }

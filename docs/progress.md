@@ -200,4 +200,5 @@
 - `9ae8bf2` — feat(profile): move department selector to top, use select dropdown
 - `2a0c684` — fix(profile): compact department select styling
 - `be230b5` — feat(profile): move department to Preferences bottom sheet
+- `703c66f` — fix(profile): preferences sheet inside frame, height, select padding
 
