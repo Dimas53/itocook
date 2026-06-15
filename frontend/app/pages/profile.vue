@@ -44,15 +44,22 @@
         <div class="h-8 w-24 bg-gray-100 rounded-full animate-pulse mt-2" />
       </div>
       <template v-else-if="balance !== null">
-        <div>
-          <p class="text-[12px] text-gray-500">My Balance</p>
-          <p
-            class="text-[28px] font-bold"
-            :class="balance >= 0 ? 'text-app-black' : 'text-red-500'"
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[12px] text-gray-500">My Balance</p>
+            <p
+              class="text-[28px] font-bold"
+              :class="balance >= 0 ? 'text-green-600' : 'text-red-500'"
+            >
+              {{ balance < 0 ? '-' : '' }}€{{ Math.abs(balance).toFixed(2) }}
+            </p>
+          </div>
+          <span
+            v-if="balance < 5"
+            class="bg-red-50 text-red-400 text-[11px] font-medium rounded-full px-3 py-1"
           >
-            {{ balance >= 0 ? '+' : '-' }}€{{ Math.abs(balance).toFixed(2) }}
-          </p>
-          <p class="text-[11px] text-gray-400">Balance limit: -€{{ Math.abs(MIN_BALANCE).toFixed(2) }}</p>
+            Limit: -€{{ Math.abs(MIN_BALANCE).toFixed(0) }}
+          </span>
         </div>
 
         <!-- Transactions -->
