@@ -196,7 +196,7 @@ GET /items/cleaning_schedule
 ```
 
 **What to display:**
-
+Next Duty
 Top line (caption, gray-500, text-[11px]):
 "This week: {department of this week}"
 (take department from the first entry of the week)

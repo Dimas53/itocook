@@ -48,12 +48,7 @@
       <!-- Widgets row -->
       <div class="grid grid-cols-2 gap-3">
         <BalanceWidget />
-        <DutyWidget
-          :loading="dutyLoading"
-          name="Kitchen duty"
-          date="Tomorrow, 12:00"
-          @view="router.push('/duty')"
-        />
+        <DutyWidget @view="router.push('/duty')" />
       </div>
 
       <!-- Search bar -->
@@ -150,9 +145,6 @@ const hasTodayQueue = ref(false)
 const todayEntryId = ref<string | null>(null)
 const { confirmed: participantCount, hasJoined, joinBlockedReason, join: onJoin, fetch: fetchParticipants } = useParticipants(todayEntryId)
 const { count: totalCount } = useTotalUsers()
-
-// Duty (static for now)
-const dutyLoading = ref(true)
 
 // Search
 const searchQuery = ref('')
@@ -269,7 +261,5 @@ onMounted(async () => {
     // Directus may not be available
   }
   recipesLoading.value = false
-
-  dutyLoading.value = false
 })
 </script>
