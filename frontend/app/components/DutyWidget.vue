@@ -1,5 +1,5 @@
 <template>
-  <div v-if="loading" class="bg-green-pastel rounded-2xl p-4">
+  <div v-if="loading" class="rounded-2xl p-4" style="background: linear-gradient(135deg, #FFF9B2, #E1FFB0)">
     <div class="h-3 w-20 bg-white/60 rounded-full animate-pulse" />
     <div class="h-5 w-28 bg-white/60 rounded-full animate-pulse mt-2" />
   </div>
@@ -7,7 +7,11 @@
   <div
     v-else
     class="rounded-2xl p-4 cursor-pointer active:scale-[0.98] transition-transform"
-    :class="isHighlighted ? 'bg-primary-pale' : 'bg-green-pastel'"
+    :style="{
+      background: isHighlighted
+        ? 'linear-gradient(135deg, #E1FFB0, #CBFFCF)'
+        : 'linear-gradient(135deg, #FFF9B2, #E1FFB0)'
+    }"
     @click="$emit('view')"
   >
     <p class="text-[12px] text-app-black/60 font-medium uppercase tracking-wide">Next Duty</p>
