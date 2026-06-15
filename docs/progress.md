@@ -118,6 +118,7 @@
 - [x] **Fix: Like counts on Home + Kitchen** — `RecipeCard.vue` replaced `rating`+`PhStar` with optional `likeCount` prop + `PhHeart`; removed duplicate like badge from `recipe/[id].vue`; `index.vue` batch-fetches `recipe_likes` after loading recipes, passes per-recipe count to `RecipeCard`; `kitchen.vue` same batch-fetch for dish history items, renders `PhHeart` + count in each row.
 - [x] **Fix: Category filter case-insensitive** — `recipes.vue` filter now lowercases both selected category and recipe category for comparison; search field also uses correct `dish_name` field.
 - [x] **Fix: Reactive image in RecipeGridItem** — `const image = useRecipeImage(...)` → `:src="image.value.src"` (classic computed ref trap: destructuring `{ src }` loses reactivity). Added `likeCount` display + batch-fetch on `/recipes` page.
+- [x] **Profile balance + transactions** — balance block (amount, Active pill, color-coded ±€X.XX) between Preferences and tabs; collapsible transaction history (5 rows default, Show all) with formatted date/description/amount
 
 ## Next session — plan
 
@@ -188,4 +189,5 @@
 - `84db77c` — feat(finance): admin finance page with balances, top-up, history, pasta price setting (Task E)
 - `f4ebfec` — feat: add pizza category, fix today cook flow, prefill recipe from history, disable hero cook when queue exists
 - `97871ba` — feat(recipe): add weekday-only date picker with 3-week pagination and month indicator
+- `b28a32c` — feat(recipe): add share shopping list with native share + clipboard fallback
 

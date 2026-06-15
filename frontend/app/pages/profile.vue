@@ -37,6 +37,79 @@
       </div>
     </div>
 
+    <!-- Balance -->
+    <div class="bg-white rounded-2xl px-4 py-4 mx-5 mb-4 shadow-sm">
+      <div v-if="loadingBalance" class="space-y-2">
+        <div class="h-3 w-20 bg-gray-100 rounded-full animate-pulse" />
+        <div class="h-8 w-24 bg-gray-100 rounded-full animate-pulse mt-2" />
+      </div>
+      <template v-else-if="balance !== null">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[12px] text-gray-500">My Balance</p>
+            <p
+              class="text-[28px] font-bold"
+              :class="balance >= 0 ? 'text-app-black' : 'text-red-500'"
+            >
+              {{ balance >= 0 ? '+' : '' }}€{{ Math.abs(balance).toFixed(2) }}
+            </p>
+          </div>
+          <span class="bg-primary-pale text-primary text-[11px] font-medium rounded-full px-3 py-1">
+            Active
+          </span>
+        </div>
+
+        <!-- Transactions -->
+        <div class="mt-4">
+          <button
+            class="flex items-center gap-2"
+            @click="showTransactions = !showTransactions"
+          >
+            <span class="text-[14px] font-semibold text-app-black">Transactions</span>
+            <PhCaretDown
+              class="w-4 h-4 text-app-black/50 transition-transform"
+              :class="showTransactions ? 'rotate-180' : ''"
+              weight="bold"
+            />
+          </button>
+
+          <template v-if="showTransactions">
+            <div v-if="loadingTransactions" class="space-y-2 mt-3">
+              <div v-for="i in 3" :key="i" class="h-12 bg-gray-100 rounded-xl animate-pulse" />
+            </div>
+            <div v-else-if="transactions.length === 0" class="text-[13px] text-gray-400 text-center py-3">
+              No transactions yet
+            </div>
+            <div v-else class="mt-3">
+              <div
+                v-for="tx in txDisplayList"
+                :key="tx.id"
+                class="flex justify-between items-start py-2 border-b border-gray-100"
+              >
+                <div class="flex-1 min-w-0 mr-2">
+                  <p class="text-[13px] text-app-black truncate">{{ tx.description }}</p>
+                  <p class="text-[11px] text-gray-400 mt-0.5">{{ formatTxDate(tx.date) }}</p>
+                </div>
+                <span
+                  class="text-[13px] font-semibold shrink-0"
+                  :class="tx.amount >= 0 ? 'text-green-600' : 'text-red-500'"
+                >
+                  {{ tx.amount >= 0 ? '+' : '-' }}€{{ Math.abs(tx.amount).toFixed(2) }}
+                </span>
+              </div>
+              <button
+                v-if="transactions.length > TX_VISIBLE_COUNT"
+                class="w-full text-center text-[12px] text-gray-400 font-medium mt-2 active:text-app-black transition-colors"
+                @click="transactionsExpanded = !transactionsExpanded"
+              >
+                {{ transactionsExpanded ? 'Show less' : `Show all (${transactions.length})` }}
+              </button>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+
     <!-- Tabs -->
     <div class="px-5 pb-5">
       <div class="flex gap-2 bg-white rounded-full p-1.5 w-fit">
@@ -159,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-import { PhCaretLeft, PhSignOut, PhCaretRight, PhX } from '@phosphor-icons/vue'
+import { PhCaretLeft, PhSignOut, PhCaretRight, PhX, PhCaretDown } from '@phosphor-icons/vue'
 import { onMounted } from 'vue'
 
 definePageMeta({ layout: 'app' })
@@ -196,6 +269,66 @@ const loadingRecipes = ref(true)
 const showConfirmLeave = ref(false)
 const leavingOrderId = ref<string | null>(null)
 const confirmLeaveText = ref('')
+
+// ── Balance & Transactions ──────────────────────────────────────────────────
+const balance = ref<number | null>(null)
+const transactions = ref<TransactionItem[]>([])
+const loadingBalance = ref(true)
+const loadingTransactions = ref(true)
+const showTransactions = ref(false)
+const transactionsExpanded = ref(false)
+const TX_VISIBLE_COUNT = 5
+
+interface TransactionItem {
+  id: string
+  amount: number
+  description: string
+  date: string
+}
+
+const txDisplayList = computed(() => {
+  if (transactionsExpanded.value) return transactions.value
+  return transactions.value.slice(0, TX_VISIBLE_COUNT)
+})
+
+async function fetchBalance() {
+  loadingBalance.value = true
+  try {
+    const items = await request<any[]>('get',
+      `/items/balances?filter[user][_eq]=${user.value?.id}&limit=1`
+    )
+    balance.value = items.length > 0 ? Number(items[0]!.amount) : null
+  } catch {
+    balance.value = null
+  }
+  loadingBalance.value = false
+}
+
+async function fetchTransactions() {
+  loadingTransactions.value = true
+  try {
+    const items = await request<any[]>('get',
+      `/items/transactions?filter[user][_eq]=${user.value?.id}&sort[]=-date&limit=50`
+    )
+    transactions.value = (items ?? []).map((t: any) => ({
+      id: t.id,
+      amount: Number(t.amount),
+      description: t.description || '',
+      date: t.date,
+    }))
+  } catch {
+    transactions.value = []
+  }
+  loadingTransactions.value = false
+}
+
+function formatTxDate(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const weekday = d.toLocaleDateString('en-US', { weekday: 'short' })
+  const month = d.toLocaleDateString('en-US', { month: 'short' })
+  return `${weekday}, ${month} ${d.getDate()}`
+}
 
 const PASTEL_COLORS = ['bg-yellow-pastel', 'bg-green-pastel', 'bg-primary-pale']
 
@@ -324,5 +457,7 @@ async function handleLogout() {
 
 onMounted(() => {
   fetchMyOrders()
+  fetchBalance()
+  fetchTransactions()
 })
 </script>
