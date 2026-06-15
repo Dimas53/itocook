@@ -213,17 +213,17 @@
     <!-- Preferences bottom sheet -->
     <div
       v-if="showPreferences"
-      class="fixed inset-0 z-50 flex flex-col justify-end"
+      class="absolute inset-0 z-50 flex flex-col justify-end"
     >
       <div class="absolute inset-0 bg-black/40" @click="showPreferences = false" />
-      <div class="relative bg-white rounded-t-3xl pb-8 px-5 pt-5">
+      <div class="relative bg-white rounded-t-3xl pb-8 px-5 pt-5 max-h-[70%] overflow-y-auto">
         <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
         <h3 class="text-[18px] font-semibold text-app-black mb-4">Preferences</h3>
 
         <p class="text-[11px] text-gray-400 mb-1">Department</p>
         <select
           :value="user?.department || ''"
-          class="bg-primary-pale text-app-black text-[13px] font-medium rounded-xl px-3 py-2 border-none outline-none w-full cursor-pointer"
+          class="bg-primary-pale text-app-black text-[13px] font-medium rounded-xl px-3 py-2 pr-8 border-none outline-none w-full cursor-pointer"
           @change="updateDepartment(($event.target as HTMLSelectElement).value)"
         >
           <option value="" disabled>— Abteilung wählen —</option>

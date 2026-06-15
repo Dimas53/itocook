@@ -122,6 +122,7 @@
 - [x] **SliderList component + profile refactor** — extracted reusable `SliderList.vue` (translateY slider with up/down arrows, slot-based items, touch/swipe support); refactored profile transactions, My List, and My Recipes to use SliderList with appropriate item heights and gaps
 - [x] **Task 1: Schema + Department field + cleaning_schedule** — added `department` (string, nullable) to `directus_users` via Directus MCP; created `cleaning_schedule` collection (date, user→M2O, department, confirmed) with UUID PK; set User Policy permissions (read all, update own confirmed only); added `department` to User Policy `directus_users` read fields
 - [x] **Task 2: Department selector in profile.vue** — added `<select>` dropdown below name/email, above Preferences, with German department options; PATCH on change via `/users/me`; pre-selects from `user.value.department`
+- [x] **Task 3: Preferences bottom sheet** — Preferences card opens bottom sheet (fixed overlay + rounded-t-3xl), department selector moved inside, Done button, subtitle shows current department in primary color
 
 ## Next session — plan
 
@@ -198,4 +199,5 @@
 - `51d9fa3` — feat(schema): add department field to users, create cleaning_schedule collection
 - `9ae8bf2` — feat(profile): move department selector to top, use select dropdown
 - `2a0c684` — fix(profile): compact department select styling
+- `be230b5` — feat(profile): move department to Preferences bottom sheet
 
