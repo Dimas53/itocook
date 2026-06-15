@@ -1,5 +1,5 @@
 <template>
-  <div v-if="loading" class="rounded-2xl p-4" style="background: linear-gradient(135deg, #FFF9B2, #E1FFB0)">
+  <div v-if="loading" class="rounded-2xl p-4" style="background: linear-gradient(to bottom, #D2C5FF, #E9D085, #FFDF00)">
     <div class="h-3 w-20 bg-white/60 rounded-full animate-pulse" />
     <div class="h-5 w-28 bg-white/60 rounded-full animate-pulse mt-2" />
   </div>
@@ -9,8 +9,8 @@
     class="rounded-2xl p-4 cursor-pointer active:scale-[0.98] transition-transform"
     :style="{
       background: isHighlighted
-        ? 'linear-gradient(135deg, #E1FFB0, #CBFFCF)'
-        : 'linear-gradient(135deg, #FFF9B2, #E1FFB0)'
+        ? 'linear-gradient(to bottom, #CBFFCF, #A8E890, #7DD87A)'
+        : 'linear-gradient(to bottom, #D2C5FF, #E9D085, #FFDF00)'
     }"
     @click="$emit('view')"
   >
