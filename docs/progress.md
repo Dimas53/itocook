@@ -139,7 +139,8 @@
 - [ ] Common screen — group purchases, announcements, polls
 - [x] Finance page — balance table, top-up form, transaction history, pasta price setting (Task E)
 - [ ] Notifications — feed, quick actions
-- [ ] Shopping list from recipe, Receipt photo upload
+- [x] Shopping list from recipe — share button with navigator.share / clipboard fallback + toast
+- [ ] Receipt photo upload
 
 ## Git log
 - `9d42482` — chore: uncommitted changes from previous sessions
@@ -186,4 +187,5 @@
 - `2cdf2fb` — fix(photo): permissions, deferred cleanup, all 7 TS errors
 - `84db77c` — feat(finance): admin finance page with balances, top-up, history, pasta price setting (Task E)
 - `f4ebfec` — feat: add pizza category, fix today cook flow, prefill recipe from history, disable hero cook when queue exists
+- `97871ba` — feat(recipe): add weekday-only date picker with 3-week pagination and month indicator
 

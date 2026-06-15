@@ -91,17 +91,26 @@
 
           <!-- Ingredients -->
           <div v-if="recipe.ingredients && recipe.ingredients.length > 0" class="mb-5">
-            <button
-              class="flex items-center justify-between w-full mb-2"
-              @click="showIngredients = !showIngredients"
-            >
-              <h3 class="text-[14px] font-semibold text-app-black">Ingredients ({{ recipe.ingredients.length }})</h3>
-              <PhCaretDown
-                class="w-4 h-4 text-app-black/50 transition-transform"
-                :class="showIngredients ? 'rotate-180' : ''"
-                weight="bold"
-              />
-            </button>
+            <div class="flex items-center justify-between w-full mb-2">
+              <button
+                class="flex items-center gap-2"
+                @click="showIngredients = !showIngredients"
+              >
+                <h3 class="text-[14px] font-semibold text-app-black">Ingredients ({{ recipe.ingredients.length }})</h3>
+                <PhCaretDown
+                  class="w-4 h-4 text-app-black/50 transition-transform"
+                  :class="showIngredients ? 'rotate-180' : ''"
+                  weight="bold"
+                />
+              </button>
+              <button
+                class="w-7 h-7 flex items-center justify-center rounded-full active:scale-[0.98] transition-transform"
+                @click="shareShoppingList"
+                title="Share shopping list"
+              >
+                <PhShareNetwork class="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
             <ul v-if="showIngredients" class="space-y-2">
               <li v-for="(ing, i) in recipe.ingredients" :key="i" class="flex items-center gap-3 text-[14px] text-app-black/70">
                 <span class="text-lg w-6 text-center shrink-0">{{ getIngredientIcon(ing.name) }}</span>
@@ -288,11 +297,18 @@
         </div>
       </div>
     </div>
+    <!-- Copied toast -->
+    <div
+      v-if="showCopiedToast"
+      class="absolute bottom-20 left-1/2 -translate-x-1/2 bg-app-black text-white text-[13px] rounded-full px-4 py-2 z-50 whitespace-nowrap"
+    >
+      Copied to clipboard!
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { PhCaretLeft, PhHeart, PhChefHat, PhForkKnife, PhCaretDown, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock } from '@phosphor-icons/vue'
+import { PhCaretLeft, PhHeart, PhChefHat, PhForkKnife, PhCaretDown, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock, PhShareNetwork } from '@phosphor-icons/vue'
 import { getIngredientIcon } from '~/utils/ingredientIcons'
 
 definePageMeta({ layout: 'default' })
@@ -605,6 +621,40 @@ async function markReady() {
     console.error('Failed to mark ready:', e)
   }
   saving.value = false
+}
+
+const showCopiedToast = ref(false)
+
+const shoppingListText = computed(() => {
+  if (!recipe.value?.ingredients || recipe.value.ingredients.length === 0) return ''
+  const lines = recipe.value.ingredients.map(ing => {
+    const amount = ing.amount || ''
+    const unit = ing.unit || ''
+    const amountStr = amount && unit ? `${amount} ${unit}` : amount || unit
+    return `${ing.name} — ${amountStr}`
+  })
+  return `🛒 ${recipe.value.dish_name}\n\n${lines.join('\n')}\n\nItoCook`
+})
+
+async function shareShoppingList() {
+  const text = shoppingListText.value
+  if (!text) return
+  const nav: any = navigator
+  if (nav.share) {
+    try {
+      await nav.share({ title: recipe.value?.dish_name, text })
+    } catch {
+      /* user cancelled */
+    }
+  } else {
+    try {
+      await nav.clipboard.writeText(text)
+      showCopiedToast.value = true
+      setTimeout(() => { showCopiedToast.value = false }, 2000)
+    } catch {
+      /* clipboard not available */
+    }
+  }
 }
 
 onMounted(async () => {
