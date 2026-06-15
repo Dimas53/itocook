@@ -44,19 +44,15 @@
         <div class="h-8 w-24 bg-gray-100 rounded-full animate-pulse mt-2" />
       </div>
       <template v-else-if="balance !== null">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-[12px] text-gray-500">My Balance</p>
-            <p
-              class="text-[28px] font-bold"
-              :class="balance >= 0 ? 'text-app-black' : 'text-red-500'"
-            >
-              {{ balance >= 0 ? '+' : '' }}€{{ Math.abs(balance).toFixed(2) }}
-            </p>
-          </div>
-          <span class="bg-primary-pale text-primary text-[11px] font-medium rounded-full px-3 py-1">
-            Active
-          </span>
+        <div>
+          <p class="text-[12px] text-gray-500">My Balance</p>
+          <p
+            class="text-[28px] font-bold"
+            :class="balance >= 0 ? 'text-app-black' : 'text-red-500'"
+          >
+            {{ balance >= 0 ? '+' : '-' }}€{{ Math.abs(balance).toFixed(2) }}
+          </p>
+          <p class="text-[11px] text-gray-400">Balance limit: -€{{ Math.abs(MIN_BALANCE).toFixed(2) }}</p>
         </div>
 
         <!-- Transactions -->
@@ -81,7 +77,7 @@
               No transactions yet
             </div>
             <div v-else class="mt-3">
-              <SliderList :items="transactions" :visibleCount="5" :itemHeight="48" :itemGap="0">
+              <SliderList :items="transactions" :visibleCount="3" :itemHeight="48" :itemGap="0">
                 <template #item="{ item: tx }">
                   <div class="flex justify-between items-start h-full px-0.5 py-2 border-b border-gray-100">
                     <div class="flex-1 min-w-0 mr-2">
@@ -134,7 +130,7 @@
           You haven't joined any dishes yet
         </div>
         <div v-else>
-          <SliderList :items="myOrders" :visibleCount="5" :itemHeight="88" :itemGap="8">
+          <SliderList :items="myOrders" :visibleCount="4" :itemHeight="88" :itemGap="8">
             <template #item="{ item: order, index: i }">
               <div
                 class="rounded-xl p-4 flex items-center justify-between h-full"
@@ -171,7 +167,7 @@
           You haven't created any recipes yet
         </div>
         <div v-else>
-          <SliderList :items="myRecipes" :visibleCount="5" :itemHeight="76" :itemGap="8">
+          <SliderList :items="myRecipes" :visibleCount="4" :itemHeight="76" :itemGap="8">
             <template #item="{ item: recipe, index: i }">
               <div
                 class="rounded-xl p-4 flex items-center justify-between h-full cursor-pointer active:scale-[0.98] transition-transform"
@@ -237,6 +233,7 @@ definePageMeta({ layout: 'app' })
 const router = useRouter()
 const { user, logout } = useAuth()
 const { request } = useDirectus()
+const { MIN_BALANCE } = useBalanceCheck()
 
 interface MyOrder {
   id: string
