@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { PhBell, PhCaretLeft, PhCaretRight } from '@phosphor-icons/vue'
+import { PhBell } from '@phosphor-icons/vue'
+import type { CalendarEntry } from '~/components/MonthCalendar.vue'
 
 interface CleaningEntry {
   id: string
@@ -14,9 +15,7 @@ interface CleaningEntry {
 }
 
 interface CalendarDay {
-  dateNum: number
   iso: string
-  isToday: boolean
   isPast: boolean
   entry: CleaningEntry | null
 }
@@ -45,11 +44,12 @@ const monthDate = computed(() => {
   return d
 })
 
-const monthLabel = computed(() => {
-  const d = monthDate.value
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  return `${months[d.getMonth()]} ${d.getFullYear()}`
-})
+function fmtISO(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
 
 function monthStart(d: Date): string {
   const y = d.getFullYear()
@@ -64,105 +64,29 @@ function monthEnd(d: Date): string {
   return `${y}-${m}-${String(last).padStart(2, '0')}`
 }
 
-function fmtISO(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+const calendarEntries = computed<CalendarEntry[]>(() =>
+  monthEntries.value.map(e => {
+    const isCurrentUser = user.value && e.user.id === user.value.id
+    return {
+      date: e.date,
+      dotColor: e.confirmed ? '#86efac' : '#D2C5FF',
+      cellClass: isCurrentUser ? 'bg-primary-pale text-primary font-semibold' : undefined,
+    }
+  })
+)
 
-function isWeekday(dow: number): boolean {
-  return dow >= 1 && dow <= 5
-}
-
-const entryMap = computed(() => {
-  const map: Record<string, CleaningEntry> = {}
-  for (const e of monthEntries.value) {
-    map[e.date] = e
-  }
-  return map
-})
-
-const calendarRows = computed(() => {
-  const d = monthDate.value
-  const year = d.getFullYear()
-  const month = d.getMonth()
-  const lastDate = new Date(year, month + 1, 0).getDate()
+function onCellTap(iso: string) {
+  const calEntry = monthEntries.value.find(e => e.date === iso) ?? null
+  if (!calEntry) return
   const todayStr = fmtISO(new Date())
-
-  const rows: CalendarDay[][] = []
-  let row: CalendarDay[] = []
-
-  // Find first weekday of the month
-  let firstWeekdayDate = 1
-  let firstWeekdayCol = 0
-  for (let day = 1; day <= 7; day++) {
-    const dateObj = new Date(year, month, day)
-    const dow = dateObj.getDay()
-    if (isWeekday(dow)) {
-      firstWeekdayDate = day
-      // dow: 1=Mon→0, 2=Tue→1, 3=Wed→2, 4=Thu→3, 5=Fri→4
-      firstWeekdayCol = dow - 1
-      break
-    }
-  }
-
-  // Leading blanks
-  for (let i = 0; i < firstWeekdayCol; i++) {
-    row.push({ dateNum: 0, iso: '', isToday: false, isPast: false, entry: null })
-  }
-
-  for (let day = firstWeekdayDate; day <= lastDate; day++) {
-    const dateObj = new Date(year, month, day)
-    const dow = dateObj.getDay()
-    if (!isWeekday(dow)) continue
-
-    const iso = fmtISO(dateObj)
-    const calEntry = entryMap.value[iso] ?? null
-    row.push({
-      dateNum: day,
-      iso,
-      isToday: iso === todayStr,
-      isPast: iso < todayStr,
-      entry: calEntry,
-    })
-
-    if (row.length === 5) {
-      rows.push(row)
-      row = []
-    }
-  }
-
-  // Trailing blanks
-  while (row.length < 5) {
-    row.push({ dateNum: 0, iso: '', isToday: false, isPast: false, entry: null })
-  }
-  if (row.length > 0) {
-    rows.push(row)
-  }
-
-  return rows
-})
-
-function cellClasses(day: CalendarDay): string {
-  if (!day.iso) return ''
-  if (day.isToday) return 'bg-primary text-white'
-  if (day.entry && day.entry.user.id === user.value?.id) return 'bg-primary-pale text-primary font-semibold'
-  if (day.entry) return 'bg-white border border-gray-100 text-app-black'
-  if (day.isPast) return 'text-gray-300'
-  return 'bg-white border border-gray-100 text-app-black'
-}
-
-function isClickable(day: CalendarDay): boolean {
-  return !!day.iso && !!day.entry
-}
-
-function onCellTap(day: CalendarDay) {
-  if (!isClickable(day)) return
-  if (selectedDay.value?.iso === day.iso) {
+  if (selectedDay.value?.iso === iso) {
     selectedDay.value = null
   } else {
-    selectedDay.value = day
+    selectedDay.value = {
+      iso,
+      isPast: iso < todayStr,
+      entry: calEntry,
+    }
   }
 }
 
@@ -215,8 +139,6 @@ const selectedEntryName = computed(() => {
   const u = selectedDay.value.entry.user
   return [u.first_name, u.last_name].filter(Boolean).join(' ')
 })
-
-const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
 
 onMounted(async () => {
   try {
@@ -280,61 +202,19 @@ onMounted(async () => {
 
       <!-- Monthly calendar -->
       <div>
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-[16px] font-semibold text-app-black">{{ monthLabel }}</h2>
-          <div class="flex items-center gap-2">
-            <button
-              class="w-7 h-7 flex items-center justify-center active:scale-[0.95] transition-transform"
-              @click="shiftMonth(-1)"
-            >
-              <PhCaretLeft class="w-5 h-5 text-gray-400" />
-            </button>
-            <button
-              class="w-7 h-7 flex items-center justify-center active:scale-[0.95] transition-transform"
-              @click="shiftMonth(1)"
-            >
-              <PhCaretRight class="w-5 h-5 text-gray-400" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Weekday labels -->
-        <div class="grid grid-cols-5 gap-2 mb-2">
-          <div
-            v-for="label in WEEKDAY_LABELS"
-            :key="label"
-            class="text-center text-[11px] text-gray-400 font-medium"
-          >
-            {{ label }}
-          </div>
-        </div>
-
-        <!-- Grid -->
         <div v-if="calLoading" class="flex items-center justify-center py-8">
           <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
 
-        <div v-else class="space-y-2">
-          <div v-for="(row, ri) in calendarRows" :key="ri" class="grid grid-cols-5 gap-2">
-            <div
-              v-for="(day, ci) in row"
-              :key="ri + '-' + ci"
-              class="relative rounded-xl text-center py-2 cursor-pointer active:scale-[0.97] transition-transform"
-              :class="cellClasses(day)"
-              @click="onCellTap(day)"
-            >
-              <template v-if="day.iso">
-                <span class="text-[14px] font-medium" :class="day.isToday ? 'text-white' : ''">{{ day.dateNum }}</span>
-                <div
-                  v-if="day.entry"
-                  class="w-1.5 h-1.5 rounded-full mx-auto mt-1"
-                  :class="day.entry.confirmed ? 'bg-green-400' : 'bg-primary-light'"
-                />
-              </template>
-            </div>
-          </div>
-        </div>
+        <MonthCalendar
+          v-else
+          :current-month="monthDate"
+          :entries="calendarEntries"
+          :selected-date="selectedDay?.iso ?? null"
+          @select="onCellTap"
+          @prev-month="shiftMonth(-1)"
+          @next-month="shiftMonth(1)"
+        />
 
         <!-- Popover -->
         <div
