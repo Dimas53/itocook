@@ -154,7 +154,7 @@ function cellClasses(day: CalendarDay): string {
 }
 
 function isClickable(day: CalendarDay): boolean {
-  return !!day.iso && !day.isPast && !!day.entry
+  return !!day.iso && !!day.entry
 }
 
 function onCellTap(day: CalendarDay) {
@@ -195,6 +195,8 @@ async function confirmDuty() {
     body: JSON.stringify({ id: entry.value.id, confirmed: true }),
   })
   entry.value.confirmed = true
+  const calEntry = monthEntries.value.find(e => e.id === entry.value!.id)
+  if (calEntry) calEntry.confirmed = true
 }
 
 const isCurrentUser = computed(() => {
@@ -345,7 +347,13 @@ onMounted(async () => {
               <p class="text-[12px] text-gray-500 mt-0.5">{{ selectedDay.entry.department }}</p>
             </div>
             <span
-              v-if="selectedDay.entry.confirmed"
+              v-if="selectedDay.isPast"
+              class="inline-block bg-gray-100 text-gray-400 text-[11px] font-medium rounded-full px-2.5 py-1"
+            >
+              Done
+            </span>
+            <span
+              v-else-if="selectedDay.entry.confirmed"
               class="inline-block bg-green-pastel text-green-700 text-[11px] font-semibold rounded-full px-2.5 py-1"
             >
               ✓ Confirmed
