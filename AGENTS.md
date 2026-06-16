@@ -8,7 +8,18 @@
 - TypeScript required: all `.vue` files must have `<script setup lang="ts">`.
 
 ## Skills
-- Global skills: ~/.config/opencode/skills/
+
+### Always read on project start (every session)
+- `~/.config/opencode/skills/using-agent-skills/SKILL.md`
+- `~/.config/opencode/skills/nuxt/SKILL.md`
+- `~/.config/opencode/skills/nuxt-ui/SKILL.md`
+- `~/.config/opencode/skills/nuxt-vue/SKILL.md`
+- `~/.config/opencode/skills/vue/SKILL.md`
+- `~/.config/opencode/skills/tailwind-design-system/SKILL.md`
+- `~/.config/opencode/skills/tailwind-nuxtui/SKILL.md`
+- `~/.config/opencode/skills/directus/SKILL.md`
+### Load when needed — rules in ~/.config/opencode/AGENTS.md
+
 
 ---
 

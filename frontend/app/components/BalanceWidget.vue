@@ -6,9 +6,9 @@
   </div>
 
   <!-- Data -->
-  <div v-else class="rounded-2xl p-4 relative overflow-hidden" :class="cardClass">
+  <div v-else class="rounded-2xl p-4 flex flex-col justify-around relative overflow-hidden" :class="cardClass">
     <svg
-      class="absolute -left-1 -top-1 w-56 h-56 z-0 opacity-10 text-primary"
+      class="absolute -left-4 -top-4 w-16 h-16 z-0 opacity-20 text-primary"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 512 512"
       fill="currentColor"

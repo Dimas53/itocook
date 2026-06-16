@@ -123,6 +123,10 @@
 - [x] **Task 1: Schema + Department field + cleaning_schedule** — added `department` (string, nullable) to `directus_users` via Directus MCP; created `cleaning_schedule` collection (date, user→M2O, department, confirmed) with UUID PK; set User Policy permissions (read all, update own confirmed only); added `department` to User Policy `directus_users` read fields
 - [x] **Task 2: Department selector in profile.vue** — added `<select>` dropdown below name/email, above Preferences, with German department options; PATCH on change via `/users/me`; pre-selects from `user.value.department`
 - [x] **Task 3: Preferences bottom sheet** — Preferences card opens bottom sheet (fixed overlay + rounded-t-3xl), department selector moved inside, Done button, subtitle shows current department in primary color
+- [x] **Fix: PATCH /users/me CORS** — создан Nuxt server route `/api/users/update-me` для проксирования запроса
+- [x] **Seed: 6 test users + cleaning_schedule** — созданы Klaus, Anna, Thomas, Sabine, Michael, Laura с отделами; 9 записей cleaning_schedule на 16–27 июня (будни)
+- [x] **Fix: MCP user filter** — `_nstarts_with=MCP` в обоих server routes (list + count); причина: first_name = "MCP User"
+- [x] **Task 4: DutyWidget live data** — компонент сам запрашивает cleaning_schedule на неделю; top line (отдел / "You're next!"), middle (имя дежурного), bottom (статус); фон градиентами; декоративный SVG в левом верхнем углу
 
 ## Next session — plan
 
@@ -140,7 +144,7 @@
 - [ ] Task B': Reminder mechanism for overdue cost entry (groundwork)
 - [ ] Task D: Ghost participants / leave-join logic
 - [ ] AI Recipe — chat with AI, JSON recipe render, serving recalculation
-- [ ] Duty screen — duty calendar, confirmation, auto-assignment
+- [ ] Duty screen — duty calendar, confirmation, auto-assignment (DutyWidget готов, схема готова, нужна отдельная страница)
 - [ ] Common screen — group purchases, announcements, polls
 - [x] Finance page — balance table, top-up form, transaction history, pasta price setting (Task E)
 - [ ] Notifications — feed, quick actions

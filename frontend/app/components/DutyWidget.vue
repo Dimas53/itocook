@@ -22,7 +22,7 @@
     @click="$emit('view')"
   >
     <svg
-      class="absolute -left-1 -top-1 w-56 h-56 z-0 opacity-10 text-primary"
+        class="absolute -right-5 -bottom-5 w-20 h-20 z-0 opacity-40 text-secondary"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 512 512"
       fill="currentColor"
