@@ -4,10 +4,17 @@
     <div class="flex items-center justify-between px-5 pb-5 cursor-pointer" @click="router.push('/profile')">
       <div class="flex items-center gap-3">
         <img
-          :src="avatarUrl"
+          v-if="user?.avatar"
+          :src="`${directusUrl}/assets/${user.avatar}`"
           alt="avatar"
-          class="w-10 h-10 rounded-full bg-primary ring-2 ring-primary"
+          class="w-10 h-10 rounded-full object-cover ring-2 ring-primary"
         />
+        <div
+          v-else
+          class="w-10 h-10 ring-2 ring-primary rounded-full overflow-hidden shrink-0"
+        >
+          <AvatarPlaceholder />
+        </div>
         <div>
           <p class="text-[14px] text-gray-500">Hello</p>
           <p class="text-[20px] font-semibold text-app-black -mt-1">
@@ -135,6 +142,8 @@ definePageMeta({ layout: 'app' })
 const router = useRouter()
 const { user } = useAuth()
 const { request } = useDirectus()
+const config = useRuntimeConfig()
+const directusUrl = config.public.directusUrl
 
 // Hero state
 const heroLoading = ref(true)
@@ -170,9 +179,6 @@ function onShowParticipants() {
   pm.open(todayCook.value?.queueId)
 }
 
-const avatarUrl = computed(() =>
-  `https://i.pravatar.cc/200?u=${user.value?.email}`
-)
 
 function onBecomeCook() {
   router.push('/cook?action=become')

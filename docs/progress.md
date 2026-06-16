@@ -109,6 +109,11 @@
 - [x] **Fix: HeroBlock cook button disabled for all when queue exists** — added `hasExistingQueue` prop to `HeroBlock.vue`; disables "I'm cooking today!" and "Cook" buttons both via `:disabled` + `pointer-events-none` + JS guard in `onBecomeCook()`; `index.vue` tracks `hasTodayQueue` explicitly from `items.length > 0`; `kitchen.vue` added `hasSelectedQueue` computed
 
 ## Current session
+- [x] **Fix: Consistent avatar URLs** — standardized all `pravatar.cc` `u` parameter to use `user.id` across `app.vue`, `index.vue`, `recipe/[id].vue`, `profile.vue`. Previously used `email` or `displayCookName`, causing different avatars per screen for the same user.
+- [x] **Fix: Avatars in finance Balances** — added user avatar (24px rounded-full) next to each name in both slider and expanded balance list on `finance.vue`.
+- [x] **Feat: Profile avatar upload** — click avatar to upload photo; resized client-side (max 400px JPEG); stored in Directus files, UUID saved to `directus_users.avatar`; `AvatarPlaceholder.vue` SVG fallback replaces Gravatar; header avatar on `index.vue` also updated; Directus permissions restricted to own-avatar-only update.
+- [x] **Fix: Avatar upload bugs** — use server proxy (`/api/users/update-me`) for PATCH `/users/me` (CORS); removed folder parameter from `uploadFile` (folder expects UUID, not name).
+- [x] **Fix: Pravatar removal from all avatar icons** — replaced pravatar in `finance.vue` (balances), `layouts/app.vue` (participant modal), `recipe/[id].vue` (cook pill) with conditional: uploaded photo → `AvatarPlaceholder` SVG. Added `avatar` field to all user/cook Directus queries. No pravatar references remain in `frontend/app/`.
 - [x] **Task G1: Recipe detail author layout fix** — removed PhChefHat icon, moved author line into photo block (bottom-left pill), restored title/category/likes layout
 - [x] **Task G2: Servings selector with ingredient scaling** — servings UI pills [base,10,15,20] + custom input below category; `scaleAmount()` with ratio scaling + whole-unit ceil; scaled amounts render in `text-primary font-semibold`; "Apply for N participants" button; `servings` field added to Directus fetch
 - [x] **Fixes: 4 UI/logic fixes** — (1) Join button hidden for recipe cook, (2) Eye icon on Today's Dish in cook panel, (3) Servings selector hidden for non-cook users, (4) Author pill shows queue cook name dynamically + clickable modal with cook's recipes via slider
@@ -169,6 +174,7 @@
 - [ ] Receipt photo upload
 
 ## Git log
+- `b532f5c` — feat: servings selector with scaling, participant modal in layout, duty tomorrow indicator, cook eye icon, author pill modal
 - `d80c44e` — feat(duty): add admin edit mode for cleaning_schedule assignments
 - `a2a75f6` — refactor(calendar): extract MonthCalendar component, use in duty and recipe pages
 - `9d42482` — chore: uncommitted changes from previous sessions

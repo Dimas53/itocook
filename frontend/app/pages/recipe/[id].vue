@@ -50,10 +50,14 @@
           @click="openCookRecipes"
         >
           <img
-            :src="`https://i.pravatar.cc/200?u=${displayCookName}`"
+            v-if="displayCookAvatar"
+            :src="displayCookAvatar"
             :alt="displayCookName"
-            class="w-6 h-6 rounded-full"
+            class="w-6 h-6 rounded-full object-cover"
           />
+          <div v-else class="w-6 h-6 rounded-full overflow-hidden">
+            <AvatarPlaceholder />
+          </div>
           <span class="text-[12px] font-medium text-app-black">by {{ displayCookName }}</span>
         </button>
       </div>
@@ -413,6 +417,8 @@ const router = useRouter()
 const route = useRoute()
 const { request } = useDirectus()
 const { user } = useAuth()
+const config = useRuntimeConfig()
+const directusUrl = config.public.directusUrl
 
 interface RecipeData {
   id: string
@@ -447,7 +453,7 @@ interface QueueEntry {
   id: string
   status: string
   date: string
-  cook?: { id: string; first_name?: string; last_name?: string }
+  cook?: { id: string; first_name?: string; last_name?: string; avatar?: string }
 }
 
 interface CookRecipeItem {
@@ -727,7 +733,7 @@ const isEntryCook = computed(() => {
 
 const displayCookName = computed(() => {
   if (queueEntry.value?.cook && typeof queueEntry.value.cook === 'object' && 'first_name' in queueEntry.value.cook) {
-    const c = queueEntry.value.cook as { id: string; first_name?: string; last_name?: string }
+    const c = queueEntry.value.cook as { id: string; first_name?: string; last_name?: string; avatar?: string }
     return [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Unknown'
   }
   return recipe.value?.cook_name ?? null
@@ -738,6 +744,13 @@ const displayCookId = computed(() => {
     return queueEntry.value.cook.id
   }
   return recipe.value?.cook_id ?? null
+})
+
+const displayCookAvatar = computed(() => {
+  if (queueEntry.value?.cook && typeof queueEntry.value.cook === 'object' && 'avatar' in queueEntry.value.cook && queueEntry.value.cook.avatar) {
+    return `${directusUrl}/assets/${queueEntry.value.cook.avatar}`
+  }
+  return null
 })
 
 const canEdit = computed(() => {
@@ -919,7 +932,7 @@ onMounted(async () => {
       steps: string | null
       cook: { id: string; first_name: string; last_name: string } | string | null
       source_cook_queue: string | null
-    }>('get', `/items/recipes/${id}?fields=id,dish_name,category,description,photo,servings,ingredients,steps,source_cook_queue,cook.id,cook.first_name,cook.last_name`)
+    }>('get', `/items/recipes/${id}?fields=id,dish_name,category,description,photo,servings,ingredients,steps,source_cook_queue,cook.id,cook.first_name,cook.last_name,cook.avatar`)
 
     let cookName: string | null = null
     let cookId: string | null = null
@@ -960,7 +973,7 @@ onMounted(async () => {
     if (cqParam.value) {
       try {
         const entry = await request<QueueEntry>('get',
-          `/items/cook_queue/${cqParam.value}?fields=id,status,date,cook.id,cook.first_name,cook.last_name`
+          `/items/cook_queue/${cqParam.value}?fields=id,status,date,cook.id,cook.first_name,cook.last_name,cook.avatar`
         )
         queueEntry.value = entry
         activeCqId.value = entry.id
@@ -969,7 +982,7 @@ onMounted(async () => {
       const today = new Date().toISOString().split('T')[0]
       try {
         const entries = await request<QueueEntry[]>('get',
-          `/items/cook_queue?filter[dish_name][_eq]=${encodeURIComponent(item.dish_name)}&filter[date][_gte]=${today}&limit=1&fields=id,status,date,cook.id,cook.first_name,cook.last_name`
+          `/items/cook_queue?filter[dish_name][_eq]=${encodeURIComponent(item.dish_name)}&filter[date][_gte]=${today}&limit=1&fields=id,status,date,cook.id,cook.first_name,cook.last_name,cook.avatar`
         )
         if (entries.length > 0) {
           activeCqId.value = entries[0]!.id

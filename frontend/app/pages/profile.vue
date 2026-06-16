@@ -14,11 +14,34 @@
     <!-- Avatar + name -->
     <div class="px-5 pb-6">
       <div class="flex items-center gap-4">
-        <img
-          :src="avatarUrl"
-          alt="avatar"
-          class="w-20 h-20 rounded-full bg-primary ring-2 ring-primary"
+        <div class="relative w-[80px] h-[80px] cursor-pointer shrink-0" @click="triggerAvatarUpload">
+          <img
+            v-if="avatarSrc"
+            :src="avatarSrc"
+            class="w-full h-full rounded-full object-cover ring-2 ring-primary"
+            alt="Profile photo"
+          />
+          <div v-else class="w-full h-full ring-2 ring-primary rounded-full overflow-hidden">
+            <AvatarPlaceholder />
+          </div>
+
+          <div class="absolute bottom-0 right-0 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow-sm">
+            <PhCamera :size="14" weight="fill" class="text-white" />
+          </div>
+
+          <div v-if="avatarUploading" class="absolute inset-0 rounded-full bg-black/30 flex items-center justify-center">
+            <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          </div>
+        </div>
+
+        <input
+          ref="avatarInput"
+          type="file"
+          accept="image/*"
+          class="hidden"
+          @change="onAvatarSelected"
         />
+
         <div class="flex-1">
           <p class="text-[18px] font-medium text-app-black">{{ displayName }}</p>
           <p class="text-[14px] text-gray-500 mt-0.5">{{ user?.email }}</p>
@@ -282,15 +305,70 @@
 </template>
 
 <script setup lang="ts">
-import { PhCaretLeft, PhSignOut, PhCaretRight, PhX, PhCaretDown } from '@phosphor-icons/vue'
+import { PhCaretLeft, PhSignOut, PhCaretRight, PhX, PhCaretDown, PhCamera } from '@phosphor-icons/vue'
 import { onMounted } from 'vue'
 
 definePageMeta({ layout: 'app' })
 
 const router = useRouter()
-const { user, logout } = useAuth()
-const { request } = useDirectus()
+const { user, logout, fetchUser } = useAuth()
+const { request, uploadFile } = useDirectus()
 const { MIN_BALANCE } = useBalanceCheck()
+const config = useRuntimeConfig()
+const directusUrl = config.public.directusUrl
+
+const avatarInput = ref<HTMLInputElement | null>(null)
+const avatarUploading = ref(false)
+
+const avatarSrc = computed(() => {
+  if (user.value?.avatar) {
+    return `${directusUrl}/assets/${user.value.avatar}`
+  }
+  return null
+})
+
+function triggerAvatarUpload() {
+  avatarInput.value?.click()
+}
+
+async function onAvatarSelected(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  avatarUploading.value = true
+  try {
+    const resized = await resizeImage(file, 400, 0.85)
+    const uploaded = await uploadFile(resized)
+    await $fetch('/api/users/update-me', { method: 'PATCH', body: { avatar: uploaded.id } })
+    await fetchUser()
+  } catch (e) {
+    console.error('Avatar upload failed:', e)
+  } finally {
+    avatarUploading.value = false
+    if (avatarInput.value) avatarInput.value.value = ''
+  }
+}
+
+async function resizeImage(file: File, maxPx: number, quality: number): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
+      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob(
+        (blob) => resolve(new File([blob!], 'avatar.jpg', { type: 'image/jpeg' })),
+        'image/jpeg',
+        quality
+      )
+    }
+    img.src = url
+  })
+}
 
 interface MyOrder {
   id: string
@@ -383,9 +461,6 @@ const displayName = computed(() => {
   return full || user.value.email
 })
 
-const avatarUrl = computed(() =>
-  `https://i.pravatar.cc/200?u=${user.value?.email}`
-)
 
 function getColor(index: number): string {
   return PASTEL_COLORS[index % PASTEL_COLORS.length]!

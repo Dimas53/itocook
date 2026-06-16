@@ -57,10 +57,14 @@
               class="flex items-center gap-3 min-h-[48px]"
             >
               <img
-                :src="`https://i.pravatar.cc/200?u=${p.id}`"
+                v-if="p.avatar"
+                :src="`${directusUrl}/assets/${p.avatar}`"
                 :alt="`${p.first_name ?? ''} ${p.last_name ?? ''}`"
-                class="w-8 h-8 rounded-full shrink-0"
+                class="w-8 h-8 rounded-full object-cover shrink-0"
               />
+              <div v-else class="w-8 h-8 rounded-full shrink-0 overflow-hidden">
+                <AvatarPlaceholder />
+              </div>
               <span class="text-[14px] font-medium text-app-black">
                 {{ [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown' }}
               </span>
@@ -78,6 +82,8 @@ import { reactive } from 'vue'
 const route = useRoute()
 const router = useRouter()
 const pm = reactive(useParticipantsModal())
+const config = useRuntimeConfig()
+const directusUrl = config.public.directusUrl
 
 router.beforeEach(() => { pm.close() })
 

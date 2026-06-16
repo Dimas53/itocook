@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 
 const show = ref(false)
-const participants = ref<Array<{ id: string; first_name?: string; last_name?: string; email?: string }>>([])
+const participants = ref<Array<{ id: string; first_name?: string; last_name?: string; email?: string; avatar?: string }>>([])
 const loading = ref(false)
 
 export function useParticipantsModal() {
@@ -34,7 +34,7 @@ export function useParticipantsModal() {
       const orders = await request<any[]>('get',
         `/items/orders?filter[cook_queue][_eq]=${queueId}`
         + `&filter[status][_eq]=confirmed`
-        + `&fields=user.id,user.first_name,user.last_name,user.email`
+        + `&fields=user.id,user.first_name,user.last_name,user.email,user.avatar`
         + `&limit=100`
       )
       console.log('[ParticipantsModal] response:', orders)

@@ -5,6 +5,7 @@ interface DirectusUser {
   email: string
   role: string
   department: string | null
+  avatar: string | null
 }
 
 interface LoginResponse {

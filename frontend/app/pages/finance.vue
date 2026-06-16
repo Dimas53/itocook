@@ -10,7 +10,11 @@ interface DirectusUser {
   id: string
   first_name: string
   last_name: string
+  avatar?: string
 }
+
+const config = useRuntimeConfig()
+const directusUrl = config.public.directusUrl
 
 interface BalanceRecord {
   id: string
@@ -58,7 +62,7 @@ async function fetchBalances() {
   try {
     const items = await request<BalanceRecord[]>(
       'get',
-      '/items/balances?fields=*,user.id,user.first_name,user.last_name'
+      '/items/balances?fields=*,user.id,user.first_name,user.last_name,user.avatar'
     )
     allBalances.value = items ?? []
   } catch {
@@ -324,11 +328,22 @@ onMounted(async () => {
                     :key="entry.user.id"
                     class="h-14 rounded-xl bg-white border border-gray-100 px-4 flex items-center justify-between mb-2 last:mb-0"
                   >
-                    <span class="text-[14px] text-app-black font-medium">
-                      {{ entry.user.first_name }} {{ entry.user.last_name }}
-                    </span>
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                      <img
+                        v-if="entry.user.avatar"
+                        :src="`${directusUrl}/assets/${entry.user.avatar}`"
+                        :alt="`${entry.user.first_name ?? ''} ${entry.user.last_name ?? ''}`"
+                        class="w-6 h-6 rounded-full object-cover shrink-0"
+                      />
+                      <div v-else class="w-6 h-6 rounded-full shrink-0 overflow-hidden">
+                        <AvatarPlaceholder />
+                      </div>
+                      <span class="text-[14px] text-app-black font-medium truncate">
+                        {{ entry.user.first_name }} {{ entry.user.last_name }}
+                      </span>
+                    </div>
                     <span
-                      class="text-[14px] font-semibold"
+                      class="text-[14px] font-semibold shrink-0 ml-2"
                       :class="isNegative(entry.amount) ? 'text-red-500' : 'text-green-600'"
                     >
                       <template v-if="isNegative(entry.amount)">-€{{ Math.abs(entry.amount).toFixed(2) }}</template>
@@ -368,11 +383,22 @@ onMounted(async () => {
                 :key="entry.user.id"
                 class="h-14 bg-white rounded-2xl border border-gray-100 px-4 flex items-center justify-between"
               >
-                <span class="text-[14px] text-app-black font-medium">
-                  {{ entry.user.first_name }} {{ entry.user.last_name }}
-                </span>
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                  <img
+                    v-if="entry.user.avatar"
+                    :src="`${directusUrl}/assets/${entry.user.avatar}`"
+                    :alt="`${entry.user.first_name ?? ''} ${entry.user.last_name ?? ''}`"
+                    class="w-6 h-6 rounded-full object-cover shrink-0"
+                  />
+                  <div v-else class="w-6 h-6 rounded-full shrink-0 overflow-hidden">
+                    <AvatarPlaceholder />
+                  </div>
+                  <span class="text-[14px] text-app-black font-medium truncate">
+                    {{ entry.user.first_name }} {{ entry.user.last_name }}
+                  </span>
+                </div>
                 <span
-                  class="text-[14px] font-semibold"
+                  class="text-[14px] font-semibold shrink-0 ml-2"
                   :class="isNegative(entry.amount) ? 'text-red-500' : 'text-green-600'"
                 >
                   <template v-if="isNegative(entry.amount)">-€{{ Math.abs(entry.amount).toFixed(2) }}</template>
