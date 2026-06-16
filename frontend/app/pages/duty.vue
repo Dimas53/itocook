@@ -175,7 +175,7 @@ async function fetchMonth() {
   calLoading.value = true
   try {
     const items = await request<CleaningEntry[]>('get',
-      `/items/cleaning_schedule?filter[date][_gte]=${monthStart(monthDate.value)}&filter[date][_lte]=${monthEnd(monthDate.value)}&fields=date,department,confirmed,user.id,user.first_name,user.last_name&limit=100`
+      `/items/cleaning_schedule?filter[date][_gte]=${monthStart(monthDate.value)}&filter[date][_lte]=${monthEnd(monthDate.value)}&fields=id,date,department,confirmed,user.id,user.first_name,user.last_name&limit=100`
     )
     monthEntries.value = items ?? []
   } catch {
@@ -189,8 +189,10 @@ watch(monthDate, fetchMonth)
 // ── Today block logic ──
 async function confirmDuty() {
   if (!entry.value) return
-  await request('patch', `/items/cleaning_schedule/${entry.value.id}`, {
-    confirmed: true,
+  await fetch('/api/duty/confirm', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: entry.value.id, confirmed: true }),
   })
   entry.value.confirmed = true
 }
@@ -217,7 +219,7 @@ const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
 onMounted(async () => {
   try {
     const items = await request<CleaningEntry[]>('get',
-      `/items/cleaning_schedule?filter[date][_eq]=${todayISO}&fields=date,department,confirmed,user.id,user.first_name,user.last_name&limit=1`
+      `/items/cleaning_schedule?filter[date][_eq]=${todayISO}&fields=id,date,department,confirmed,user.id,user.first_name,user.last_name&limit=1`
     )
     entry.value = items?.[0] ?? null
   } catch {
