@@ -110,6 +110,8 @@
 
 ## Current session
 - [x] **Ingredient emoji icons + Add Ingredient quick-pick dropdown** — created `frontend/app/utils/ingredientIcons.ts` (emoji dictionary with 130+ entries + fuzzy `getIngredientIcon()` matcher) and `frontend/app/utils/popularIngredients.ts` (35 popular ingredients with default units); created shared `frontend/app/components/AddIngredientPopover.vue` (bottom-sheet with 2-column ingredient grid + "Custom ingredient" option); updated `recipe/create.vue` (popover opens from "+ Add" button, selects prefill name+unit, live emoji preview next to name input); updated `recipe/[id].vue` (replaced bullet dot with emoji icon in ingredient list). Shared component ready for AI Recipe page use.
+- [x] **Task 5: Duty page top section** — "On duty today" card with live fetch from `cleaning_schedule`; department pill, user name, Confirm Duty button (PATCH /items/cleaning_schedule/{id}); confirmed badge in green-pastel; loading skeleton; empty state ("No duty assigned for today")
+- [x] **Task 6: Monthly calendar on duty.vue** — inline month calendar (Mon–Fri) below today card; prev/next arrows; cell states (today/has entry/current user/confirmed/past); dot indicator; tap popover with user info + confirmed/pending badge; data fetch per displayed month
 - [x] **Popover & Form fixes** — Fix 1: popover rendered inside phone frame (removed Teleport, `absolute` positioning in `relative` container). Fix 2: restructured `popularIngredients.ts` into 5 categorized `INGREDIENT_CATEGORIES`; popover now uses accordion (first category expanded, single-column list). Fix 3: `existingIngredients` prop greys out already-added items with ✓ badge. Fix 4: unit text input replaced with `<select>` (g/kg/ml/l/pcs/tbsp/tsp/bunch/to taste) with legacy value preservation. Fix 5: ingredient row widths fixed with `w-full overflow-hidden` and proper `flex-1 min-w-0`/`shrink-0` distribution.
 - [x] **Fix: HeroBlock category image — root cause was missing category field on cook_queue** — added `category` string field to `cook_queue` collection (Directus); `cook.vue` `saveDish()` now persists `selectedCategory` to the queue entry; `kitchen.vue` `watch(selectedSlot)` fallback reads `category` from cook_queue item when no recipe match; Directus fields query updated to explicitly list `category`. HeroBlock now shows category image (e.g. pasta.png) when cook set name + category but no recipe yet.
 - [x] **Fix: cook.vue requires both dish name AND category before enabling buttons** — added `canSchedule` computed (`dishName.trim().length > 0 && !!selectedCategory`); applied to all 4 schedule buttons in 'dish' state template; disabled styling changed to `opacity-40 cursor-not-allowed`.
@@ -167,6 +169,8 @@
 - `94fc7a4` — feat(onboarding): replace absolute layout with flex, add lang=ts
 - `376d90f` — feat(layout): add BottomTabBar with 5 tabs, wire into default layout
 - `adff924` — feat(auth): add fake login flow, form validation, route protection, darkStatus
+- `8d69f3b` — feat(widgets): add decorative star SVG to BalanceWidget and DutyWidget
+- `d47aa2e` — feat(finance): add slider with arrows to Balances block (5 per screen)
 - `5a16375` — chore: update git log in progress.md
 - `ef1d539` — feat(auth): replace fake login with real Directus auth + signup proxy
 - `96cde43` — chore: update git log in progress.md
