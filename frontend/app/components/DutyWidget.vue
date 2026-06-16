@@ -35,13 +35,7 @@
         : 'linear-gradient(to bottom, #D2C5FF 30%, #E9D085 80%, #FFDF00 100%)'
     }"-->
     <p class="text-[12px] text-app-black/60 font-medium uppercase tracking-wide">Next Duty</p>
-    <p
-      v-if="hasUpcomingDuty"
-      class="text-[11px] font-semibold text-primary"
-    >
-      You're next!
-    </p>
-    <p v-else class="text-[11px] text-gray-500">
+    <p class="text-[11px] text-gray-500">
       This week: {{ weekDepartment || '—' }}
     </p>
     <p class="text-[14px] font-semibold text-app-black mt-1">
@@ -50,11 +44,11 @@
     <p v-if="isMyTurn" class="text-[12px] text-primary font-medium mt-0.5">
       🧹 Your turn today!
     </p>
-    <p v-else-if="todayEntry" class="text-[12px] text-gray-400 mt-0.5">
-      Today, 12:00
+    <p v-else-if="tomorrowEntry" class="text-[14px] font-semibold text-primary mt-0.5">
+      {{ tomorrowUserName }}, You are next!
     </p>
-    <p v-else-if="nextDutyDay" class="text-[12px] text-gray-400 mt-0.5">
-      Your next duty: {{ nextDutyDay }}
+    <p v-else-if="todayEntry" class="text-[12px] text-gray-400 mt-0.5">
+      Today, 9:00
     </p>
   </div>
 </template>
@@ -105,17 +99,22 @@ const isMyTurn = computed(() => {
   return e?.user.id === user.value?.id
 })
 
-const hasUpcomingDuty = computed(() =>
-  entries.value.some((e) => e.user.id === user.value?.id && e.date > todayStr)
+const isHighlighted = computed(() => isMyTurn.value || !!tomorrowEntry.value)
+
+function getTomorrowStr(): string {
+  const d = new Date(today)
+  d.setDate(d.getDate() + 1)
+  return d.toISOString().split('T')[0]!
+}
+
+const tomorrowEntry = computed(() =>
+  entries.value.find((e) => e.user.id === user.value?.id && e.date === getTomorrowStr()) || null
 )
 
-const isHighlighted = computed(() => isMyTurn.value || hasUpcomingDuty.value)
-
-const nextDutyDay = computed(() => {
-  const myEntries = entries.value.filter((e) => e.user.id === user.value?.id && e.date > todayStr)
-  if (myEntries.length === 0) return null
-  const d = new Date(myEntries[0]!.date + 'T12:00:00')
-  return d.toLocaleDateString('en-US', { weekday: 'short' })
+const tomorrowUserName = computed(() => {
+  const e = tomorrowEntry.value
+  if (!e) return null
+  return e.user.first_name
 })
 
 async function fetchSchedule() {

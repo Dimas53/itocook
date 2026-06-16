@@ -77,7 +77,7 @@
 
       <div class="relative mt-3 -mx-5 -mb-5 min-h-[140px] cursor-pointer" @click="onDishClick">
         <!-- Text left -->
-        <div class="absolute left-5 bottom-4 flex flex-col gap-1 z-10">
+        <div class="absolute left-5 -bottom-4 flex flex-col gap-1 z-10">
           <span class="text-[22px] font-bold text-app-black">
             {{ cook.dish || 'Chef is thinking...' }}
           </span>
@@ -85,7 +85,10 @@
             {{ cook.category }}
           </span>
           <p class="text-[15px] font-medium text-app-black/80">by {{ cook.name }}</p>
-          <div class="flex items-center gap-1.5 mt-0.5">
+          <div
+            class="flex items-center gap-1.5 mt-0.5 min-h-[44px] cursor-pointer relative z-10 active:opacity-70 transition-opacity"
+            @click.stop="$emit('show-participants')"
+          >
             <PhUsers class="w-3.5 h-3.5 text-app-black/50" weight="fill" />
             <p class="text-[12px] text-app-black/50">
               <span class="font-semibold text-app-black">{{ participantCount }}</span>
@@ -134,6 +137,7 @@ export interface CookInfo {
   dish: string
   photo?: string | null
   category?: string | null
+  queueId?: string
 }
 
 const props = defineProps<{
@@ -151,6 +155,7 @@ const emit = defineEmits<{
   'become-cook': []
   'view-dish': []
   'go-to-cook': []
+  'show-participants': []
 }>()
 
 const router = useRouter()

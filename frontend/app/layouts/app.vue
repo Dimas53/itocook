@@ -26,12 +26,60 @@
 
       <!-- Floating bottom tab bar -->
       <BottomTabBar v-if="!isProfilePage && !isCookPage" />
+
+      <!-- Participants modal (global, inside phone frame) -->
+      <div
+        v-if="pm.show"
+        class="absolute inset-0 z-50 flex flex-col justify-end"
+      >
+        <div class="absolute inset-0 bg-black/40" @click="pm.close()" />
+        <div class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[60%] flex flex-col">
+          <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-3 shrink-0" />
+          <div class="flex items-center gap-3 mb-4 shrink-0">
+            <h3 class="text-[16px] font-semibold text-app-black">Participants</h3>
+            <span class="bg-primary-pale text-primary rounded-full px-2 text-[13px] font-semibold">{{ pm.participants.length }}</span>
+          </div>
+
+          <div v-if="pm.loading" class="flex items-center justify-center py-8">
+            <div class="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+
+          <template v-else-if="pm.participants.length === 0">
+            <div class="flex flex-col items-center justify-center py-8">
+              <p class="text-[13px] text-gray-400">No one has joined yet</p>
+            </div>
+          </template>
+
+          <div v-else class="overflow-y-auto">
+            <div
+              v-for="p in pm.participants"
+              :key="p.id"
+              class="flex items-center gap-3 min-h-[48px]"
+            >
+              <img
+                :src="`https://i.pravatar.cc/200?u=${p.id}`"
+                :alt="`${p.first_name ?? ''} ${p.last_name ?? ''}`"
+                class="w-8 h-8 rounded-full shrink-0"
+              />
+              <span class="text-[14px] font-medium text-app-black">
+                {{ [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { reactive } from 'vue'
+
 const route = useRoute()
+const router = useRouter()
+const pm = reactive(useParticipantsModal())
+
+router.beforeEach(() => { pm.close() })
 
 const isDarkStatus = computed(() => route.meta.darkStatus === true)
 const isProfilePage = computed(() => route.path === '/profile')

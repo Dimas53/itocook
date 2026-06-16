@@ -44,6 +44,18 @@
         >
           <PhHeart :size="20" :weight="isLiked ? 'fill' : 'regular'" :class="isLiked ? 'text-red-500' : 'text-gray-400'" />
         </button>
+        <button
+          v-if="displayCookName"
+          class="absolute bottom-3 left-3 flex items-center gap-2 bg-white/80 rounded-full px-3 py-1.5 shadow-sm active:scale-[0.98] transition-transform"
+          @click="openCookRecipes"
+        >
+          <img
+            :src="`https://i.pravatar.cc/200?u=${displayCookName}`"
+            :alt="displayCookName"
+            class="w-6 h-6 rounded-full"
+          />
+          <span class="text-[12px] font-medium text-app-black">by {{ displayCookName }}</span>
+        </button>
       </div>
 
       <!-- White card -- scrollable middle -->
@@ -63,22 +75,59 @@
             </div>
           </div>
 
-          <!-- Cook row -->
-          <div v-if="recipe.cook_name" class="flex items-center justify-between mb-5">
-            <div class="flex items-center gap-2.5">
-              <img
-                :src="`https://i.pravatar.cc/200?u=${recipe.cook_name}`"
-                :alt="recipe.cook_name"
-                class="w-8 h-8 rounded-full"
-              />
-              <div>
-                <p class="text-[14px] font-semibold text-app-black leading-tight">{{ recipe.cook_name }}</p>
-                <p class="text-[11px] text-app-black/50">Chef</p>
+          <!-- Servings selector -->
+          <div v-if="!hasActiveQueue || isEntryCook" class="mb-5">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <div class="flex items-center gap-2">
+                <span class="text-[13px] text-gray-500 font-medium">Portions</span>
+                <button
+                  v-for="n in servingsPresets"
+                  :key="n"
+                  class="min-w-[44px] h-9 px-3 text-[14px] font-semibold rounded-xl transition-all active:scale-[0.98]"
+                  :class="activeServings === n ? 'bg-primary text-white' : 'bg-gray-100 text-app-black'"
+                  @click="selectServing(n)"
+                >
+                  {{ n }}
+                </button>
+                <button
+                  class="min-w-[44px] h-9 px-3 rounded-xl bg-gray-100 text-app-black flex items-center justify-center active:scale-[0.98]"
+                  @click="showCustomServings = !showCustomServings"
+                >
+                  <PhPlus class="w-5 h-5" weight="bold" />
+                </button>
+              </div>
+              <div v-if="queueEntry" class="flex items-center gap-1 shrink-0">
+                <PhUsers class="w-4 h-4 text-gray-500" />
+                <span class="text-[14px] text-gray-500 font-medium">{{ participants.length }}</span>
               </div>
             </div>
-            <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
-              <PhChefHat class="w-5 h-5 text-primary" weight="fill" />
+            <div
+              v-if="showCustomServings"
+              class="flex items-center gap-2 mt-2"
+            >
+              <input
+                v-model="customServingsInput"
+                type="number"
+                min="1"
+                max="100"
+                placeholder="15"
+                class="w-20 h-9 rounded-xl border border-gray-200 text-[14px] text-center font-semibold outline-none focus:border-primary"
+                @keyup.enter="applyCustomServing"
+              />
+              <button
+                class="h-9 px-4 rounded-xl bg-primary text-white text-[13px] font-semibold active:scale-[0.98]"
+                @click="applyCustomServing"
+              >
+                Apply
+              </button>
             </div>
+            <button
+              v-if="queueEntry && participantCount > 0 && participantCount !== activeServings"
+              class="mt-2 bg-primary-pale text-primary text-[13px] rounded-full px-3 py-1 font-medium active:scale-[0.98] transition-transform"
+              @click="saveServingsToRecipe(participantCount)"
+            >
+              ↺ Apply for {{ participantCount }} participants
+            </button>
           </div>
 
           <!-- Description -->
@@ -115,8 +164,9 @@
               <li v-for="(ing, i) in recipe.ingredients" :key="i" class="flex items-center gap-3 text-[14px] text-app-black/70">
                 <span class="text-lg w-6 text-center shrink-0">{{ getIngredientIcon(ing.name) }}</span>
                 <span>{{ ing.name }}</span>
-                <span v-if="ing.amount || ing.unit" class="font-medium text-app-black shrink-0 ml-auto">
-                  {{ ing.amount }}{{ ing.unit ? ' ' + ing.unit : '' }}
+                <span v-if="ing.amount || ing.unit" class="shrink-0 ml-auto flex items-center gap-1" :class="isScaling ? 'text-primary font-semibold' : 'font-medium text-app-black'">
+                  <span v-if="isSpiceUnit(ing.unit)" class="text-[10px] text-gray-400 font-normal">(to taste)</span>
+                  {{ scaleAmount(ing.amount, ing.unit) }}{{ ing.unit ? ' ' + ing.unit : '' }}
                 </span>
 
               </li>
@@ -167,11 +217,6 @@
               </button>
             </div>
 
-            <div class="flex items-center gap-2 text-[13px] text-gray-500">
-              <PhUsers class="w-4 h-4" />
-              <span>{{ participants.length }} joined</span>
-            </div>
-
             <button
                 v-if="isEntryCook && queueStatus === 'scheduled'"
                 class="w-full h-14 rounded-2xl bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg"
@@ -200,7 +245,7 @@
           </div>
         </template>
 
-        <!-- Smart adaptive button -->
+        <!-- Smart adaptive button (not for entry cook — handled in status block above) -->
         <button
           v-if="!hasActiveQueue"
           class="w-full h-14 rounded-2xl border border-primary text-primary font-semibold text-[16px] bg-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
@@ -209,7 +254,7 @@
           🍳 Cook This
         </button>
         <button
-          v-else-if="joined"
+          v-else-if="joined && !isEntryCook"
           class="w-full h-14 rounded-2xl bg-gray-100 text-gray-400 font-semibold text-[16px] flex items-center justify-center gap-2 cursor-not-allowed mb-3"
           disabled
         >
@@ -217,7 +262,7 @@
           Joined
         </button>
         <button
-          v-else
+          v-else-if="!isEntryCook"
           class="w-full h-14 rounded-2xl bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform mb-3"
           :disabled="!canJoin"
           @click="onJoin"
@@ -274,6 +319,79 @@
         />
       </div>
     </div>
+    <!-- Cook recipes modal -->
+    <div
+      v-if="showCookRecipes"
+      class="absolute inset-0 z-50 flex flex-col justify-end"
+    >
+      <div class="absolute inset-0 bg-black/40" @click="showCookRecipes = false" />
+      <div class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[60%] flex flex-col">
+        <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-3 shrink-0" />
+        <h3 class="text-[16px] font-semibold text-app-black mb-1 shrink-0">Recipes by {{ displayCookName }}</h3>
+        <p class="text-[12px] text-gray-500 mb-4 shrink-0">{{ cookRecipes.length }} recipes</p>
+
+        <div v-if="cookRecipesLoading" class="flex items-center justify-center py-8">
+          <PhSpinner class="w-6 h-6 text-primary animate-spin" />
+        </div>
+
+        <template v-else-if="cookRecipes.length === 0">
+          <div class="flex flex-col items-center justify-center py-8">
+            <p class="text-[13px] text-gray-400">No recipes yet</p>
+          </div>
+        </template>
+
+        <template v-else>
+          <!-- Up arrow -->
+          <div v-if="cookRecipes.length > COOK_RECIPES_VISIBLE" class="flex justify-center h-6 shrink-0">
+            <button
+              class="w-6 h-6 flex items-center justify-center transition-colors"
+              :class="canScrollCookUp ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
+              :disabled="!canScrollCookUp"
+              @click="scrollCookUp"
+            >
+              <PhCaretUp class="w-4 h-4" weight="bold" />
+            </button>
+          </div>
+
+          <div class="overflow-hidden" :style="{ height: COOK_RECIPES_VISIBLE * COOK_RECIPE_OFFSET + 'px' }">
+            <div
+              class="transition-transform duration-300 ease-out will-change-transform space-y-2"
+              :style="{ transform: `translateY(${-cookRecipesIndex * COOK_RECIPE_OFFSET}px)` }"
+            >
+              <div
+                v-for="r in cookRecipes"
+                :key="r.id"
+                class="h-[72px] rounded-xl bg-gray-50 px-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform"
+                @click="router.push(`/recipe/${r.id}`); showCookRecipes = false"
+              >
+                <div class="w-12 h-12 rounded-xl bg-primary-light flex items-center justify-center shrink-0 overflow-hidden">
+                  <img v-if="r.photo" :src="`http://localhost:8055/assets/${r.photo}`" class="w-full h-full object-cover" alt="" />
+                  <PhCookingPot v-else class="w-5 h-5 text-primary" weight="fill" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[14px] font-semibold text-app-black truncate leading-tight">{{ r.dish_name }}</p>
+                  <p v-if="r.category" class="text-[11px] text-gray-500 capitalize mt-0.5">{{ r.category }}</p>
+                </div>
+                <PhEye class="w-5 h-5 text-gray-400 shrink-0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Down arrow -->
+          <div v-if="cookRecipes.length > COOK_RECIPES_VISIBLE" class="flex justify-center h-6 shrink-0">
+            <button
+              class="w-6 h-6 flex items-center justify-center transition-colors"
+              :class="canScrollCookDown ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
+              :disabled="!canScrollCookDown"
+              @click="scrollCookDown"
+            >
+              <PhCaretDown class="w-4 h-4" weight="bold" />
+            </button>
+          </div>
+        </template>
+      </div>
+    </div>
+
     <!-- Copied toast -->
     <div
       v-if="showCopiedToast"
@@ -285,7 +403,7 @@
 </template>
 
 <script setup lang="ts">
-import { PhCaretLeft, PhHeart, PhChefHat, PhForkKnife, PhCaretDown, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock, PhUploadSimple } from '@phosphor-icons/vue'
+import { PhCaretLeft, PhHeart, PhForkKnife, PhCaretDown, PhCaretUp, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock, PhUploadSimple, PhPlus, PhEye } from '@phosphor-icons/vue'
 import { getIngredientIcon } from '~/utils/ingredientIcons'
 import type { CalendarEntry } from '~/components/MonthCalendar.vue'
 
@@ -302,6 +420,7 @@ interface RecipeData {
   category: string | null
   description: string | null
   photo: string | null
+  servings: number | null
   ingredients: { name: string; amount: string; unit: string }[] | null
   steps: { step: number; description: string }[] | null
   cook_name: string | null
@@ -328,7 +447,14 @@ interface QueueEntry {
   id: string
   status: string
   date: string
-  cook?: { id: string }
+  cook?: { id: string; first_name?: string; last_name?: string }
+}
+
+interface CookRecipeItem {
+  id: string
+  dish_name: string
+  category: string | null
+  photo: string | null
 }
 
 const loading = ref(true)
@@ -350,6 +476,93 @@ const isLiked = ref(false)
 const likeCount = ref(0)
 const myLikeId = ref<string | null>(null)
 
+// Servings / scaling
+const baseServings = computed(() => recipe.value?.servings ?? 4)
+const currentServings = ref<number | null>(null)
+const activeServings = computed(() => currentServings.value ?? baseServings.value)
+
+const showCustomServings = ref(false)
+const customServingsInput = ref('')
+const savingServings = ref(false)
+
+const servingsPresets = computed(() => {
+  const base = baseServings.value
+  const presets = [10, 15, 20]
+  if (!presets.includes(base)) {
+    return [...presets.slice(0, -1), base]
+  }
+  return presets
+})
+
+const spiceUnits = ['tsp', 'tbsp', 'teaspoon', 'teaspoons', 'tablespoon', 'tablespoons', 'tsp.', 'tbsp.', 'ч.л.', 'ч.л', 'ст.л.', 'ст.л', 'щепотка', 'pinch']
+function isSpiceUnit(unit: string | null | undefined): boolean {
+  if (!unit) return false
+  return spiceUnits.includes(unit.toLowerCase())
+}
+
+function scaleAmount(amount: string | null, unit: string | null): string {
+  if (!amount) return '—'
+  const num = parseFloat(amount)
+  if (isNaN(num)) return amount
+  const ratio = activeServings.value / baseServings.value
+  const scaled = num * ratio
+  const wholeUnits = ['pcs', 'pc', 'piece', 'pieces', 'stück', 'шт', 'шт.', 'item']
+  if (unit && wholeUnits.includes(unit.toLowerCase())) {
+    return String(Math.ceil(scaled))
+  }
+  return parseFloat(scaled.toFixed(1)).toString()
+}
+
+const isScaling = computed(() => currentServings.value !== null && currentServings.value !== baseServings.value)
+
+function scaleAmountRaw(amount: string | null, unit: string | null, ratio: number): string {
+  if (!amount) return ''
+  const num = parseFloat(amount)
+  if (isNaN(num)) return amount
+  const scaled = num * ratio
+  const wholeUnits = ['pcs', 'pc', 'piece', 'pieces', 'stück', 'шт', 'шт.', 'item']
+  if (unit && wholeUnits.includes(unit.toLowerCase())) {
+    return String(Math.ceil(scaled))
+  }
+  return parseFloat(scaled.toFixed(1)).toString()
+}
+
+async function saveServingsToRecipe(newServings: number) {
+  const r = recipe.value
+  if (!r || !r.ingredients) return
+  const oldBase = r.servings ?? 4
+  if (newServings === oldBase) return
+  savingServings.value = true
+  const ratio = newServings / oldBase
+  const scaledIngredients = r.ingredients.map(ing => ({
+    ...ing,
+    amount: scaleAmountRaw(ing.amount, ing.unit, ratio),
+  }))
+  try {
+    await request('PATCH', `/items/recipes/${route.params.id}`, {
+      servings: newServings,
+      ingredients: scaledIngredients,
+    })
+    r.servings = newServings
+    r.ingredients = scaledIngredients
+    currentServings.value = null
+  } catch { /* ignore */ }
+  savingServings.value = false
+}
+
+function selectServing(n: number) {
+  if (recipe.value && n === (recipe.value.servings ?? 4)) return
+  saveServingsToRecipe(n)
+  showCustomServings.value = false
+}
+
+function applyCustomServing() {
+  const v = parseInt(customServingsInput.value, 10)
+  if (isNaN(v) || v < 1 || v > 100) return
+  saveServingsToRecipe(v)
+  showCustomServings.value = false
+}
+
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
 const pickerMonth = computed(() => {
@@ -365,7 +578,7 @@ const pickerEntries = computed<CalendarEntry[]>(() =>
   availableDates.value.map(d => {
     let cellClass = ''
     if (d.isPast) cellClass = 'text-gray-300 pointer-events-none'
-    else if (d.isTaken) cellClass = 'opacity-40 pointer-events-none'
+    else if (d.isTaken) cellClass = 'bg-primary-light opacity-60 pointer-events-none'
     return { date: d.iso, cellClass: cellClass || undefined }
   })
 )
@@ -512,9 +725,65 @@ const isEntryCook = computed(() => {
   return !!cookId && cookId === user.value.id
 })
 
+const displayCookName = computed(() => {
+  if (queueEntry.value?.cook && typeof queueEntry.value.cook === 'object' && 'first_name' in queueEntry.value.cook) {
+    const c = queueEntry.value.cook as { id: string; first_name?: string; last_name?: string }
+    return [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Unknown'
+  }
+  return recipe.value?.cook_name ?? null
+})
+
+const displayCookId = computed(() => {
+  if (queueEntry.value?.cook && typeof queueEntry.value.cook === 'object') {
+    return queueEntry.value.cook.id
+  }
+  return recipe.value?.cook_id ?? null
+})
+
 const canEdit = computed(() => {
   return isOwner.value || isEntryCook.value
 })
+
+// Cook recipes modal
+const showCookRecipes = ref(false)
+const cookRecipes = ref<CookRecipeItem[]>([])
+const cookRecipesLoading = ref(false)
+const cookRecipesIndex = ref(0)
+
+async function fetchCookRecipes(cookId: string) {
+  cookRecipesLoading.value = true
+  try {
+    const items = await request<any[]>('get',
+      `/items/recipes?filter[user_created][_eq]=${cookId}&sort=-date_created&fields=id,dish_name,category,photo`
+    )
+    cookRecipes.value = items.map((r: any) => ({
+      id: r.id,
+      dish_name: r.dish_name,
+      category: r.category ?? null,
+      photo: r.photo ?? null,
+    }))
+    cookRecipesIndex.value = 0
+  } catch { /* ignore */ }
+  cookRecipesLoading.value = false
+}
+
+function openCookRecipes() {
+  const id = displayCookId.value
+  if (!id) return
+  fetchCookRecipes(id)
+  showCookRecipes.value = true
+}
+
+const COOK_RECIPES_VISIBLE = 3
+const COOK_RECIPES_ITEM_H = 72
+const COOK_RECIPES_ITEM_GAP = 8
+const COOK_RECIPE_OFFSET = COOK_RECIPES_ITEM_H + COOK_RECIPES_ITEM_GAP
+
+const canScrollCookUp = computed(() => cookRecipesIndex.value > 0)
+const canScrollCookDown = computed(() => cookRecipesIndex.value + COOK_RECIPES_VISIBLE < cookRecipes.value.length)
+
+function scrollCookUp() { if (canScrollCookUp.value) cookRecipesIndex.value-- }
+function scrollCookDown() { if (canScrollCookDown.value) cookRecipesIndex.value++ }
 
 function editRecipe() {
   router.push(`/recipe/create?id=${recipe.value?.id}&name=${encodeURIComponent(recipe.value?.dish_name || '')}`)
@@ -645,11 +914,12 @@ onMounted(async () => {
       category: string | null
       description: string | null
       photo: string | null
+      servings: number | null
       ingredients: string | null
       steps: string | null
       cook: { id: string; first_name: string; last_name: string } | string | null
       source_cook_queue: string | null
-    }>('get', `/items/recipes/${id}?fields=id,dish_name,category,description,photo,ingredients,steps,source_cook_queue,cook.id,cook.first_name,cook.last_name`)
+    }>('get', `/items/recipes/${id}?fields=id,dish_name,category,description,photo,servings,ingredients,steps,source_cook_queue,cook.id,cook.first_name,cook.last_name`)
 
     let cookName: string | null = null
     let cookId: string | null = null
@@ -678,6 +948,7 @@ onMounted(async () => {
       category: item.category,
       description: item.description,
       photo: item.photo,
+      servings: item.servings ?? null,
       ingredients,
       steps,
       cook_name: cookName,
@@ -689,7 +960,7 @@ onMounted(async () => {
     if (cqParam.value) {
       try {
         const entry = await request<QueueEntry>('get',
-          `/items/cook_queue/${cqParam.value}?fields=id,status,date,cook.id`
+          `/items/cook_queue/${cqParam.value}?fields=id,status,date,cook.id,cook.first_name,cook.last_name`
         )
         queueEntry.value = entry
         activeCqId.value = entry.id
@@ -698,7 +969,7 @@ onMounted(async () => {
       const today = new Date().toISOString().split('T')[0]
       try {
         const entries = await request<QueueEntry[]>('get',
-          `/items/cook_queue?filter[dish_name][_eq]=${encodeURIComponent(item.dish_name)}&filter[date][_gte]=${today}&limit=1&fields=id,status,date,cook.id`
+          `/items/cook_queue?filter[dish_name][_eq]=${encodeURIComponent(item.dish_name)}&filter[date][_gte]=${today}&limit=1&fields=id,status,date,cook.id,cook.first_name,cook.last_name`
         )
         if (entries.length > 0) {
           activeCqId.value = entries[0]!.id

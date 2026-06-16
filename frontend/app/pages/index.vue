@@ -34,6 +34,7 @@
           @join="onJoin"
         @become-cook="onBecomeCook"
         @go-to-cook="router.push('/cook')"
+        @show-participants="onShowParticipants"
       />
 
 <!--      &lt;!&ndash; Participant counter &ndash;&gt;
@@ -163,6 +164,12 @@ function formatDateISO(d: Date): string {
 
 const todayISO = formatDateISO(new Date())
 
+const pm = useParticipantsModal()
+
+function onShowParticipants() {
+  pm.open(todayCook.value?.queueId)
+}
+
 const avatarUrl = computed(() =>
   `https://i.pravatar.cc/200?u=${user.value?.email}`
 )
@@ -220,6 +227,7 @@ onMounted(async () => {
         dish: todayEntry.dish_name || '',
         photo: heroPhoto,
         category: heroCategory,
+        queueId: todayEntry.id,
       }
 
       // Check if current user is today's cook

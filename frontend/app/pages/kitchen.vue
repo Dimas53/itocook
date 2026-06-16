@@ -69,6 +69,7 @@
         @join="onJoin"
         @become-cook="onBecomeCook"
         @go-to-cook="router.push('/cook?date=' + selectedDate)"
+        @show-participants="onShowParticipants"
       />
 
       <!-- 4. Dish history -->
@@ -175,6 +176,7 @@ interface WeekSlot {
   dateStr: string
   cookName: string | null
   dishName: string | null
+  queueId: string | null
   isToday: boolean
   isPast: boolean
 }
@@ -210,6 +212,12 @@ const activeEntryId = computed(() => {
 })
 const { confirmed: participantCount, hasJoined, joinBlockedReason, join: onJoin, fetch: fetchParticipants } = useParticipants(activeEntryId)
 const { count: totalCount } = useTotalUsers()
+
+const pm = useParticipantsModal()
+
+function onShowParticipants() {
+  pm.open(heroCook.value?.queueId)
+}
 
 // ── Week navigation ──
 const weekOffset = ref(0)
@@ -276,6 +284,7 @@ const weekSlots = computed<WeekSlot[]>(() => {
       dateStr: formatDateStr(d),
       cookName: item ? getCookName(item.cook) : null,
       dishName: item?.dish_name || null,
+      queueId: item?.id ?? null,
       isToday: iso === todayISO,
       isPast: iso < todayISO,
     })
@@ -308,6 +317,7 @@ const heroCook = computed<CookInfo | null>(() => {
     dish: slot.dishName || '',
     photo: selectedRecipePhoto.value,
     category: selectedCategory.value,
+    queueId: slot.queueId ?? undefined,
   }
 })
 

@@ -200,9 +200,18 @@
             </div>
           </div>
 
-          <div class="rounded-xl bg-white p-4">
-            <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Today's Dish</p>
-            <p class="text-[20px] font-bold text-app-black mt-1">{{ cookEntry?.dish_name }}</p>
+          <div
+            class="rounded-xl bg-white p-4 flex items-center justify-between"
+            :class="{ 'cursor-pointer active:scale-[0.98] transition-transform': existingRecipeId }"
+            @click="existingRecipeId && router.push(`/recipe/${existingRecipeId}`)"
+          >
+            <div>
+              <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Today's Dish</p>
+              <p class="text-[20px] font-bold text-app-black mt-1">{{ cookEntry?.dish_name }}</p>
+            </div>
+            <button v-if="existingRecipeId" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+              <PhEye class="w-4 h-4 text-app-black" />
+            </button>
           </div>
 
           <template v-if="recipeSearchDone">
@@ -258,18 +267,20 @@
                 <p class="text-[12px] text-gray-500">{{ formattedDate }}</p>
               </div>
             </div>
-            <button
-              v-if="existingRecipeId"
-              class="w-10 h-10 rounded-full bg-white flex items-center justify-center active:scale-[0.98] transition-transform"
-              @click="router.push(`/recipe/${existingRecipeId}`)"
-            >
-              <PhEye class="w-5 h-5 text-app-black" />
-            </button>
           </div>
 
-          <div class="rounded-xl bg-white p-4">
-            <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Today's Dish</p>
-            <p class="text-[20px] font-bold text-app-black mt-1">{{ cookEntry?.dish_name }}</p>
+          <div
+            class="rounded-xl bg-white p-4 flex items-center justify-between"
+            :class="{ 'cursor-pointer active:scale-[0.98] transition-transform': existingRecipeId }"
+            @click="existingRecipeId && router.push(`/recipe/${existingRecipeId}`)"
+          >
+            <div>
+              <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Today's Dish</p>
+              <p class="text-[20px] font-bold text-app-black mt-1">{{ cookEntry?.dish_name }}</p>
+            </div>
+            <button v-if="existingRecipeId" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+              <PhEye class="w-4 h-4 text-app-black" />
+            </button>
           </div>
 
           <template v-if="recipeSearchDone">

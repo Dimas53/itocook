@@ -109,6 +109,18 @@
 - [x] **Fix: HeroBlock cook button disabled for all when queue exists** — added `hasExistingQueue` prop to `HeroBlock.vue`; disables "I'm cooking today!" and "Cook" buttons both via `:disabled` + `pointer-events-none` + JS guard in `onBecomeCook()`; `index.vue` tracks `hasTodayQueue` explicitly from `items.length > 0`; `kitchen.vue` added `hasSelectedQueue` computed
 
 ## Current session
+- [x] **Task G1: Recipe detail author layout fix** — removed PhChefHat icon, moved author line into photo block (bottom-left pill), restored title/category/likes layout
+- [x] **Task G2: Servings selector with ingredient scaling** — servings UI pills [base,10,15,20] + custom input below category; `scaleAmount()` with ratio scaling + whole-unit ceil; scaled amounts render in `text-primary font-semibold`; "Apply for N participants" button; `servings` field added to Directus fetch
+- [x] **Fixes: 4 UI/logic fixes** — (1) Join button hidden for recipe cook, (2) Eye icon on Today's Dish in cook panel, (3) Servings selector hidden for non-cook users, (4) Author pill shows queue cook name dynamically + clickable modal with cook's recipes via slider
+- [x] **Post-fix: Cook button** — entry cook sees "Start Cooking" / "View Cook Panel" button (→ /cook) instead of Join buttons
+- [x] **Post-fix: Servings persistence** — `saveServingsToRecipe` now also scales ingredient amounts by ratio and saves both `servings` + `ingredients` to Directus; no flash/jump because `currentServings` is set to null after save (base = selection)
+- [x] **Post-fix: Servings presets** — always 3 pills: [10, 15, 20]; if base differs, last preset (20) replaced with base value
+- [x] **G3a: shopping_list_items collection** — created in Directus with fields (id, user M2O, recipe M2O, recipe_name, ingredient_name, amount, unit, emoji, is_checked, sort, date_created); permissions set for User policy (create/read=`*`, update=`is_checked,sort`, delete; all filtered by `$CURRENT_USER`)
+- [x] **Fix: duplicate Start Cooking** — removed duplicate `isEntryCook` button from smart-adaptive section; only one Start Cooking exists inside status template with `startCooking` handler
+- [x] **UX: participant count moved** — removed "N joined" from bottom controls; added `PhUsers` icon + count next to Portions pills row, shown when `queueEntry` exists
+- [x] **Fix: all participants** — extended limit to 100, added `user.email` to fields, added `.filter(Boolean)` after map
+- [x] **Fix: HeroBlock participant modal — mount in app.vue layout** — created global `useParticipantsModal.ts` composable (module-level refs); modal template moved to `app.vue` inside phone container (`relative`), so `absolute inset-0` covers the visible phone screen regardless of page scroll; `router.beforeEach` closes modal on navigation; pages (`index.vue`, `kitchen.vue`) call `pm.open(queueId)` on `@show-participants`; all local modal state/templates removed from pages
+- [x] **Fix: Modal loader spinning forever** — root cause: `useParticipantsModal()` returns a plain object with `Ref` properties. Vue 3 templates do NOT auto-unwrap refs nested inside plain objects — `v-if="pm.loading"` always evaluated to the `Ref` object (truthy). Fix: wrapped `useParticipantsModal()` return value with `reactive()` in `layouts/app.vue` — `reactive()` triggers Vue's ref unwrapping in templates. `pm.loading` now correctly evaluates to the boolean value.
 - [x] **Ingredient emoji icons + Add Ingredient quick-pick dropdown** — created `frontend/app/utils/ingredientIcons.ts` (emoji dictionary with 130+ entries + fuzzy `getIngredientIcon()` matcher) and `frontend/app/utils/popularIngredients.ts` (35 popular ingredients with default units); created shared `frontend/app/components/AddIngredientPopover.vue` (bottom-sheet with 2-column ingredient grid + "Custom ingredient" option); updated `recipe/create.vue` (popover opens from "+ Add" button, selects prefill name+unit, live emoji preview next to name input); updated `recipe/[id].vue` (replaced bullet dot with emoji icon in ingredient list). Shared component ready for AI Recipe page use.
 - [x] **Task 5: Duty page top section** — "On duty today" card with live fetch from `cleaning_schedule`; department pill, user name, Confirm Duty button (PATCH /items/cleaning_schedule/{id}); confirmed badge in green-pastel; loading skeleton; empty state ("No duty assigned for today")
 - [x] **Task 6: Monthly calendar on duty.vue** — inline month calendar (Mon–Fri) below today card; prev/next arrows; cell states (today/has entry/current user/confirmed/past); dot indicator; tap popover with user info + confirmed/pending badge; data fetch per displayed month
@@ -157,6 +169,8 @@
 - [ ] Receipt photo upload
 
 ## Git log
+- `d80c44e` — feat(duty): add admin edit mode for cleaning_schedule assignments
+- `a2a75f6` — refactor(calendar): extract MonthCalendar component, use in duty and recipe pages
 - `9d42482` — chore: uncommitted changes from previous sessions
 - `b7ddd47` — fix(recipe): reactive image in RecipeGridItem, batch-fetch likes on all pages
 - `80afb1d` — feat(cook): persist category to cook_queue, show category image in HeroBlock, require category for schedule/save
