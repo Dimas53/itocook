@@ -935,7 +935,11 @@ async function saveDish() {
           existingRecipeId.value = created.id
         }
       }
-      // User owns the recipe → use as-is; no PATCH needed
+      // Link queue entry to the (forked) recipe
+      await request('PATCH', `/items/cook_queue/${cookEntry.value.id}`, {
+        recipe: existingRecipeId.value,
+      })
+      cookEntry.value.recipe = existingRecipeId.value
     }
   } catch (e) {
     console.error('Failed to save dish:', e)
@@ -1003,6 +1007,21 @@ async function cancelCooking() {
     for (const o of orders) {
       await request('delete', `/items/orders/${o.id}`)
     }
+
+    // Cleanup: delete shopping list items for this recipe
+    try {
+      if (cookEntry.value.recipe) {
+        const slItems = await request<{ id: number }[]>('GET',
+          `/items/shopping_list_items?filter[user][_eq]=${user.value?.id}&filter[recipe][_eq]=${cookEntry.value.recipe}&fields=id&limit=200`
+        )
+        if (slItems?.length) await Promise.all(slItems.map(i => request('DELETE', `/items/shopping_list_items/${i.id}`)))
+      } else if (cookEntry.value.dish_name && cookEntry.value.date) {
+        const slItems = await request<{ id: number }[]>('GET',
+          `/items/shopping_list_items?filter[user][_eq]=${user.value?.id}&filter[recipe_name][_eq]=${encodeURIComponent(cookEntry.value.dish_name)}&filter[cook_date][_eq]=${cookEntry.value.date}&fields=id&limit=200`
+        )
+        if (slItems?.length) await Promise.all(slItems.map(i => request('DELETE', `/items/shopping_list_items/${i.id}`)))
+      }
+    } catch { /* non-critical */ }
 
     router.push('/kitchen')
   } catch (e) {
@@ -1083,6 +1102,23 @@ async function confirmDeduction() {
     })
     cookEntry.value.status = 'completed'
     deductionResult.value = true
+
+    // Cleanup: delete shopping list items for this recipe
+    try {
+      const qDate = cookEntry.value.date
+      // Prefer linked recipe ID, fallback to dish_name + date
+      if (cookEntry.value.recipe) {
+        const items = await request<{ id: number }[]>('GET',
+          `/items/shopping_list_items?filter[user][_eq]=${user.value?.id}&filter[recipe][_eq]=${cookEntry.value.recipe}&fields=id&limit=200`
+        )
+        if (items?.length) await Promise.all(items.map(i => request('DELETE', `/items/shopping_list_items/${i.id}`)))
+      } else if (cookEntry.value.dish_name && qDate) {
+        const items = await request<{ id: number }[]>('GET',
+          `/items/shopping_list_items?filter[user][_eq]=${user.value?.id}&filter[recipe_name][_eq]=${encodeURIComponent(cookEntry.value.dish_name)}&filter[cook_date][_eq]=${qDate}&fields=id&limit=200`
+        )
+        if (items?.length) await Promise.all(items.map(i => request('DELETE', `/items/shopping_list_items/${i.id}`)))
+      }
+    } catch { /* non-critical — shopping list cleanup is best-effort */ }
   } catch (e) {
     console.error('Failed to process deduction:', e)
   }

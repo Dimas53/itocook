@@ -13,6 +13,8 @@ export default {
         'app-black': '#0A0116',
         'app-bg': '#F5F5F8',
         'gray-500': '#6B7280',
+        'orange-pastel': '#FFDE96',
+        'orange-light': '#FFD9C1',
         white: '#FFFFFF',
       }
     }

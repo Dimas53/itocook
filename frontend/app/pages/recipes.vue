@@ -1,16 +1,16 @@
 <template>
   <div class="flex flex-col min-h-full">
-    <div class="flex items-center gap-3 px-5 pb-4">
-      <button
-        class="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center active:scale-[0.98]"
-        @click="router.back()"
-      >
-        <PhCaretLeft class="w-5 h-5 text-app-black" weight="bold" />
-      </button>
+    <div class="flex items-center justify-between px-5 pt-12 pb-4">
       <h1 class="text-[20px] font-semibold text-app-black">All Recipes</h1>
+      <button
+        class="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center active:scale-[0.98] transition-transform"
+        @click="router.push('/kitchen')"
+      >
+        <PhX class="w-5 h-5 text-app-black" weight="bold" />
+      </button>
     </div>
 
-    <div class="pb-[100px] space-y-4">
+    <div class="pb-8 space-y-4">
       <div class="relative px-5">
         <PhMagnifyingGlass class="absolute left-9 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
@@ -65,9 +65,9 @@
 </template>
 
 <script setup lang="ts">
-import { PhCaretLeft, PhMagnifyingGlass } from '@phosphor-icons/vue'
+import { PhMagnifyingGlass, PhX } from '@phosphor-icons/vue'
 
-definePageMeta({ layout: 'app' })
+definePageMeta({ layout: 'default' })
 
 const router = useRouter()
 const { request } = useDirectus()

@@ -39,6 +39,14 @@
           <PhX class="w-5 h-5 text-app-black" weight="bold" />
         </button>
         <button
+          v-if="isEntryCook"
+          class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-white/80 flex items-center justify-center active:scale-90 transition-transform shadow-sm"
+          @click="router.push('/shopping-list')"
+        >
+          <PhShoppingCart :size="20" weight="fill" class="text-primary" />
+        </button>
+        <button
+          v-else
           @click="toggleLike"
           class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-white/80 flex items-center justify-center active:scale-90 transition-transform shadow-sm"
         >
@@ -157,11 +165,11 @@
                 />
               </button>
               <button
-                class="w-7 h-7 flex items-center justify-center rounded-full active:scale-[0.98] transition-transform"
-                @click="shareShoppingList"
+                class="w-9 h-9 rounded-full bg-primary flex items-center justify-center active:scale-[0.98] transition-transform shadow-sm"
+                @click="showShareModal = true"
                 title="Share shopping list"
               >
-                <PhUploadSimple class="w-5 h-5 text-gray-500" />
+                <PhUploadSimple class="w-5 h-5 text-white" />
               </button>
             </div>
             <ul v-if="showIngredients" class="space-y-2">
@@ -396,6 +404,53 @@
       </div>
     </div>
 
+    <!-- Shopping list modal -->
+    <div
+      v-if="showShareModal"
+      class="absolute inset-0 z-50 flex flex-col justify-end"
+    >
+      <div class="absolute inset-0 bg-black/40" @click="showShareModal = false" />
+      <div class="relative bg-white rounded-t-3xl p-6">
+        <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-5 shrink-0" />
+
+        <button
+          v-if="canAddToList"
+          class="w-full h-14 rounded-2xl bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform mb-3"
+          :disabled="isAddingToList"
+          @click="addToShoppingList"
+        >
+          <PhSpinner v-if="isAddingToList" class="w-5 h-5 animate-spin" />
+          <template v-else>
+            <PhShoppingCart class="w-5 h-5" weight="fill" />
+            Add to Shopping List
+          </template>
+        </button>
+
+        <button
+          class="w-full h-14 rounded-2xl border border-gray-200 bg-white text-app-black font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform mb-3"
+          @click="copyIngredients"
+        >
+          <PhCopySimple class="w-5 h-5" weight="fill" />
+          Copy ingredients
+        </button>
+
+        <button
+          class="w-full h-14 rounded-2xl border border-gray-200 bg-white text-app-black font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform mb-3"
+          @click="shareShoppingList"
+        >
+          <PhShareNetwork class="w-5 h-5" weight="fill" />
+          Share recipe
+        </button>
+
+        <button
+          class="w-full h-12 text-[14px] text-gray-500 font-medium active:scale-[0.98] transition-transform"
+          @click="showShareModal = false"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+
     <!-- Copied toast -->
     <div
       v-if="showCopiedToast"
@@ -403,11 +458,25 @@
     >
       Copied to clipboard!
     </div>
+
+    <!-- Added toast -->
+    <div
+      v-if="showAddedToast"
+      class="absolute bottom-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-app-black text-white text-[13px] rounded-full pl-4 pr-1 py-1"
+    >
+      <span class="whitespace-nowrap">Added {{ addedToastCount }} {{ addedToastCount === 1 ? 'item' : 'items' }} 👍</span>
+      <button
+        class="w-8 h-8 rounded-full bg-white flex items-center justify-center active:scale-[0.98] transition-transform"
+        @click="router.push('/shopping-list')"
+      >
+        <PhShoppingCart class="w-4 h-4 text-app-black" weight="fill" />
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { PhCaretLeft, PhHeart, PhForkKnife, PhCaretDown, PhCaretUp, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock, PhUploadSimple, PhPlus, PhEye } from '@phosphor-icons/vue'
+import { PhCaretLeft, PhHeart, PhForkKnife, PhCaretDown, PhCaretUp, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock, PhUploadSimple, PhPlus, PhEye, PhShoppingCart, PhCopySimple, PhShareNetwork } from '@phosphor-icons/vue'
 import { getIngredientIcon } from '~/utils/ingredientIcons'
 import type { CalendarEntry } from '~/components/MonthCalendar.vue'
 
@@ -431,6 +500,7 @@ interface RecipeData {
   steps: { step: number; description: string }[] | null
   cook_name: string | null
   cook_id: string | null
+  cook_avatar: string | null
   source_cook_queue: string | null
 }
 
@@ -750,6 +820,9 @@ const displayCookAvatar = computed(() => {
   if (queueEntry.value?.cook && typeof queueEntry.value.cook === 'object' && 'avatar' in queueEntry.value.cook && queueEntry.value.cook.avatar) {
     return `${directusUrl}/assets/${queueEntry.value.cook.avatar}`
   }
+  if (recipe.value?.cook_avatar) {
+    return `${directusUrl}/assets/${recipe.value.cook_avatar}`
+  }
   return null
 })
 
@@ -885,6 +958,10 @@ async function markReady() {
 }
 
 const showCopiedToast = ref(false)
+const showShareModal = ref(false)
+const isAddingToList = ref(false)
+const showAddedToast = ref(false)
+const addedToastCount = ref(0)
 
 const shoppingListText = computed(() => {
   if (!recipe.value?.ingredients || recipe.value.ingredients.length === 0) return ''
@@ -896,6 +973,66 @@ const shoppingListText = computed(() => {
   })
   return `🛒 ${recipe.value.dish_name}\n\n${lines.join('\n')}\n\nItoCook`
 })
+
+function copyIngredientsText(): string {
+  if (!recipe.value?.ingredients || recipe.value.ingredients.length === 0) return ''
+  const ratio = activeServings.value / baseServings.value
+  const lines = recipe.value.ingredients.map(ing => {
+    const scaledAmount = ing.amount ? parseFloat((parseFloat(ing.amount) * ratio).toFixed(1)) : null
+    const amountStr = scaledAmount ? `${scaledAmount}` : ''
+    const unitStr = ing.unit || ''
+    const fullAmount = amountStr && unitStr ? `${amountStr} ${unitStr}` : amountStr || unitStr
+    const emoji = getIngredientIcon(ing.name)
+    const amountPart = fullAmount ? ` ${fullAmount}` : ''
+    return `• ${emoji} ${ing.name}${amountPart}`
+  })
+  return `${recipe.value.dish_name} (${activeServings.value} portions)\n${lines.join('\n')}`
+}
+
+const canAddToList = computed(() => isEntryCook.value)
+
+async function addToShoppingList() {
+  if (!recipe.value?.ingredients?.length) return
+  isAddingToList.value = true
+  const ratio = activeServings.value / baseServings.value
+  const cookDate = queueEntry.value?.date ?? null
+  const items = recipe.value.ingredients.map(ing => ({
+    user: user.value!.id,
+    recipe: recipe.value!.id,
+    recipe_name: recipe.value!.dish_name,
+    ingredient_name: ing.name,
+    amount: ing.amount ? parseFloat((parseFloat(ing.amount) * ratio).toFixed(1)) : null,
+    unit: ing.unit ?? null,
+    emoji: getIngredientIcon(ing.name) ?? null,
+    is_checked: false,
+    cook_date: cookDate,
+  }))
+  try {
+    await Promise.all(
+      items.map(item => request('post', '/items/shopping_list_items', item))
+    )
+    addedToastCount.value = items.length
+    showAddedToast.value = true
+    setTimeout(() => { showAddedToast.value = false }, 2000)
+  } catch {
+    /* silently fail */
+  }
+  isAddingToList.value = false
+  showShareModal.value = false
+}
+
+async function copyIngredients() {
+  const text = copyIngredientsText()
+  if (!text) return
+  try {
+    await navigator.clipboard.writeText(text)
+    showCopiedToast.value = true
+    setTimeout(() => { showCopiedToast.value = false }, 2000)
+  } catch {
+    /* clipboard not available */
+  }
+  showShareModal.value = false
+}
 
 async function shareShoppingList() {
   const text = shoppingListText.value
@@ -916,6 +1053,7 @@ async function shareShoppingList() {
       /* clipboard not available */
     }
   }
+  showShareModal.value = false
 }
 
 onMounted(async () => {
@@ -936,9 +1074,11 @@ onMounted(async () => {
 
     let cookName: string | null = null
     let cookId: string | null = null
+    let cookAvatar: string | null = null
     if (item.cook && typeof item.cook === 'object') {
       cookName = [item.cook.first_name, item.cook.last_name].filter(Boolean).join(' ') || 'Unknown'
       cookId = item.cook.id
+      cookAvatar = (item.cook as { avatar?: string }).avatar ?? null
     }
 
     let ingredients: { name: string; amount: string; unit: string }[] | null = null
@@ -966,6 +1106,7 @@ onMounted(async () => {
       steps,
       cook_name: cookName,
       cook_id: cookId,
+      cook_avatar: cookAvatar,
       source_cook_queue: item.source_cook_queue,
     }
 
@@ -981,8 +1122,10 @@ onMounted(async () => {
     } else {
       const today = new Date().toISOString().split('T')[0]
       try {
+        // Prefer queue entry where current user is cook, fallback to any match
+        const userFilter = user.value?.id ? `&filter[cook][_eq]=${user.value.id}` : ''
         const entries = await request<QueueEntry[]>('get',
-          `/items/cook_queue?filter[dish_name][_eq]=${encodeURIComponent(item.dish_name)}&filter[date][_gte]=${today}&limit=1&fields=id,status,date,cook.id,cook.first_name,cook.last_name,cook.avatar`
+          `/items/cook_queue?filter[dish_name][_eq]=${encodeURIComponent(item.dish_name)}&filter[date][_gte]=${today}${userFilter}&limit=1&fields=id,status,date,cook.id,cook.first_name,cook.last_name,cook.avatar`
         )
         if (entries.length > 0) {
           activeCqId.value = entries[0]!.id

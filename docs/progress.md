@@ -122,6 +122,9 @@
 - [x] **Post-fix: Servings persistence** — `saveServingsToRecipe` now also scales ingredient amounts by ratio and saves both `servings` + `ingredients` to Directus; no flash/jump because `currentServings` is set to null after save (base = selection)
 - [x] **Post-fix: Servings presets** — always 3 pills: [10, 15, 20]; if base differs, last preset (20) replaced with base value
 - [x] **G3a: shopping_list_items collection** — created in Directus with fields (id, user M2O, recipe M2O, recipe_name, ingredient_name, amount, unit, emoji, is_checked, sort, date_created); permissions set for User policy (create/read=`*`, update=`is_checked,sort`, delete; all filtered by `$CURRENT_USER`)
+- [x] **G3b: Shopping list page + Kitchen widget** — `shopping-list.vue` page with By Recipe / All Items tabs, toggle check, clear checked (individual DELETE loop); `ShoppingListWidget.vue` for kitchen page (unchecked count, tap → /shopping-list); kitchen header shows shopping cart icon (PhShoppingCart) instead of bell when user is cook for selected day
+- [x] **G3c: Add to shopping list from recipe detail** — share icon in ingredients header opens bottom sheet modal with 3 actions: "Add to Shopping List" (POST each scaled ingredient to shopping_list_items), "Copy ingredients" (clipboard with formatted text + scaled amounts), "Share recipe" (navigator.share / clipboard fallback); success toast "Added N items to your shopping list"
+- [x] **G3c polish: Widget design + share button visibility** — ShoppingListWidget now uses `bg-orange-pastel` when items pending, `bg-green-pastel` when all done; added `orange-pastel`/`orange-light` to tailwind config and design.md; share icon in recipe page enlarged to `w-9 h-9` with `bg-primary text-white`
 - [x] **Fix: duplicate Start Cooking** — removed duplicate `isEntryCook` button from smart-adaptive section; only one Start Cooking exists inside status template with `startCooking` handler
 - [x] **UX: participant count moved** — removed "N joined" from bottom controls; added `PhUsers` icon + count next to Portions pills row, shown when `queueEntry` exists
 - [x] **Fix: all participants** — extended limit to 100, added `user.email` to fields, added `.filter(Boolean)` after map
@@ -150,6 +153,13 @@
 - [x] **Seed: 6 test users + cleaning_schedule** — созданы Klaus, Anna, Thomas, Sabine, Michael, Laura с отделами; 9 записей cleaning_schedule на 16–27 июня (будни)
 - [x] **Fix: MCP user filter** — `_nstarts_with=MCP` в обоих server routes (list + count); причина: first_name = "MCP User"
 - [x] **Task 4: DutyWidget live data** — компонент сам запрашивает cleaning_schedule на неделю; top line (отдел / "You're next!"), middle (имя дежурного), bottom (статус); фон градиентами; декоративный SVG в левом верхнем углу
+- [x] **G3d: Shopping list polish** — added `cook_date` field to `shopping_list_items` (Directus); stored from queue entry when adding items; displayed next to recipe name in By Recipe view (e.g. "Wed, Jun 17"); tabs restyled with `bg-primary-pale`/`bg-primary text-white` and icons; weekly shopping comment added
+- [x] **G3d: Permission gate + recipe page UX** — "Add to Shopping List" button only shown when `isEntryCook`; photo header heart replaced with shopping cart when cook (links to `/shopping-list`); added-to-list toast includes a "View cart" shortcut button
+- [x] **G3d: Copy format fix** — changed clipboard format from `• 🐟 180 g Salmon fillet` to `• 🐟 Salmon fillet 180 g` (emoji → name → amount, matching page layout)
+- [x] **Fix: Fork-on-cook — always link recipe to queue entry** — added `recipe` field (M2O) to `cook_queue` Directus collection; `saveDish()` now PATCHes `recipe` after creating a fork; HeroBlock in kitchen uses linked recipe ID first; `recipe/[id].vue` queue entry search filters by current user's cook ID to avoid matching wrong queue
+- [x] **Fix: Auto-cleanup shopping list** — when `confirmDeduction()` runs, deletes `shopping_list_items` for the linked recipe (by recipe ID, fallback to dish_name + cook_date)
+- [x] **Shopping list UX: colorful cart, per-group select-all, red delete** — empty state cart icon in red circle; each recipe group in By Recipe view has its own select-all checkbox in the header row (checkbox → name → date right-aligned); All Items view has global select-all + "Delete all checked" button; `PhTrash` changed to `text-red-500`
+- [x] **Fix: Cancel queue → auto-cleanup shopping list** — `cancelCooking()` deletes `shopping_list_items` for the linked recipe (same logic as `confirmDeduction`)
 
 ## Next session — plan
 

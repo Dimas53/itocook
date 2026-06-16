@@ -234,3 +234,19 @@ When reviewing existing code, automatically convert any Russian comments, descri
 Never generate, insert, copy, preserve, or leave Russian text in project files under any circumstances.
 
 do not look at the mape /notes. in this mape /notes kann be written in russian.
+
+---
+
+## Rules to add under a new section "Vue 3 / Nuxt Gotchas"
+
+1. **useDirectus() must be called at composable init time, not inside async handlers.**
+   Nuxt composables (useRuntimeConfig, useCookie) require synchronous Nuxt context.
+   Calling them inside setTimeout, async functions, or event handlers loses that context.
+   Always initialize at the top level of the composable.
+
+2. **Composables returning plain objects with refs need `reactive()` in templates.**
+   If a composable returns `{ show: ref(false), loading: ref(false) }` (plain object),
+   Vue does NOT auto-unwrap refs in templates — `v-if="pm.loading"` checks the Ref
+   object itself (always truthy), not its value.
+   Fix: `const pm = reactive(useMyComposable())` in the component,
+   or return `readonly(reactive({...}))` from the composable itself.

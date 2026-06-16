@@ -6,7 +6,14 @@
         <p class="text-[14px] text-gray-500">Kitchen</p>
         <h1 class="text-[20px] font-semibold text-app-black -mt-0.5">Cook Queue</h1>
       </div>
-      <button class="w-10 h-10 flex items-center justify-center" @click.stop>
+      <button
+        v-if="isCurrentUserCookForSelected"
+        class="w-10 h-10 flex items-center justify-center active:scale-[0.98] transition-transform"
+        @click="router.push('/shopping-list')"
+      >
+        <PhShoppingCart class="w-6 h-6 text-app-black" />
+      </button>
+      <button v-else class="w-10 h-10 flex items-center justify-center" @click.stop>
         <PhBell class="w-6 h-6 text-app-black" />
       </button>
     </div>
@@ -72,7 +79,10 @@
         @show-participants="onShowParticipants"
       />
 
-      <!-- 4. Dish history -->
+      <!-- 4. Shopping list widget -->
+      <ShoppingListWidget @view="router.push('/shopping-list')" />
+
+      <!-- 5. Dish history -->
       <div>
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-[16px] font-semibold text-app-black">Dish History</h2>
@@ -144,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { PhBell, PhChefHat, PhHeart, PhMagnifyingGlass } from '@phosphor-icons/vue'
+import { PhBell, PhChefHat, PhHeart, PhMagnifyingGlass, PhShoppingCart } from '@phosphor-icons/vue'
 import type { CalendarDay } from '~/components/WeekCalendar.vue'
 import type { CookInfo } from '~/components/HeroBlock.vue'
 
@@ -163,6 +173,7 @@ interface CookQueueItem {
   dish_name: string | null
   category: string | null
   status: string | null
+  recipe: string | null
   cook: {
     id: string
     first_name: string
@@ -348,6 +359,23 @@ watch(selectedSlot, async (slot) => {
   if (!slot?.dishName) return
 
   try {
+    // Prefer linked recipe from the queue entry
+    const dayItems = allItems.value.filter(
+      (i) => i.date === selectedDate.value && i.status !== 'cancelled'
+    )
+    const queueItem = dayItems.find((i) => i.dish_name === slot.dishName) || dayItems[0]
+    if (queueItem?.recipe) {
+      const linked = await request<{ id: string; photo: string | null; category: string | null }>('get',
+        `/items/recipes/${queueItem.recipe}?fields=id,photo,category`
+      )
+      if (linked) {
+        heroRecipeId.value = linked.id
+        selectedCategory.value = linked.category || null
+        selectedRecipePhoto.value = linked.photo ?? null
+        return
+      }
+    }
+    // Fallback: dish_name match
     const recipeMatch = await request<{ id: string; photo: string | null; category: string | null }[]>('get',
       `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(slot.dishName)}&limit=1&fields=id,photo,category`
     )
@@ -356,14 +384,8 @@ watch(selectedSlot, async (slot) => {
       heroRecipeId.value = match.id
       selectedCategory.value = match.category || null
       selectedRecipePhoto.value = match.photo ?? null
-    } else {
-      const dayItems = allItems.value.filter(
-        (i) => i.date === selectedDate.value && i.status !== 'cancelled'
-      )
-      const queueItem = dayItems.find((i) => i.dish_name === slot.dishName) || dayItems[0]
-      if (queueItem?.category) {
-        selectedCategory.value = queueItem.category
-      }
+    } else if (queueItem?.category) {
+      selectedCategory.value = queueItem.category
     }
   } catch { /* ignore */ }
 })
@@ -391,7 +413,7 @@ onMounted(async () => {
     //   - who cooks today (Today's block)
     //   - weekly schedule (WeekCalendar)
     //   - dish history (Dish history)
-    items = await request<CookQueueItem[]>('get', `/items/cook_queue?${params}`)
+    items = await request<CookQueueItem[]>('get', `/items/cook_queue?${params}&fields=id,date,dish_name,category,status,recipe,cook.id,cook.first_name,cook.last_name`)
   } catch {
     // Directus may not be available
   }

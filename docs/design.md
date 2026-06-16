@@ -54,6 +54,8 @@
 | Yellow Pastel | `#FFF9B2` | `yellow-pastel` | Meal Plan card backgrounds |
 | Green Pastel | `#E1FFB0` | `green-pastel` | Lunch/Dinner card backgrounds |
 | Green Light | `#CBFFCF` | `green-light` | Alternative green fills (Journal) |
+| Orange Pastel | `#FFDE96` | `orange-pastel` | Shopping list widget background (items pending) |
+| Orange Light | `#FFD9C1` | `orange-light` | Alternative orange fills |
 | Black | `#0A0116` | `app-black` | Main text, dark element backgrounds |
 | White | `#FFFFFF` | `white` | Card backgrounds, text on dark |
 | Background | `#F5F5F8` | `app-bg` | General screen background |
@@ -73,6 +75,8 @@ colors: {
   'app-black': '#0A0116',
   'app-bg': '#F5F5F8',
   'gray-500': '#6B7280',
+  'orange-pastel': '#FFDE96',
+  'orange-light': '#FFD9C1',
   white: '#FFFFFF',
 }
 ```
