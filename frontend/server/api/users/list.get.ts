@@ -8,6 +8,7 @@ interface DirectusUser {
   id: string
   first_name: string
   last_name: string
+  department: string
 }
 
 export default defineEventHandler(async (event) => {
@@ -35,7 +36,7 @@ export default defineEventHandler(async (event) => {
   const adminToken = (adminJson as { data: { access_token: string } }).data.access_token
 
   const res = await fetch(
-    `${config.directusUrl}/users?fields[]=id&fields[]=first_name&fields[]=last_name&filter[status][_eq]=active&filter[first_name][_nstarts_with]=MCP&sort[]=first_name`,
+    `${config.directusUrl}/users?fields[]=id&fields[]=first_name&fields[]=last_name&fields[]=department&filter[status][_eq]=active&filter[first_name][_nstarts_with]=MCP&sort[]=first_name`,
     {
       headers: { Authorization: `Bearer ${adminToken}` },
     }

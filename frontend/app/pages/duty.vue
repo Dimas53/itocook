@@ -77,16 +77,13 @@ const calendarEntries = computed<CalendarEntry[]>(() =>
 
 function onCellTap(iso: string) {
   const calEntry = monthEntries.value.find(e => e.date === iso) ?? null
-  if (!calEntry) return
-  const todayStr = fmtISO(new Date())
   if (selectedDay.value?.iso === iso) {
     selectedDay.value = null
+    editingDate.value = null
   } else {
-    selectedDay.value = {
-      iso,
-      isPast: iso < todayStr,
-      entry: calEntry,
-    }
+    const todayStr = fmtISO(new Date())
+    selectedDay.value = { iso, isPast: iso < todayStr, entry: calEntry }
+    editingDate.value = null
   }
 }
 
@@ -140,6 +137,57 @@ const selectedEntryName = computed(() => {
   return [u.first_name, u.last_name].filter(Boolean).join(' ')
 })
 
+// ── Admin edit mode ──
+const USER_ROLE_UUID = '1927ae8a-4442-4097-91ce-0c290b3fc1d4'
+const DEPARTMENTS = ['Buchhaltung', 'Vertrieb', 'IT-Security', 'Infrastruktur', 'Entwicklung', 'HR', 'MARKET', 'CONTR']
+
+const isAdmin = computed(() => user.value?.role && user.value.role !== USER_ROLE_UUID)
+
+const editingDate = ref<string | null>(null)
+const allUsers = ref<{ id: string; first_name: string; last_name: string; department: string }[]>([])
+const editDept = ref('')
+const editUserId = ref('')
+const editSaving = ref(false)
+
+const filteredUsers = computed(() =>
+  allUsers.value.filter(u => u.department === editDept.value)
+)
+
+function startEdit() {
+  if (!selectedDay.value) return
+  editingDate.value = selectedDay.value.iso
+  editDept.value = selectedDay.value.entry?.department ?? DEPARTMENTS[0]
+  editUserId.value = selectedDay.value.entry?.user.id ?? ''
+}
+
+function cancelEdit() {
+  editingDate.value = null
+}
+
+async function saveAssignment() {
+  if (!editingDate.value || !editUserId.value) return
+  editSaving.value = true
+  try {
+    const existing = selectedDay.value?.entry
+    await $fetch('/api/duty/upsert', {
+      method: 'POST',
+      body: {
+        id: existing?.id ?? undefined,
+        date: editingDate.value,
+        user: editUserId.value,
+        department: editDept.value,
+        confirmed: existing?.confirmed ?? false,
+      },
+    })
+    editingDate.value = null
+    selectedDay.value = null
+    await fetchMonth()
+  } catch {
+    // silent
+  }
+  editSaving.value = false
+}
+
 onMounted(async () => {
   try {
     const items = await request<CleaningEntry[]>('get',
@@ -151,6 +199,15 @@ onMounted(async () => {
   }
   loading.value = false
   await fetchMonth()
+
+  if (isAdmin.value) {
+    try {
+      const res = await $fetch<{ users: { id: string; first_name: string; last_name: string; department: string }[] }>('/api/users/list')
+      allUsers.value = res.users ?? []
+    } catch {
+      allUsers.value = []
+    }
+  }
 })
 </script>
 
@@ -218,33 +275,85 @@ onMounted(async () => {
 
         <!-- Popover -->
         <div
-          v-if="selectedDay?.entry"
+          v-if="selectedDay"
           class="mt-3 bg-white rounded-xl border border-gray-100 px-4 py-3 shadow-sm"
         >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-[14px] font-semibold text-app-black">{{ selectedEntryName }}</p>
-              <p class="text-[12px] text-gray-500 mt-0.5">{{ selectedDay.entry.department }}</p>
+          <!-- Edit mode (admin only) -->
+          <template v-if="editingDate">
+            <p class="text-[11px] text-gray-400 uppercase tracking-wide mb-3">Edit assignment</p>
+
+            <p class="text-[11px] text-gray-400 mb-1">Department</p>
+            <select
+              v-model="editDept"
+              class="bg-primary-pale text-app-black text-[13px] font-medium rounded-xl px-3 py-2 pr-8 border-none outline-none w-full mb-3"
+            >
+              <option v-for="d in DEPARTMENTS" :key="d" :value="d">{{ d }}</option>
+            </select>
+
+            <p class="text-[11px] text-gray-400 mb-1">User</p>
+            <select
+              v-model="editUserId"
+              class="bg-primary-pale text-app-black text-[13px] font-medium rounded-xl px-3 py-2 pr-8 border-none outline-none w-full mb-3"
+            >
+              <option value="" disabled>— Select user —</option>
+              <option v-for="u in filteredUsers" :key="u.id" :value="u.id">
+                {{ u.first_name }} {{ u.last_name }}
+              </option>
+            </select>
+
+            <div class="flex gap-2">
+              <button
+                class="flex-1 bg-gray-100 text-gray-500 h-10 rounded-xl text-[13px] font-semibold active:scale-[0.98] transition-transform"
+                @click="cancelEdit"
+              >
+                Cancel
+              </button>
+              <button
+                class="flex-1 bg-primary text-white h-10 rounded-xl text-[13px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-50"
+                :disabled="!editUserId || editSaving"
+                @click="saveAssignment"
+              >
+                {{ editSaving ? 'Saving…' : 'Save' }}
+              </button>
             </div>
-            <span
-              v-if="selectedDay.isPast"
-              class="inline-block bg-gray-100 text-gray-400 text-[11px] font-medium rounded-full px-2.5 py-1"
+          </template>
+
+          <!-- View mode -->
+          <template v-else>
+            <div class="flex items-center justify-between">
+              <div>
+                <p v-if="selectedDay.entry" class="text-[14px] font-semibold text-app-black">{{ selectedEntryName }}</p>
+                <p v-else class="text-[14px] font-semibold text-app-black">No assignment</p>
+                <p class="text-[12px] text-gray-500 mt-0.5">{{ selectedDay.entry?.department ?? '—' }}</p>
+              </div>
+              <span
+                v-if="selectedDay.isPast"
+                class="inline-block bg-gray-100 text-gray-400 text-[11px] font-medium rounded-full px-2.5 py-1"
+              >
+                Done
+              </span>
+              <span
+                v-else-if="selectedDay.entry?.confirmed"
+                class="inline-block bg-green-pastel text-green-700 text-[11px] font-semibold rounded-full px-2.5 py-1"
+              >
+                ✓ Confirmed
+              </span>
+              <span
+                v-else-if="selectedDay.entry"
+                class="inline-block bg-gray-100 text-gray-400 text-[11px] font-medium rounded-full px-2.5 py-1"
+              >
+                Pending
+              </span>
+            </div>
+
+            <button
+              v-if="isAdmin"
+              class="bg-primary-pale text-primary h-9 rounded-xl w-full mt-3 text-[13px] font-semibold active:scale-[0.98] transition-transform"
+              @click="startEdit"
             >
-              Done
-            </span>
-            <span
-              v-else-if="selectedDay.entry.confirmed"
-              class="inline-block bg-green-pastel text-green-700 text-[11px] font-semibold rounded-full px-2.5 py-1"
-            >
-              ✓ Confirmed
-            </span>
-            <span
-              v-else
-              class="inline-block bg-gray-100 text-gray-400 text-[11px] font-medium rounded-full px-2.5 py-1"
-            >
-              Pending
-            </span>
-          </div>
+              {{ selectedDay.entry ? 'Edit' : 'Add' }}
+            </button>
+          </template>
         </div>
       </div>
     </div>
