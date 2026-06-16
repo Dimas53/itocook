@@ -111,6 +111,7 @@
 ## Current session
 - [x] **Fix: Consistent avatar URLs** — standardized all `pravatar.cc` `u` parameter to use `user.id` across `app.vue`, `index.vue`, `recipe/[id].vue`, `profile.vue`. Previously used `email` or `displayCookName`, causing different avatars per screen for the same user.
 - [x] **Fix: Avatars in finance Balances** — added user avatar (24px rounded-full) next to each name in both slider and expanded balance list on `finance.vue`.
+- [x] **Fix: Avatars not showing in Balances block** — `/api/users/list` was missing `avatar` from query fields and interface. `balanceEntries` iterates this list, so `entry.user.avatar` was `undefined` for everyone. Added `&fields[]=avatar` to the admin-proxy query and `avatar: string | null` to the interface.
 - [x] **Feat: Profile avatar upload** — click avatar to upload photo; resized client-side (max 400px JPEG); stored in Directus files, UUID saved to `directus_users.avatar`; `AvatarPlaceholder.vue` SVG fallback replaces Gravatar; header avatar on `index.vue` also updated; Directus permissions restricted to own-avatar-only update.
 - [x] **Fix: Avatar upload bugs** — use server proxy (`/api/users/update-me`) for PATCH `/users/me` (CORS); removed folder parameter from `uploadFile` (folder expects UUID, not name).
 - [x] **Fix: Pravatar removal from all avatar icons** — replaced pravatar in `finance.vue` (balances), `layouts/app.vue` (participant modal), `recipe/[id].vue` (cook pill) with conditional: uploaded photo → `AvatarPlaceholder` SVG. Added `avatar` field to all user/cook Directus queries. No pravatar references remain in `frontend/app/`.
@@ -174,6 +175,7 @@
 - [ ] Receipt photo upload
 
 ## Git log
+- `f8089ec` — feat(profile): avatar upload with SVG fallback, remove pravatar everywhere
 - `b532f5c` — feat: servings selector with scaling, participant modal in layout, duty tomorrow indicator, cook eye icon, author pill modal
 - `d80c44e` — feat(duty): add admin edit mode for cleaning_schedule assignments
 - `a2a75f6` — refactor(calendar): extract MonthCalendar component, use in duty and recipe pages
