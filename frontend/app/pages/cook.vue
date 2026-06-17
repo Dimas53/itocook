@@ -166,7 +166,7 @@
           <div
             class="rounded-xl bg-white p-4 flex items-center justify-between"
             :class="{ 'cursor-pointer active:scale-[0.98] transition-transform': existingRecipeId }"
-            @click="existingRecipeId && router.push(`/recipe/${existingRecipeId}`)"
+            @click="existingRecipeId && router.push(`/recipe/${existingRecipeId}?cq=${cookEntry!.id}`)"
           >
             <div>
               <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Today's Dish</p>
@@ -181,7 +181,7 @@
             <button
               v-if="existingRecipeId"
               class="w-full h-12 rounded-full border border-primary text-primary font-semibold text-[14px] flex items-center justify-center gap-2 bg-white active:scale-[0.98] transition-transform"
-              @click="router.push(`/recipe/create?id=${existingRecipeId}&name=${encodeURIComponent(cookEntry!.dish_name || '')}`)"
+              @click="router.push(`/recipe/create?id=${existingRecipeId}&name=${encodeURIComponent(cookEntry!.dish_name || '')}&cq=${cookEntry!.id}`)"
             >
               <PhPencil class="w-4 h-4" />
               Edit Recipe
@@ -189,7 +189,7 @@
             <button
               v-else
               class="w-full h-12 rounded-full border border-primary text-primary font-semibold text-[14px] flex items-center justify-center gap-2 bg-white active:scale-[0.98] transition-transform"
-              @click="router.push(`/recipe/create?name=${encodeURIComponent(cookEntry!.dish_name || '')}&date=${pageDateStr}&category=${selectedCategory}`)"
+              @click="router.push(`/recipe/create?name=${encodeURIComponent(cookEntry!.dish_name || '')}&date=${pageDateStr}&category=${selectedCategory}&cq=${cookEntry!.id}`)"
             >
               <PhPlus class="w-4 h-4" weight="bold" />
               Add Recipe
@@ -235,7 +235,7 @@
           <div
             class="rounded-xl bg-white p-4 flex items-center justify-between"
             :class="{ 'cursor-pointer active:scale-[0.98] transition-transform': existingRecipeId }"
-            @click="existingRecipeId && router.push(`/recipe/${existingRecipeId}`)"
+            @click="existingRecipeId && router.push(`/recipe/${existingRecipeId}?cq=${cookEntry!.id}`)"
           >
             <div>
               <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Today's Dish</p>
@@ -250,7 +250,7 @@
             <button
               v-if="existingRecipeId"
               class="w-full h-12 rounded-full border border-primary text-primary font-semibold text-[14px] flex items-center justify-center gap-2 bg-white active:scale-[0.98] transition-transform"
-              @click="router.push(`/recipe/create?id=${existingRecipeId}&name=${encodeURIComponent(cookEntry!.dish_name || '')}`)"
+              @click="router.push(`/recipe/create?id=${existingRecipeId}&name=${encodeURIComponent(cookEntry!.dish_name || '')}&cq=${cookEntry!.id}`)"
             >
               <PhPencil class="w-4 h-4" />
               Edit Recipe
@@ -258,7 +258,7 @@
             <button
               v-else
               class="w-full h-12 rounded-full border border-primary text-primary font-semibold text-[14px] flex items-center justify-center gap-2 bg-white active:scale-[0.98] transition-transform"
-              @click="router.push(`/recipe/create?name=${encodeURIComponent(cookEntry!.dish_name || '')}&date=${pageDateStr}&category=${selectedCategory}`)"
+              @click="router.push(`/recipe/create?name=${encodeURIComponent(cookEntry!.dish_name || '')}&date=${pageDateStr}&category=${selectedCategory}&cq=${cookEntry!.id}`)"
             >
               <PhPlus class="w-4 h-4" weight="bold" />
               Add Recipe
@@ -865,7 +865,7 @@ async function saveMatchedDish() {
 function createRecipeAndAdd() {
   const returnTo = `/cook?date=${pageDateStr.value}`
   router.push(
-    `/recipe/create?name=${encodeURIComponent(dishName.value.trim())}&date=${pageDateStr.value}&category=${selectedCategory.value}&returnTo=${encodeURIComponent(returnTo)}`
+    `/recipe/create?name=${encodeURIComponent(dishName.value.trim())}&date=${pageDateStr.value}&category=${selectedCategory.value}&returnTo=${encodeURIComponent(returnTo)}&cq=${cookEntry.value!.id}`
   )
 }
 
@@ -873,7 +873,7 @@ function editDish() {
   if (!cookEntry.value?.dish_name) return
   const id = existingRecipeId.value
   if (id) {
-    router.push(`/recipe/${id}`)
+    router.push(`/recipe/${id}?cq=${cookEntry.value!.id}`)
   } else {
     router.push(`/recipe/create?name=${encodeURIComponent(cookEntry.value.dish_name)}&date=${pageDateStr.value}&category=${selectedCategory.value}`)
   }
