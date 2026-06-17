@@ -243,4 +243,5 @@
 - `344e137` — fix(duty): add id to fields, proxy confirm PATCH through server route
 - `b973505` — fix(duty): sync calendar after confirm, allow clicking past dates
 - `648d1f3` — feat(shopping-list): cook_date, per-group select-all, auto-cleanup, fork fix
+- `4a0940a` — feat(recipes): dedup by dish_name across all recipe lists, cleanup unused collections
 
