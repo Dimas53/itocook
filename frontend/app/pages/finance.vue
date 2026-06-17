@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhArrowUp, PhCheck, PhFloppyDisk, PhCaretUp, PhCaretDown } from '@phosphor-icons/vue'
+import { PhArrowUp, PhCheck, PhFloppyDisk } from '@phosphor-icons/vue'
 
 definePageMeta({ layout: 'app' })
 
@@ -197,71 +197,9 @@ async function submitTopup() {
   topupSubmitting.value = false
 }
 
-// ── Transaction History slider ─────────────────────────────────────────────
+// ── Expand state for slider/expanded toggle ───────────────────────────────
 const transactionsExpanded = ref(false)
-const txHistoryIndex = ref(0)
-const TX_VISIBLE_COUNT = 5
-const TX_ITEM_HEIGHT = 72
-const TX_ITEM_GAP = 8
-const TX_ITEM_OFFSET = TX_ITEM_HEIGHT + TX_ITEM_GAP
-const txSliderHeight = TX_VISIBLE_COUNT * TX_ITEM_HEIGHT + (TX_VISIBLE_COUNT - 1) * TX_ITEM_GAP
-
-const canScrollTxUp = computed(() => txHistoryIndex.value > 0)
-const canScrollTxDown = computed(() => txHistoryIndex.value + TX_VISIBLE_COUNT < transactions.value.length)
-
-function scrollTxUp() {
-  if (canScrollTxUp.value) txHistoryIndex.value--
-}
-function scrollTxDown() {
-  if (canScrollTxDown.value) txHistoryIndex.value++
-}
-
-let txTouchStartY = 0
-function onTxTouchStart(e: TouchEvent) {
-  txTouchStartY = e.touches[0]!.clientY
-}
-function onTxTouchEnd(e: TouchEvent) {
-  const deltaY = e.changedTouches[0]!.clientY - txTouchStartY
-  if (Math.abs(deltaY) > 30) {
-    if (deltaY < 0) scrollTxDown()
-    else scrollTxUp()
-  }
-}
-
-watch(transactions, () => { txHistoryIndex.value = 0 })
-
-// ── Balances slider ─────────────────────────────────────────────────────────
 const balancesExpanded = ref(false)
-const balIndex = ref(0)
-const BAL_VISIBLE_COUNT = 5
-const BAL_ITEM_HEIGHT = 56
-const BAL_ITEM_GAP = 8
-const BAL_ITEM_OFFSET = BAL_ITEM_HEIGHT + BAL_ITEM_GAP
-const balSliderHeight = BAL_VISIBLE_COUNT * BAL_ITEM_HEIGHT + (BAL_VISIBLE_COUNT - 1) * BAL_ITEM_GAP
-
-const canScrollBalUp = computed(() => balIndex.value > 0)
-const canScrollBalDown = computed(() => balIndex.value + BAL_VISIBLE_COUNT < balanceEntries.value.length)
-
-function scrollBalUp() {
-  if (canScrollBalUp.value) balIndex.value--
-}
-function scrollBalDown() {
-  if (canScrollBalDown.value) balIndex.value++
-}
-
-let balTouchStartY = 0
-function onBalTouchStart(e: TouchEvent) {
-  balTouchStartY = e.touches[0]!.clientY
-}
-function onBalTouchEnd(e: TouchEvent) {
-  const deltaY = e.changedTouches[0]!.clientY - balTouchStartY
-  if (Math.abs(deltaY) > 30) {
-    if (deltaY < 0) scrollBalDown()
-    else scrollBalUp()
-  }
-}
-
-watch(balanceEntries, () => { balIndex.value = 0 })
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function formatDate(iso: string): string {
@@ -302,72 +240,35 @@ onMounted(async () => {
 
           <!-- Slider mode -->
           <template v-if="!balancesExpanded">
-            <!-- Up arrow -->
-            <div v-if="balanceEntries.length > BAL_VISIBLE_COUNT" class="flex justify-center h-6">
-              <button
-                class="w-6 h-6 flex items-center justify-center transition-colors"
-                :class="canScrollBalUp ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
-                :disabled="!canScrollBalUp"
-                @click="scrollBalUp"
-              >
-                <PhCaretUp class="w-4 h-4" weight="bold" />
-              </button>
-            </div>
-
-            <div
-              @touchstart="onBalTouchStart"
-              @touchend="onBalTouchEnd"
-            >
-              <div class="overflow-hidden relative" :style="{ height: balSliderHeight + 'px' }">
-                <div
-                  class="transition-transform duration-300 ease-out will-change-transform"
-                  :style="{ transform: `translateY(${-balIndex * BAL_ITEM_OFFSET}px)` }"
-                >
-                  <div
-                    v-for="entry in balanceEntries"
-                    :key="entry.user.id"
-                    class="h-14 rounded-xl bg-white border border-gray-100 px-4 flex items-center justify-between mb-2 last:mb-0"
-                  >
-                    <div class="flex items-center gap-2 min-w-0 flex-1">
-                      <img
-                        v-if="entry.user.avatar"
-                        :src="`${directusUrl}/assets/${entry.user.avatar}`"
-                        :alt="`${entry.user.first_name ?? ''} ${entry.user.last_name ?? ''}`"
-                        class="w-6 h-6 rounded-full object-cover shrink-0"
-                      />
-                      <div v-else class="w-6 h-6 rounded-full shrink-0 overflow-hidden">
-                        <AvatarPlaceholder />
-                      </div>
-                      <span class="text-[14px] text-app-black font-medium truncate">
-                        {{ entry.user.first_name }} {{ entry.user.last_name }}
-                      </span>
+            <SliderList :items="balanceEntries" :visible-count="5" :item-height="56">
+              <template #item="{ item: entry }">
+                <div class="rounded-xl bg-white border border-gray-100 px-4 flex items-center justify-between h-full">
+                  <div class="flex items-center gap-2 min-w-0 flex-1">
+                    <img
+                      v-if="entry.user.avatar"
+                      :src="`${directusUrl}/assets/${entry.user.avatar}`"
+                      :alt="`${entry.user.first_name ?? ''} ${entry.user.last_name ?? ''}`"
+                      class="w-6 h-6 rounded-full object-cover shrink-0"
+                    />
+                    <div v-else class="w-6 h-6 rounded-full shrink-0 overflow-hidden">
+                      <AvatarPlaceholder />
                     </div>
-                    <span
-                      class="text-[14px] font-semibold shrink-0 ml-2"
-                      :class="isNegative(entry.amount) ? 'text-red-500' : 'text-green-600'"
-                    >
-                      <template v-if="isNegative(entry.amount)">-€{{ Math.abs(entry.amount).toFixed(2) }}</template>
-                      <template v-else>€{{ entry.amount.toFixed(2) }}</template>
+                    <span class="text-[14px] text-app-black font-medium truncate">
+                      {{ entry.user.first_name }} {{ entry.user.last_name }}
                     </span>
                   </div>
+                  <span
+                    class="text-[14px] font-semibold shrink-0 ml-2"
+                    :class="isNegative(entry.amount) ? 'text-red-500' : 'text-green-600'"
+                  >
+                    <template v-if="isNegative(entry.amount)">-€{{ Math.abs(entry.amount).toFixed(2) }}</template>
+                    <template v-else>€{{ entry.amount.toFixed(2) }}</template>
+                  </span>
                 </div>
-              </div>
-            </div>
-
-            <!-- Down arrow -->
-            <div v-if="balanceEntries.length > BAL_VISIBLE_COUNT" class="flex justify-center h-6">
-              <button
-                class="w-6 h-6 flex items-center justify-center transition-colors"
-                :class="canScrollBalDown ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
-                :disabled="!canScrollBalDown"
-                @click="scrollBalDown"
-              >
-                <PhCaretDown class="w-4 h-4" weight="bold" />
-              </button>
-            </div>
-
+              </template>
+            </SliderList>
             <button
-              v-if="balanceEntries.length > BAL_VISIBLE_COUNT"
+              v-if="balanceEntries.length > 5"
               class="w-full flex items-center justify-center gap-1 mt-2 text-[13px] text-gray-400 font-medium active:text-app-black transition-colors active:scale-[0.98]"
               @click="balancesExpanded = true"
             >
@@ -511,66 +412,29 @@ onMounted(async () => {
 
           <!-- Slider mode -->
           <template v-if="!transactionsExpanded">
-            <!-- Up arrow -->
-            <div v-if="transactions.length > TX_VISIBLE_COUNT" class="flex justify-center h-6">
-              <button
-                class="w-6 h-6 flex items-center justify-center transition-colors"
-                :class="canScrollTxUp ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
-                :disabled="!canScrollTxUp"
-                @click="scrollTxUp"
-              >
-                <PhCaretUp class="w-4 h-4" weight="bold" />
-              </button>
-            </div>
-
-            <div
-              @touchstart="onTxTouchStart"
-              @touchend="onTxTouchEnd"
-            >
-              <div class="overflow-hidden relative" :style="{ height: txSliderHeight + 'px' }">
-                <div
-                  class="transition-transform duration-300 ease-out will-change-transform"
-                  :style="{ transform: `translateY(${-txHistoryIndex * TX_ITEM_OFFSET}px)` }"
-                >
-                  <div
-                    v-for="tx in transactions"
-                    :key="tx.id"
-                    class="h-[72px] rounded-xl bg-white border border-gray-100 p-3 flex flex-col justify-center mb-2 last:mb-0"
-                  >
-                    <div class="flex items-center justify-between">
-                      <span class="text-[12px] text-gray-500">{{ formatDate(tx.date) }}</span>
-                      <span
-                        class="text-[14px] font-semibold"
-                        :class="Number(tx.amount) >= 0 ? 'text-green-600' : 'text-red-500'"
-                      >
-                        {{ Number(tx.amount) >= 0 ? '+' : '-' }}€{{ Math.abs(Number(tx.amount)).toFixed(2) }}
-                      </span>
-                    </div>
-                    <div class="flex items-center justify-between mt-1">
-                      <span class="text-[14px] text-app-black font-medium">
-                        {{ tx.user?.first_name }} {{ tx.user?.last_name }}
-                      </span>
-                      <span class="text-[12px] text-gray-400 capitalize">{{ tx.type }}</span>
-                    </div>
+            <SliderList :items="transactions" :visible-count="5" :item-height="72">
+              <template #item="{ item: tx }">
+                <div class="rounded-xl bg-white border border-gray-100 p-3 flex flex-col justify-center h-full">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-500">{{ formatDate(tx.date) }}</span>
+                    <span
+                      class="text-[14px] font-semibold"
+                      :class="Number(tx.amount) >= 0 ? 'text-green-600' : 'text-red-500'"
+                    >
+                      {{ Number(tx.amount) >= 0 ? '+' : '-' }}€{{ Math.abs(Number(tx.amount)).toFixed(2) }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between mt-1">
+                    <span class="text-[14px] text-app-black font-medium">
+                      {{ tx.user?.first_name }} {{ tx.user?.last_name }}
+                    </span>
+                    <span class="text-[12px] text-gray-400 capitalize">{{ tx.type }}</span>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <!-- Down arrow -->
-            <div v-if="transactions.length > TX_VISIBLE_COUNT" class="flex justify-center h-6">
-              <button
-                class="w-6 h-6 flex items-center justify-center transition-colors"
-                :class="canScrollTxDown ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
-                :disabled="!canScrollTxDown"
-                @click="scrollTxDown"
-              >
-                <PhCaretDown class="w-4 h-4" weight="bold" />
-              </button>
-            </div>
-
+              </template>
+            </SliderList>
             <button
-              v-if="transactions.length > TX_VISIBLE_COUNT"
+              v-if="transactions.length > 5"
               class="w-full flex items-center justify-center gap-1 mt-2 text-[13px] text-gray-400 font-medium active:text-app-black transition-colors active:scale-[0.98]"
               @click="transactionsExpanded = true"
             >

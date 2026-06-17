@@ -110,7 +110,7 @@
               </div>
               <div v-if="queueEntry" class="flex items-center gap-1 shrink-0">
                 <PhUsers class="w-4 h-4 text-gray-500" />
-                <span class="text-[14px] text-gray-500 font-medium">{{ participants.length }}</span>
+                <span class="text-[14px] text-gray-500 font-medium">{{ participantsList.length }}</span>
               </div>
             </div>
             <div
@@ -351,56 +351,24 @@
             <p class="text-[13px] text-gray-400">No recipes yet</p>
           </div>
         </template>
-
-        <template v-else>
-          <!-- Up arrow -->
-          <div v-if="cookRecipes.length > COOK_RECIPES_VISIBLE" class="flex justify-center h-6 shrink-0">
-            <button
-              class="w-6 h-6 flex items-center justify-center transition-colors"
-              :class="canScrollCookUp ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
-              :disabled="!canScrollCookUp"
-              @click="scrollCookUp"
-            >
-              <PhCaretUp class="w-4 h-4" weight="bold" />
-            </button>
-          </div>
-
-          <div class="overflow-hidden" :style="{ height: COOK_RECIPES_VISIBLE * COOK_RECIPE_OFFSET + 'px' }">
+        <SliderList v-else :items="cookRecipes" :visible-count="3" :item-height="72">
+          <template #item="{ item: r }">
             <div
-              class="transition-transform duration-300 ease-out will-change-transform space-y-2"
-              :style="{ transform: `translateY(${-cookRecipesIndex * COOK_RECIPE_OFFSET}px)` }"
+              class="rounded-xl bg-gray-50 px-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform h-full"
+              @click="router.push(`/recipe/${r.id}`); showCookRecipes = false"
             >
-              <div
-                v-for="r in cookRecipes"
-                :key="r.id"
-                class="h-[72px] rounded-xl bg-gray-50 px-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform"
-                @click="router.push(`/recipe/${r.id}`); showCookRecipes = false"
-              >
-                <div class="w-12 h-12 rounded-xl bg-primary-light flex items-center justify-center shrink-0 overflow-hidden">
-                  <img v-if="r.photo" :src="`http://localhost:8055/assets/${r.photo}`" class="w-full h-full object-cover" alt="" />
-                  <PhCookingPot v-else class="w-5 h-5 text-primary" weight="fill" />
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-[14px] font-semibold text-app-black truncate leading-tight">{{ r.dish_name }}</p>
-                  <p v-if="r.category" class="text-[11px] text-gray-500 capitalize mt-0.5">{{ r.category }}</p>
-                </div>
-                <PhEye class="w-5 h-5 text-gray-400 shrink-0" />
+              <div class="w-12 h-12 rounded-xl bg-primary-light flex items-center justify-center shrink-0 overflow-hidden">
+                <img v-if="r.photo" :src="`http://localhost:8055/assets/${r.photo}`" class="w-full h-full object-cover" alt="" />
+                <PhCookingPot v-else class="w-5 h-5 text-primary" weight="fill" />
               </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[14px] font-semibold text-app-black truncate leading-tight">{{ r.dish_name }}</p>
+                <p v-if="r.category" class="text-[11px] text-gray-500 capitalize mt-0.5">{{ r.category }}</p>
+              </div>
+              <PhEye class="w-5 h-5 text-gray-400 shrink-0" />
             </div>
-          </div>
-
-          <!-- Down arrow -->
-          <div v-if="cookRecipes.length > COOK_RECIPES_VISIBLE" class="flex justify-center h-6 shrink-0">
-            <button
-              class="w-6 h-6 flex items-center justify-center transition-colors"
-              :class="canScrollCookDown ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
-              :disabled="!canScrollCookDown"
-              @click="scrollCookDown"
-            >
-              <PhCaretDown class="w-4 h-4" weight="bold" />
-            </button>
-          </div>
-        </template>
+          </template>
+        </SliderList>
       </div>
     </div>
 
@@ -476,7 +444,7 @@
 </template>
 
 <script setup lang="ts">
-import { PhCaretLeft, PhHeart, PhForkKnife, PhCaretDown, PhCaretUp, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock, PhUploadSimple, PhPlus, PhEye, PhShoppingCart, PhCopySimple, PhShareNetwork } from '@phosphor-icons/vue'
+import { PhCaretLeft, PhHeart, PhForkKnife, PhCaretDown, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock, PhUploadSimple, PhPlus, PhEye, PhShoppingCart, PhCopySimple, PhShareNetwork } from '@phosphor-icons/vue'
 import { getIngredientIcon } from '~/utils/ingredientIcons'
 import type { CalendarEntry } from '~/components/MonthCalendar.vue'
 
@@ -514,10 +482,6 @@ interface OrderEntry {
   status: string
 }
 
-interface Participant {
-  id: string
-  name: string
-}
 
 interface QueueEntry {
   id: string
@@ -539,7 +503,7 @@ const showIngredients = ref(true)
 const showSteps = ref(false)
 
 const saving = ref(false)
-const participants = ref<Participant[]>([])
+
 const activeCqId = ref<string | null>(null)
 const queueEntry = ref<QueueEntry | null>(null)
 
@@ -733,7 +697,7 @@ function selectDate(date: string) {
 
 const cqParam = computed(() => route.query.cq as string | undefined)
 const participantsCqId = computed(() => cqParam.value ?? activeCqId.value ?? null)
-const { confirmed: participantCount, hasJoined: joined, joinBlockedReason, join: onJoin, fetch: refreshParticipants } = useParticipants(participantsCqId)
+const { confirmed: participantCount, hasJoined: joined, joinBlockedReason, join: onJoin, fetch: refreshParticipants, participantsList } = useParticipants(participantsCqId)
 
 const hasActiveEntry = computed(() => !!(cqParam.value ?? activeCqId.value))
 
@@ -836,8 +800,6 @@ const canEdit = computed(() => {
 const showCookRecipes = ref(false)
 const cookRecipes = ref<CookRecipeItem[]>([])
 const cookRecipesLoading = ref(false)
-const cookRecipesIndex = ref(0)
-
 async function fetchCookRecipes(cookId: string) {
   cookRecipesLoading.value = true
   try {
@@ -850,7 +812,6 @@ async function fetchCookRecipes(cookId: string) {
       category: r.category ?? null,
       photo: r.photo ?? null,
     }))
-    cookRecipesIndex.value = 0
   } catch { /* ignore */ }
   cookRecipesLoading.value = false
 }
@@ -861,17 +822,6 @@ function openCookRecipes() {
   fetchCookRecipes(id)
   showCookRecipes.value = true
 }
-
-const COOK_RECIPES_VISIBLE = 3
-const COOK_RECIPES_ITEM_H = 72
-const COOK_RECIPES_ITEM_GAP = 8
-const COOK_RECIPE_OFFSET = COOK_RECIPES_ITEM_H + COOK_RECIPES_ITEM_GAP
-
-const canScrollCookUp = computed(() => cookRecipesIndex.value > 0)
-const canScrollCookDown = computed(() => cookRecipesIndex.value + COOK_RECIPES_VISIBLE < cookRecipes.value.length)
-
-function scrollCookUp() { if (canScrollCookUp.value) cookRecipesIndex.value-- }
-function scrollCookDown() { if (canScrollCookDown.value) cookRecipesIndex.value++ }
 
 function editRecipe() {
   router.push(`/recipe/create?id=${recipe.value?.id}&name=${encodeURIComponent(recipe.value?.dish_name || '')}`)
@@ -912,20 +862,6 @@ async function toggleLike() {
       likeCount.value++
       myLikeId.value = newLike.id
     } catch { /* ignore */ }
-  }
-}
-
-async function fetchParticipants(id: string) {
-  try {
-    const orders = await request<OrderEntry[]>('get',
-      `/items/orders?filter[cook_queue][_eq]=${id}&filter[status][_eq]=confirmed&fields=*,user.id,user.first_name,user.last_name`
-    )
-    participants.value = orders.map((o) => ({
-      id: o.user.id,
-      name: [o.user.first_name, o.user.last_name].filter(Boolean).join(' ') || 'Unknown',
-    }))
-  } catch {
-    // ignore
   }
 }
 
@@ -1138,7 +1074,6 @@ onMounted(async () => {
 
     const targetId = activeCqId.value
     if (targetId) {
-      await fetchParticipants(targetId)
       await refreshParticipants()
     }
 

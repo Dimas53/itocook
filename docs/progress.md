@@ -109,6 +109,7 @@
 - [x] **Fix: HeroBlock cook button disabled for all when queue exists** — added `hasExistingQueue` prop to `HeroBlock.vue`; disables "I'm cooking today!" and "Cook" buttons both via `:disabled` + `pointer-events-none` + JS guard in `onBecomeCook()`; `index.vue` tracks `hasTodayQueue` explicitly from `items.length > 0`; `kitchen.vue` added `hasSelectedQueue` computed
 
 ## Current session
+- [x] **Refactoring analysis** — analyzed 5 pages (3855 total lines) for extraction opportunities; identified 13 composable candidates, 4 cross-cutting patterns (slider, shopping list cleanup, participants fetch, date helpers); primary target: `confirmDeduction()` in `cook.vue` (64 lines, 5+ sequential API calls per participant). Findings saved to `docs/refactoring-plan.md`.
 - [x] **Fix: Consistent avatar URLs** — standardized all `pravatar.cc` `u` parameter to use `user.id` across `app.vue`, `index.vue`, `recipe/[id].vue`, `profile.vue`. Previously used `email` or `displayCookName`, causing different avatars per screen for the same user.
 - [x] **Fix: Avatars in finance Balances** — added user avatar (24px rounded-full) next to each name in both slider and expanded balance list on `finance.vue`.
 - [x] **Fix: Avatars not showing in Balances block** — `/api/users/list` was missing `avatar` from query fields and interface. `balanceEntries` iterates this list, so `entry.user.avatar` was `undefined` for everyone. Added `&fields[]=avatar` to the admin-proxy query and `avatar: string | null` to the interface.

@@ -33,19 +33,7 @@ export default defineEventHandler(async (event) => {
 
   const adminToken = (adminJson as { data: { access_token: string } }).data.access_token
 
-  const getRes = await fetch(`${config.directusUrl}/items/app_settings`, {
-    headers: { Authorization: `Bearer ${adminToken}` },
-  })
-
-  const getJson = await getRes.json()
-
-  if (!getRes.ok || !getJson.data) {
-    throw createError({ statusCode: 500, message: 'Failed to read app settings' })
-  }
-
-  const settingsId = getJson.data.id
-
-  const patchRes = await fetch(`${config.directusUrl}/items/app_settings/${settingsId}`, {
+  const patchRes = await fetch(`${config.directusUrl}/items/app_settings`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

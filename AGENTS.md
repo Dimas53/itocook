@@ -9,6 +9,9 @@
 
 ## Skills
 
+> ⚠️ Read `SKILL.md` via the filesystem path shown (e.g. `Read ~/.config/opencode/skills/foo/SKILL.md`).
+> Do NOT use the `skill` MCP tool — it only sees ~31 of 41 installed skills.
+
 ### Always read on project start (every session)
 - `~/.config/opencode/skills/using-agent-skills/SKILL.md`
 - `~/.config/opencode/skills/nuxt/SKILL.md`
@@ -250,3 +253,22 @@ do not look at the mape /notes. in this mape /notes kann be written in russian.
    object itself (always truthy), not its value.
    Fix: `const pm = reactive(useMyComposable())` in the component,
    or return `readonly(reactive({...}))` from the composable itself.
+
+
+---
+
+## Communication Language
+
+During documentation and refactoring sessions, communicate with the user in Russian:
+- Explain what you are doing and why — in Russian
+- Ask clarifying questions — in Russian
+- Write summaries and proposals — in Russian
+- Session types where this applies:
+    - Refactoring analysis and implementation
+    - Security audit
+    - CONTEXT.md creation (grill-with-docs session)
+    - Code comments (zoom-out sessions)
+    - ARCHITECTURE.md creation
+    - Design review feedback
+
+Code, comments inside source files, file names, git commit messages — always in English.

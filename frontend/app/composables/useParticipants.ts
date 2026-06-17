@@ -1,3 +1,8 @@
+export interface ParticipantSummary {
+  id: string
+  name: string
+}
+
 export function useParticipants(cookQueueId: Ref<string | null>) {
   const { request } = useDirectus()
   const { user } = useAuth()
@@ -5,6 +10,7 @@ export function useParticipants(cookQueueId: Ref<string | null>) {
   const hasJoined = ref(false)
   const loading = ref(true)
   const joinBlockedReason = ref('')
+  const participantsList = ref<ParticipantSummary[]>([])
 
   async function fetch() {
     if (!cookQueueId.value) {
@@ -14,10 +20,14 @@ export function useParticipants(cookQueueId: Ref<string | null>) {
     loading.value = true
     try {
       const orders = await request<any[]>('get',
-        `/items/orders?filter[cook_queue][_eq]=${cookQueueId.value}&filter[status][_eq]=confirmed&fields=id,user.id`
+        `/items/orders?filter[cook_queue][_eq]=${cookQueueId.value}&filter[status][_eq]=confirmed&fields=id,user.id,user.first_name,user.last_name`
       )
       confirmed.value = orders.length
       hasJoined.value = !!user.value && orders.some(o => o.user.id === user.value!.id)
+      participantsList.value = orders.map((o) => ({
+        id: o.user.id,
+        name: [o.user.first_name, o.user.last_name].filter(Boolean).join(' ') || 'Unknown',
+      }))
     } catch {}
     loading.value = false
   }
@@ -42,5 +52,5 @@ export function useParticipants(cookQueueId: Ref<string | null>) {
     await fetch()
   }
 
-  return { confirmed, hasJoined, loading, joinBlockedReason, fetch, join }
+  return { confirmed, hasJoined, loading, joinBlockedReason, participantsList, fetch, join }
 }

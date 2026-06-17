@@ -79,62 +79,25 @@
               Or pick from history
             </p>
             <div class="space-y-1">
-              <!-- Up arrow -->
-              <div v-if="pastDishes.length > VISIBLE_COUNT" class="flex justify-center h-6">
-                <button
-                  class="w-6 h-6 flex items-center justify-center transition-colors"
-                  :class="canScrollUp ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
-                  :disabled="!canScrollUp"
-                  @click="scrollUp"
-                >
-                  <PhCaretUp class="w-4 h-4" weight="bold" />
-                </button>
+              <div v-if="pastDishes.length === 0" class="text-[13px] text-gray-400 text-center py-6">
+                No past dishes yet
               </div>
-
-              <div
-                class="space-y-2"
-                @touchstart="onTouchStart"
-                @touchend="onTouchEnd"
-              >
-                <div v-if="pastDishes.length === 0" class="text-[13px] text-gray-400 text-center py-6">
-                  No past dishes yet
-                </div>
-                <template v-else>
-                  <div class="overflow-hidden relative" :style="{ height: sliderHeight + 'px' }">
-                    <div
-                      class="transition-transform duration-300 ease-out will-change-transform"
-                      :style="{ transform: `translateY(${-historyIndex * ITEM_OFFSET}px)` }"
-                    >
-                      <div
-                        v-for="item in pastDishes"
-                        :key="item.id"
-                        class="h-[60px] rounded-xl bg-white/70 px-4 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform mb-2 last:mb-0"
-                        @click="selectPastDish(item)"
-                      >
-                        <div class="flex-1 min-w-0 mr-3">
-                          <p class="text-[14px] font-medium text-app-black truncate leading-tight">{{ item.dish_name }}</p>
-                          <p class="text-[12px] text-app-black/60 mt-0.5 leading-none">
-                            by {{ item.cookName }} &middot; {{ item.dateLabel }}
-                          </p>
-                        </div>
-                        <PhClockCounterClockwise class="w-4 h-4 text-gray-400 shrink-0" />
-                      </div>
+              <SliderList v-else :items="pastDishes" :visible-count="3" :item-height="60">
+                <template #item="{ item }">
+                  <div
+                    class="rounded-xl bg-white/70 px-4 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform h-full"
+                    @click="selectPastDish(item)"
+                  >
+                    <div class="flex-1 min-w-0 mr-3">
+                      <p class="text-[14px] font-medium text-app-black truncate leading-tight">{{ item.dish_name }}</p>
+                      <p class="text-[12px] text-app-black/60 mt-0.5 leading-none">
+                        by {{ item.cookName }} &middot; {{ item.dateLabel }}
+                      </p>
                     </div>
+                    <PhClockCounterClockwise class="w-4 h-4 text-gray-400 shrink-0" />
                   </div>
                 </template>
-              </div>
-
-              <!-- Down arrow -->
-              <div v-if="pastDishes.length > VISIBLE_COUNT" class="flex justify-center h-6">
-                <button
-                  class="w-6 h-6 flex items-center justify-center transition-colors"
-                  :class="canScrollDown ? 'text-gray-400 active:text-app-black' : 'text-gray-200'"
-                  :disabled="!canScrollDown"
-                  @click="scrollDown"
-                >
-                  <PhCaretDown class="w-4 h-4" weight="bold" />
-                </button>
-              </div>
+              </SliderList>
             </div>
           </div>
 
@@ -304,15 +267,15 @@
 
           <div>
             <p class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide mb-2">
-              Participants ({{ participants.length }})
+              Participants ({{ pm.participantsList.length }})
             </p>
-            <div v-if="participants.length === 0" class="rounded-xl bg-white/70 p-4 text-center">
+            <div v-if="pm.participantsList.length === 0" class="rounded-xl bg-white/70 p-4 text-center">
               <PhUsers class="w-8 h-8 text-gray-300 mx-auto mb-2" />
               <p class="text-[13px] text-gray-400">No one has joined yet</p>
             </div>
             <div v-else class="space-y-2">
               <div
-                v-for="p in participants"
+                v-for="p in pm.participantsList"
                 :key="p.id"
                 class="rounded-xl bg-white/70 px-4 py-3 flex items-center gap-3"
               >
@@ -366,11 +329,11 @@
             </div>
           </div>
 
-          <div v-if="participants.length === 0" class="rounded-xl bg-white/70 p-4 text-center">
+          <div v-if="pm.participantsList.length === 0" class="rounded-xl bg-white/70 p-4 text-center">
             <p class="text-[13px] text-gray-500">No participants to split with</p>
           </div>
 
-          <template v-if="participants.length > 0">
+          <template v-if="pm.participantsList.length > 0">
             <div>
               <label class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide mb-2 block">
                 Total receipt amount (€)
@@ -393,13 +356,15 @@
                 <span class="text-gray-500">Total receipt</span>
                 <span class="font-bold text-app-black text-[16px]">€{{ formattedReceipt }}</span>
               </div>
-              <div v-if="pastaBreakdown" class="flex justify-between text-[14px]">
-                <span class="text-gray-500">{{ pastaBreakdown.label }}</span>
-                <span class="font-semibold text-app-black">€{{ pastaBreakdown.amount.toFixed(2) }}</span>
+              <div v-if="deduction.pastaBreakdown" class="flex justify-between text-[14px]">
+
+                <span class="text-gray-500">{{ deduction.pastaBreakdown.label }}</span>
+
+                <span class="font-semibold text-app-black">€{{ deduction.pastaBreakdown.amount.toFixed(2) }}</span>
               </div>
               <div class="flex justify-between text-[14px]">
                 <span class="text-gray-500">Participants</span>
-                <span class="font-semibold text-app-black">{{ participants.length }}</span>
+                <span class="font-semibold text-app-black">{{ pm.participantsList.length }}</span>
               </div>
               <div class="flex justify-between text-[14px]">
                 <span class="text-gray-500">Share per person</span>
@@ -416,11 +381,13 @@
 
             <div class="rounded-xl bg-yellow-pastel p-4">
               <p class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide">Deduction preview</p>
-              <div v-if="pastaBreakdown" class="flex justify-between text-[14px] mt-2">
-                <span class="text-app-black/70">{{ pastaBreakdown.label }}</span>
-                <span class="font-medium text-app-black">€{{ pastaBreakdown.amount.toFixed(2) }}</span>
+              <div v-if="deduction.pastaBreakdown" class="flex justify-between text-[14px] mt-2">
+
+                <span class="text-app-black/70">{{ deduction.pastaBreakdown.label }}</span>
+
+                <span class="font-medium text-app-black">€{{ deduction.pastaBreakdown.amount.toFixed(2) }}</span>
               </div>
-              <div v-for="p in participants" :key="p.id" class="flex justify-between text-[14px] mt-2">
+              <div v-for="p in pm.participantsList" :key="p.id" class="flex justify-between text-[14px] mt-2">
                 <span class="text-app-black">{{ p.name }}</span>
                 <span class="font-medium text-app-black">−€{{ sharePerPerson }}</span>
               </div>
@@ -428,10 +395,11 @@
 
             <button
               class="w-full h-14 rounded-full bg-app-black text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-              :disabled="!receiptAmount || parseFloat(receiptAmount) <= 0 || deducting"
-              @click="confirmDeduction"
+:disabled="!receiptAmount || parseFloat(receiptAmount) <= 0 || deduction.deducting"
+
+              @click="handleConfirmDeduction"
             >
-              <PhSpinner v-if="deducting" class="w-5 h-5 animate-spin" />
+              <PhSpinner v-if="deduction.deducting" class="w-5 h-5 animate-spin" />
               <template v-else>
                 <PhCreditCard class="w-5 h-5" weight="fill" />
                 Confirm Deduction
@@ -452,10 +420,10 @@
             <p class="text-[14px] text-gray-500 mt-1">{{ cookEntry?.dish_name }} — {{ formattedDate }}</p>
           </div>
           <div class="rounded-xl bg-white/70 p-4">
-            <p v-if="pastaBreakdown" class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Grand total (incl. pasta)</p>
+            <p v-if="deduction.pastaBreakdown" class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Grand total (incl. pasta)</p>
             <p v-else class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Receipt total</p>
             <p class="text-[24px] font-bold text-app-black mt-1">€{{ grandTotalDisplay }}</p>
-            <p class="text-[13px] text-gray-500">{{ participants.length }} participants · €{{ sharePerPerson }} each</p>
+            <p class="text-[13px] text-gray-500">{{ pm.participantsList.length }} participants · €{{ sharePerPerson }} each</p>
           </div>
           <button
             class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] active:scale-[0.98] transition-transform"
@@ -548,8 +516,6 @@ import {
   PhClock,
   PhWarning,
   PhXCircle,
-  PhCaretUp,
-  PhCaretDown,
 } from '@phosphor-icons/vue'
 
 definePageMeta({
@@ -584,16 +550,6 @@ interface OrderEntry {
   status: string
 }
 
-interface BalanceEntry {
-  id: string
-  user: string
-  amount: string
-}
-
-interface Participant {
-  id: string
-  name: string
-}
 
 interface HistoryDish {
   id: string
@@ -626,25 +582,17 @@ const formattedDate = computed(() => {
 // ── State ──
 const loading = ref(true)
 const saving = ref(false)
-const deducting = ref(false)
 const cancelling = ref(false)
 const showCancelDialog = ref(false)
 const cookEntry = ref<CookQueueEntry | null>(null)
 const dishName = ref('')
 const selectedCategory = ref('')
 const receiptAmount = ref<string>('')
-const participants = ref<Participant[]>([])
 const pastDishes = ref<HistoryDish[]>([])
 const deductionResult = ref(false)
-const historyIndex = ref(0)
-const VISIBLE_COUNT = 3
-const ITEM_HEIGHT = 60
-const ITEM_GAP = 8
-const ITEM_OFFSET = ITEM_HEIGHT + ITEM_GAP
-const sliderHeight = VISIBLE_COUNT * ITEM_HEIGHT + (VISIBLE_COUNT - 1) * ITEM_GAP
-const pastaCost = ref(0)
-const pastaBreakdown = ref<{ label: string; amount: number } | null>(null)
-const mealCost = useMealCost()
+const cookQueueId = computed(() => cookEntry.value?.id ?? null)
+const deduction = reactive(useDeduction())
+const pm = reactive(useParticipants(cookQueueId))
 
 function formatDateStr(date: Date): string {
   const now = new Date()
@@ -673,35 +621,6 @@ const matchedRecipe = computed(() => {
   const name = dishName.value.toLowerCase()
   return pastDishes.value.find(d => d.dish_name.toLowerCase().includes(name)) || null
 })
-
-const visiblePastDishes = computed(() => {
-  return pastDishes.value.slice(historyIndex.value, historyIndex.value + VISIBLE_COUNT)
-})
-
-const canScrollUp = computed(() => historyIndex.value > 0)
-const canScrollDown = computed(() => historyIndex.value + VISIBLE_COUNT < pastDishes.value.length)
-
-let touchStartY = 0
-
-function scrollUp() {
-  if (canScrollUp.value) historyIndex.value--
-}
-
-function scrollDown() {
-  if (canScrollDown.value) historyIndex.value++
-}
-
-function onTouchStart(e: TouchEvent) {
-  touchStartY = e.touches[0]!.clientY
-}
-
-function onTouchEnd(e: TouchEvent) {
-  const deltaY = e.changedTouches[0]!.clientY - touchStartY
-  if (Math.abs(deltaY) > 30) {
-    if (deltaY < 0) scrollDown()
-    else scrollUp()
-  }
-}
 
 const existingRecipeId = ref<string | null>(null)
 const recipeSearchDone = ref(false)
@@ -736,14 +655,14 @@ const formattedReceipt = computed(() => {
 
 const sharePerPerson = computed(() => {
   const base = parseFloat(receiptAmount.value)
-  if (isNaN(base) || participants.value.length === 0) return '0.00'
-  const total = base + pastaCost.value
-  return (total / participants.value.length).toFixed(2)
+  if (isNaN(base) || pm.participantsList.length === 0) return '0.00'
+  const total = base + deduction.pastaCost
+  return (total / pm.participantsList.length).toFixed(2)
 })
 
 const grandTotalDisplay = computed(() => {
   const base = parseFloat(receiptAmount.value)
-  const total = (isNaN(base) ? 0 : base) + pastaCost.value
+  const total = (isNaN(base) ? 0 : base) + deduction.pastaCost
   return total.toFixed(2)
 })
 
@@ -788,23 +707,6 @@ async function fetchPastDishes() {
         cookName: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
         dateLabel: formatDateStr(new Date(r.date_created)),
       }))
-    historyIndex.value = 0
-  } catch {
-    // ignore
-  }
-}
-
-// ── Fetch participants (confirmed orders) ──
-async function fetchParticipants() {
-  if (!cookEntry.value) return
-  try {
-    const orders = await request<OrderEntry[]>('get',
-      `/items/orders?filter[cook_queue][_eq]=${cookEntry.value.id}&filter[status][_eq]=confirmed&fields=*,user.id,user.first_name,user.last_name`
-    )
-    participants.value = orders.map((o) => ({
-      id: o.user.id,
-      name: [o.user.first_name, o.user.last_name].filter(Boolean).join(' ') || 'Unknown',
-    }))
   } catch {
     // ignore
   }
@@ -884,7 +786,7 @@ async function startCooking() {
       status: 'cooking',
     })
     cookEntry.value.status = 'cooking'
-    await fetchParticipants()
+    await pm.fetch()
   } catch (e) {
     console.error('Failed to start cooking:', e)
   }
@@ -903,7 +805,7 @@ async function saveDish() {
     cookEntry.value.dish_name = dishName.value.trim()
     cookEntry.value.category = selectedCategory.value || null
     cookEntry.value.status = 'scheduled'
-    await fetchParticipants()
+    await pm.fetch()
     await searchExistingRecipe(dishName.value.trim())
 
     // Fork on cook: if recipe exists and belongs to another user, fork it
@@ -985,7 +887,7 @@ async function markReady() {
       status: 'ready',
     })
     cookEntry.value.status = 'ready'
-    await fetchParticipants()
+    await pm.fetch()
     // TODO: Notify participants that lunch is ready
   } catch (e) {
     console.error('Failed to mark ready:', e)
@@ -1008,20 +910,12 @@ async function cancelCooking() {
       await request('delete', `/items/orders/${o.id}`)
     }
 
-    // Cleanup: delete shopping list items for this recipe
-    try {
-      if (cookEntry.value.recipe) {
-        const slItems = await request<{ id: number }[]>('GET',
-          `/items/shopping_list_items?filter[user][_eq]=${user.value?.id}&filter[recipe][_eq]=${cookEntry.value.recipe}&fields=id&limit=200`
-        )
-        if (slItems?.length) await Promise.all(slItems.map(i => request('DELETE', `/items/shopping_list_items/${i.id}`)))
-      } else if (cookEntry.value.dish_name && cookEntry.value.date) {
-        const slItems = await request<{ id: number }[]>('GET',
-          `/items/shopping_list_items?filter[user][_eq]=${user.value?.id}&filter[recipe_name][_eq]=${encodeURIComponent(cookEntry.value.dish_name)}&filter[cook_date][_eq]=${cookEntry.value.date}&fields=id&limit=200`
-        )
-        if (slItems?.length) await Promise.all(slItems.map(i => request('DELETE', `/items/shopping_list_items/${i.id}`)))
-      }
-    } catch { /* non-critical */ }
+    await deduction.cleanupShoppingList({
+      recipe: cookEntry.value.recipe,
+      dishName: cookEntry.value.dish_name,
+      cookDate: cookEntry.value.date,
+      userId: user.value?.id,
+    })
 
     router.push('/kitchen')
   } catch (e) {
@@ -1031,98 +925,22 @@ async function cancelCooking() {
   showCancelDialog.value = false
 }
 
-async function loadPastaCost() {
-  if (!existingRecipeId.value) {
-    pastaCost.value = 0
-    pastaBreakdown.value = null
-    return
-  }
+async function handleConfirmDeduction() {
+  if (!cookEntry.value) return
   try {
-    const recipe = await request<{ pasta_packages: number | null }>('get',
-      `/items/recipes/${existingRecipeId.value}?fields=pasta_packages`
-    )
-    const packages = recipe.pasta_packages ?? 0
-    if (packages > 0) {
-      const price = await mealCost.fetchPastaPrice()
-      const cost = mealCost.computePastaCost(packages, price)
-      pastaCost.value = cost
-      pastaBreakdown.value = {
-        label: `Pasta (${packages} package${packages > 1 ? 's' : ''})`,
-        amount: cost,
-      }
-    } else {
-      pastaCost.value = 0
-      pastaBreakdown.value = null
-    }
-  } catch {
-    pastaCost.value = 0
-    pastaBreakdown.value = null
-  }
-}
-
-async function confirmDeduction() {
-  if (!cookEntry.value || !receiptAmount.value || participants.value.length === 0) return
-  deducting.value = true
-  const baseTotal = parseFloat(receiptAmount.value)
-  const grandTotal = baseTotal + pastaCost.value
-  const share = grandTotal / participants.value.length
-
-  try {
-    for (const p of participants.value) {
-      // Create transaction
-      await request('post', '/items/transactions', {
-        user: p.id,
-        amount: -share,
-        type: 'debit',
-        description: `Lunch ${pageDateStr.value}: ${cookEntry.value.dish_name || 'Office lunch'}`,
-        date: new Date().toISOString(),
-      })
-
-      // Update or create balance
-      const balances = await request<BalanceEntry[]>('get',
-        `/items/balances?filter[user][_eq]=${p.id}&limit=1`
-      )
-      const existingBalance = balances[0]
-      if (existingBalance) {
-        const currentAmount = parseFloat(existingBalance.amount)
-        await request('PATCH', `/items/balances/${existingBalance.id}`, {
-          amount: currentAmount - share,
-        })
-      } else {
-        await request('post', '/items/balances', {
-          user: p.id,
-          amount: -share,
-        })
-      }
-    }
-
-    // Mark cook_queue as completed
-    await request('PATCH', `/items/cook_queue/${cookEntry.value.id}`, {
-      status: 'completed',
+    await deduction.confirmDeduction({
+      cookEntry: cookEntry.value,
+      participants: pm.participantsList,
+      receiptAmount: receiptAmount.value,
+      pastaCost: deduction.pastaCost,
+      dateStr: pageDateStr.value,
+      userId: user.value?.id,
     })
     cookEntry.value.status = 'completed'
     deductionResult.value = true
-
-    // Cleanup: delete shopping list items for this recipe
-    try {
-      const qDate = cookEntry.value.date
-      // Prefer linked recipe ID, fallback to dish_name + date
-      if (cookEntry.value.recipe) {
-        const items = await request<{ id: number }[]>('GET',
-          `/items/shopping_list_items?filter[user][_eq]=${user.value?.id}&filter[recipe][_eq]=${cookEntry.value.recipe}&fields=id&limit=200`
-        )
-        if (items?.length) await Promise.all(items.map(i => request('DELETE', `/items/shopping_list_items/${i.id}`)))
-      } else if (cookEntry.value.dish_name && qDate) {
-        const items = await request<{ id: number }[]>('GET',
-          `/items/shopping_list_items?filter[user][_eq]=${user.value?.id}&filter[recipe_name][_eq]=${encodeURIComponent(cookEntry.value.dish_name)}&filter[cook_date][_eq]=${qDate}&fields=id&limit=200`
-        )
-        if (items?.length) await Promise.all(items.map(i => request('DELETE', `/items/shopping_list_items/${i.id}`)))
-      }
-    } catch { /* non-critical — shopping list cleanup is best-effort */ }
   } catch (e) {
     console.error('Failed to process deduction:', e)
   }
-  deducting.value = false
 }
 
 // ── Refresh when page becomes visible ──
@@ -1133,7 +951,7 @@ async function refreshCookData() {
     return
   }
   if (cookEntry.value && cookEntry.value.dish_name) {
-    await fetchParticipants()
+    await pm.fetch()
     await searchExistingRecipe(cookEntry.value.dish_name)
   }
 }
@@ -1146,7 +964,7 @@ function onVisibilityChange() {
 
 // ── Init ──
 watch(existingRecipeId, () => {
-  loadPastaCost()
+  deduction.loadPastaCost(existingRecipeId.value)
 })
 
 onMounted(async () => {
