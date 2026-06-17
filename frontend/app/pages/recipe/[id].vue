@@ -538,13 +538,6 @@ const pickerEntries = computed<CalendarEntry[]>(() =>
   })
 )
 
-function fmtISO(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
 function prevWeekPage() {
   const step = Math.min(15, dateOffset.value)
   dateOffset.value -= step
@@ -558,7 +551,7 @@ function nextWeekPage() {
 
 async function loadDates() {
   datePickerLoading.value = true
-  const today = fmtISO(new Date())
+  const today = formatDateISO(new Date())
   let takenSet = new Set<string>()
   try {
     const taken = await request<{ date: string }[]>('get',
@@ -567,7 +560,7 @@ async function loadDates() {
     takenSet = new Set(taken.map(t => t.date))
   } catch { /* ignore */ }
 
-  const todayStr = fmtISO(new Date())
+  const todayStr = formatDateISO(new Date())
   const dates: { label: string; dateNum: number; iso: string; isTaken: boolean; isPast: boolean; isToday: boolean; isMonthStart: boolean }[] = []
   let i = 0
   let weekdaysSkipped = 0
@@ -579,7 +572,7 @@ async function loadDates() {
       if (weekdaysSkipped < dateOffset.value) {
         weekdaysSkipped++
       } else {
-        const iso = fmtISO(d)
+        const iso = formatDateISO(d)
         dates.push({
           label: DAY_SHORT[dow],
           dateNum: d.getDate(),

@@ -182,7 +182,7 @@
 - [ ] **Receipt photo upload**
 
 ## Git log
-- `` — refactor: extract BalanceRow and TransactionRow components, dedup finance.vue templates
+- `fe0e9f7` — refactor: extract BalanceRow and TransactionRow components, dedup finance.vue templates
 - `c5159cb` — refactor: extract ReceiptSummary component, dedup receipt rows in cook.vue
 - `a700b57` — refactor: extract useRecipeServings composable, restrict canAddToList to isEntryCook
 - `0b9d369` — fix(cook): pass cq param to recipe links for reliable queue detection

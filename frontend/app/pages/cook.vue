@@ -409,10 +409,9 @@
             <p class="text-[14px] text-gray-500 mt-1">{{ cookEntry?.dish_name }} — {{ formattedDate }}</p>
           </div>
           <div class="rounded-xl bg-white/70 p-4">
-            <p v-if="deduction.pastaBreakdown" class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Grand total (incl. pasta)</p>
-            <p v-else class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Receipt total</p>
-            <p class="text-[24px] font-bold text-app-black mt-1">€{{ grandTotalDisplay }}</p>
-            <p class="text-[13px] text-gray-500">{{ pm.participantsList.length }} participants · €{{ sharePerPerson }} each</p>
+            <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Receipt total</p>
+            <p class="text-[24px] font-bold text-app-black mt-1">€{{ deductedTotal.toFixed(2) }}</p>
+            <p class="text-[13px] text-gray-500">{{ pm.participantsList.length }} participants · €{{ (deductedTotal / pm.participantsList.length).toFixed(2) }} each</p>
           </div>
           <button
             class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] active:scale-[0.98] transition-transform"
@@ -548,24 +547,13 @@ interface HistoryDish {
   dateLabel: string
 }
 
-// ── Date helpers ──
-const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
-function formatDateISO(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
 const pageDateStr = computed(() => {
   return (route.query.date as string) || formatDateISO(new Date())
 })
 
 const formattedDate = computed(() => {
   const d = new Date(pageDateStr.value + 'T12:00:00')
-  return `${DAY_NAMES[d.getDay()]}, ${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`
+  return formatDateLong(d)
 })
 
 // ── State ──
@@ -579,23 +567,10 @@ const selectedCategory = ref('')
 const receiptAmount = ref<string>('')
 const pastDishes = ref<HistoryDish[]>([])
 const deductionResult = ref(false)
+const deductedTotal = ref(0)
 const cookQueueId = computed(() => cookEntry.value?.id ?? null)
 const deduction = reactive(useDeduction())
 const pm = reactive(useParticipants(cookQueueId))
-
-function formatDateStr(date: Date): string {
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  if (days === 0) {
-    const h = date.getHours()
-    const m = String(date.getMinutes()).padStart(2, '0')
-    return `Today ${h}:${m}`
-  }
-  if (days === 1) return 'Yesterday'
-  if (days < 7) return `${days} days ago`
-  return `${date.getDate()} ${MONTH_NAMES[date.getMonth()]}`
-}
 
 const isToday = computed(() => pageDateStr.value === formatDateISO(new Date()))
 
@@ -694,7 +669,7 @@ async function fetchPastDishes() {
         dish_name: r.dish_name,
         category: r.category ?? null,
         cookName: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
-        dateLabel: formatDateStr(new Date(r.date_created)),
+        dateLabel: formatDateRelative(new Date(r.date_created)),
       }))
   } catch {
     // ignore
@@ -925,6 +900,9 @@ async function handleConfirmDeduction() {
       dateStr: pageDateStr.value,
       userId: user.value?.id,
     })
+    deductedTotal.value = parseFloat(receiptAmount.value) + deduction.pastaCost
+    deduction.pastaBreakdown = null
+    deduction.pastaCost = 0
     cookEntry.value.status = 'completed'
     deductionResult.value = true
   } catch (e) {
