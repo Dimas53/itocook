@@ -162,15 +162,18 @@
 - [x] **Shopping list UX: colorful cart, per-group select-all, red delete** — empty state cart icon in red circle; each recipe group in By Recipe view has its own select-all checkbox in the header row (checkbox → name → date right-aligned); All Items view has global select-all + "Delete all checked" button; `PhTrash` changed to `text-red-500`
 - [x] **Fix: Cancel queue → auto-cleanup shopping list** — `cancelCooking()` deletes `shopping_list_items` for the linked recipe (same logic as `confirmDeduction`)
 
-## Current session — done
-- [x] **Dedup: show only one recipe per dish_name everywhere** — created `frontend/app/utils/dedupRecipes.ts` utility (group by `dish_name`, prefer latest fork if any, else latest original). Applied to:
-  - `recipes.vue` (All Recipes) — `limit=200`, dedup before likeCount map
-  - `index.vue` (Recent Dishes) — `limit=20`, dedup + `slice(0,6)`
-  - `kitchen.vue` (Dish History) — `limit=50`, dedup + `slice(0,5)`
-  - `cook.vue` (Pick from history) — `limit=200`, dedup in `fetchPastDishes()`
-  - HeroBlock match queries (`index.vue`, `kitchen.vue`) — added `sort=-date_created` to prefer latest recipe
-- [x] **Cleanup: delete unused Directus collections** — `cooked_recipes`, `order_items` (empty), `test_api` removed from schema. Removed O2M alias field `cooked_recipes` from `recipes` first. No frontend code refs found.
-- [x] **Fix: recipe author mismatch** — `recipe/[id].vue` `displayCookName/Id/Avatar` теперь берут `recipe.cook` в приоритете, `queueEntry.cook` только как fallback. Раньше queueEntry переопределял автора, что давало неверное имя если для этого блюда была другая запись в очереди.
+## Refactoring session — Phase 1–2
+- [x] **Phase 1: Replace manual sliders with SliderList.vue** — history slider in `cook.vue`, both sliders (balances + transactions) in `finance.vue`, cook recipes slider in `recipe/[id].vue`. Removed scroll/touch/arrow code (~140 lines total).
+- [x] **Phase 1: Extract useParticipants.participantsList** — extended `useParticipants.ts`; migrated `cook.vue` + `recipe/[id].vue` off local `fetchParticipants()`/`participants` ref.
+- [x] **Phase 1: Create utils/dates.ts** — 7 shared date functions; 8+ files can import instead of redefining.
+- [x] **Phase 2, candidate 1: Create useDeduction.ts** — extracted `confirmDeduction`, `loadPastaCost`, `cleanupShoppingList` from `cook.vue` (~90 lines); parallelized transactions (`Promise.all`) + batch-fetch balances (`_in` filter); `cleanupShoppingList` shared with `cancelCooking`.
+- [x] **Fix: pasta-price PATCH 500** — `app_settings` is a singleton; PATCH `/items/app_settings/{id}` rejected by Directus ("Route doesn't exist"). Removed ID lookup, PATCH `/items/app_settings` directly.
+- [x] **Fix: cook→recipe navigation missing ?cq=** — recipe page не находил queue entry по dish_name; добавлен `?cq=${cookEntry.id}` во все ссылки на рецепт.
+- [x] **Phase 2, candidate 2: useRecipeServings.ts** — extract all serving/scaling logic (~85 lines) from `recipe/[id].vue` into composable.
+- [x] **Fix: canAddToList restriction** — кнопка "Add to Shopping List" показывается только когда `isEntryCook` (повар очереди).
+- [ ] **Phase 2, candidate 3: Template dedup** — receipt section in `cook.vue` (parallel structure in ready/done states).
+- [ ] **Phase 2, candidate 4: Finance template dedup** — repeated user rows in balances.
+- [ ] **Phase 2, candidate 5: useDateNavigation.ts** — extract date-nav from `recipe/[id].vue`, `finance.vue`, `cook.vue`.
 - [ ] **Task B': Reminder mechanism for overdue cost entry (groundwork)
 - [ ] **Task D: Ghost participants / leave-join logic
 - [ ] **AI Recipe** — chat with AI, JSON recipe render, serving recalculation
@@ -179,6 +182,8 @@
 - [ ] **Receipt photo upload**
 
 ## Git log
+- `0b9d369` — fix(cook): pass cq param to recipe links for reliable queue detection
+- `c88c50e` — refactor: extract useDeduction composable, replace manual sliders with SliderList, fix pasta-price PATCH
 - `f8089ec` — feat(profile): avatar upload with SVG fallback, remove pravatar everywhere
 - `b532f5c` — feat: servings selector with scaling, participant modal in layout, duty tomorrow indicator, cook eye icon, author pill modal
 - `d80c44e` — feat(duty): add admin edit mode for cleaning_schedule assignments

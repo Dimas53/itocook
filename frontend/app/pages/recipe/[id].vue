@@ -93,17 +93,17 @@
               <div class="flex items-center gap-2">
                 <span class="text-[13px] text-gray-500 font-medium">Portions</span>
                 <button
-                  v-for="n in servingsPresets"
+                  v-for="n in sr.servingsPresets"
                   :key="n"
                   class="min-w-[44px] h-9 px-3 text-[14px] font-semibold rounded-xl transition-all active:scale-[0.98]"
-                  :class="activeServings === n ? 'bg-primary text-white' : 'bg-gray-100 text-app-black'"
-                  @click="selectServing(n)"
+                  :class="sr.activeServings === n ? 'bg-primary text-white' : 'bg-gray-100 text-app-black'"
+                  @click="sr.selectServing(n)"
                 >
                   {{ n }}
                 </button>
                 <button
                   class="min-w-[44px] h-9 px-3 rounded-xl bg-gray-100 text-app-black flex items-center justify-center active:scale-[0.98]"
-                  @click="showCustomServings = !showCustomServings"
+                  @click="sr.showCustomServings = !sr.showCustomServings"
                 >
                   <PhPlus class="w-5 h-5" weight="bold" />
                 </button>
@@ -114,29 +114,29 @@
               </div>
             </div>
             <div
-              v-if="showCustomServings"
+              v-if="sr.showCustomServings"
               class="flex items-center gap-2 mt-2"
             >
               <input
-                v-model="customServingsInput"
+                v-model="sr.customServingsInput"
                 type="number"
                 min="1"
                 max="100"
                 placeholder="15"
                 class="w-20 h-9 rounded-xl border border-gray-200 text-[14px] text-center font-semibold outline-none focus:border-primary"
-                @keyup.enter="applyCustomServing"
+                @keyup.enter="sr.applyCustomServing"
               />
               <button
                 class="h-9 px-4 rounded-xl bg-primary text-white text-[13px] font-semibold active:scale-[0.98]"
-                @click="applyCustomServing"
+                @click="sr.applyCustomServing"
               >
                 Apply
               </button>
             </div>
             <button
-              v-if="queueEntry && participantCount > 0 && participantCount !== activeServings"
+              v-if="queueEntry && participantCount > 0 && participantCount !== sr.activeServings"
               class="mt-2 bg-primary-pale text-primary text-[13px] rounded-full px-3 py-1 font-medium active:scale-[0.98] transition-transform"
-              @click="saveServingsToRecipe(participantCount)"
+              @click="sr.saveServingsToRecipe(participantCount)"
             >
               ↺ Apply for {{ participantCount }} participants
             </button>
@@ -176,9 +176,9 @@
               <li v-for="(ing, i) in recipe.ingredients" :key="i" class="flex items-center gap-3 text-[14px] text-app-black/70">
                 <span class="text-lg w-6 text-center shrink-0">{{ getIngredientIcon(ing.name) }}</span>
                 <span>{{ ing.name }}</span>
-                <span v-if="ing.amount || ing.unit" class="shrink-0 ml-auto flex items-center gap-1" :class="isScaling ? 'text-primary font-semibold' : 'font-medium text-app-black'">
-                  <span v-if="isSpiceUnit(ing.unit)" class="text-[10px] text-gray-400 font-normal">(to taste)</span>
-                  {{ scaleAmount(ing.amount, ing.unit) }}{{ ing.unit ? ' ' + ing.unit : '' }}
+                <span v-if="ing.amount || ing.unit" class="shrink-0 ml-auto flex items-center gap-1" :class="sr.isScaling ? 'text-primary font-semibold' : 'font-medium text-app-black'">
+                  <span v-if="sr.isSpiceUnit(ing.unit)" class="text-[10px] text-gray-400 font-normal">(to taste)</span>
+                  {{ sr.scaleAmount(ing.amount, ing.unit) }}{{ ing.unit ? ' ' + ing.unit : '' }}
                 </span>
 
               </li>
@@ -499,6 +499,7 @@ interface CookRecipeItem {
 
 const loading = ref(true)
 const recipe = ref<RecipeData | null>(null)
+const sr = reactive(useRecipeServings(recipe))
 const showIngredients = ref(true)
 const showSteps = ref(false)
 
@@ -516,92 +517,6 @@ const isLiked = ref(false)
 const likeCount = ref(0)
 const myLikeId = ref<string | null>(null)
 
-// Servings / scaling
-const baseServings = computed(() => recipe.value?.servings ?? 4)
-const currentServings = ref<number | null>(null)
-const activeServings = computed(() => currentServings.value ?? baseServings.value)
-
-const showCustomServings = ref(false)
-const customServingsInput = ref('')
-const savingServings = ref(false)
-
-const servingsPresets = computed(() => {
-  const base = baseServings.value
-  const presets = [10, 15, 20]
-  if (!presets.includes(base)) {
-    return [...presets.slice(0, -1), base]
-  }
-  return presets
-})
-
-const spiceUnits = ['tsp', 'tbsp', 'teaspoon', 'teaspoons', 'tablespoon', 'tablespoons', 'tsp.', 'tbsp.', 'ч.л.', 'ч.л', 'ст.л.', 'ст.л', 'щепотка', 'pinch']
-function isSpiceUnit(unit: string | null | undefined): boolean {
-  if (!unit) return false
-  return spiceUnits.includes(unit.toLowerCase())
-}
-
-function scaleAmount(amount: string | null, unit: string | null): string {
-  if (!amount) return '—'
-  const num = parseFloat(amount)
-  if (isNaN(num)) return amount
-  const ratio = activeServings.value / baseServings.value
-  const scaled = num * ratio
-  const wholeUnits = ['pcs', 'pc', 'piece', 'pieces', 'stück', 'шт', 'шт.', 'item']
-  if (unit && wholeUnits.includes(unit.toLowerCase())) {
-    return String(Math.ceil(scaled))
-  }
-  return parseFloat(scaled.toFixed(1)).toString()
-}
-
-const isScaling = computed(() => currentServings.value !== null && currentServings.value !== baseServings.value)
-
-function scaleAmountRaw(amount: string | null, unit: string | null, ratio: number): string {
-  if (!amount) return ''
-  const num = parseFloat(amount)
-  if (isNaN(num)) return amount
-  const scaled = num * ratio
-  const wholeUnits = ['pcs', 'pc', 'piece', 'pieces', 'stück', 'шт', 'шт.', 'item']
-  if (unit && wholeUnits.includes(unit.toLowerCase())) {
-    return String(Math.ceil(scaled))
-  }
-  return parseFloat(scaled.toFixed(1)).toString()
-}
-
-async function saveServingsToRecipe(newServings: number) {
-  const r = recipe.value
-  if (!r || !r.ingredients) return
-  const oldBase = r.servings ?? 4
-  if (newServings === oldBase) return
-  savingServings.value = true
-  const ratio = newServings / oldBase
-  const scaledIngredients = r.ingredients.map(ing => ({
-    ...ing,
-    amount: scaleAmountRaw(ing.amount, ing.unit, ratio),
-  }))
-  try {
-    await request('PATCH', `/items/recipes/${route.params.id}`, {
-      servings: newServings,
-      ingredients: scaledIngredients,
-    })
-    r.servings = newServings
-    r.ingredients = scaledIngredients
-    currentServings.value = null
-  } catch { /* ignore */ }
-  savingServings.value = false
-}
-
-function selectServing(n: number) {
-  if (recipe.value && n === (recipe.value.servings ?? 4)) return
-  saveServingsToRecipe(n)
-  showCustomServings.value = false
-}
-
-function applyCustomServing() {
-  const v = parseInt(customServingsInput.value, 10)
-  if (isNaN(v) || v < 1 || v > 100) return
-  saveServingsToRecipe(v)
-  showCustomServings.value = false
-}
 
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
@@ -914,7 +829,7 @@ const shoppingListText = computed(() => {
 
 function copyIngredientsText(): string {
   if (!recipe.value?.ingredients || recipe.value.ingredients.length === 0) return ''
-  const ratio = activeServings.value / baseServings.value
+  const ratio = sr.activeServings / sr.baseServings
   const lines = recipe.value.ingredients.map(ing => {
     const scaledAmount = ing.amount ? parseFloat((parseFloat(ing.amount) * ratio).toFixed(1)) : null
     const amountStr = scaledAmount ? `${scaledAmount}` : ''
@@ -924,7 +839,7 @@ function copyIngredientsText(): string {
     const amountPart = fullAmount ? ` ${fullAmount}` : ''
     return `• ${emoji} ${ing.name}${amountPart}`
   })
-  return `${recipe.value.dish_name} (${activeServings.value} portions)\n${lines.join('\n')}`
+  return `${recipe.value.dish_name} (${sr.activeServings} portions)\n${lines.join('\n')}`
 }
 
 const canAddToList = computed(() => isEntryCook.value)
@@ -932,7 +847,7 @@ const canAddToList = computed(() => isEntryCook.value)
 async function addToShoppingList() {
   if (!recipe.value?.ingredients?.length) return
   isAddingToList.value = true
-  const ratio = activeServings.value / baseServings.value
+  const ratio = sr.activeServings / sr.baseServings
   const cookDate = queueEntry.value?.date ?? null
   const items = recipe.value.ingredients.map(ing => ({
     user: user.value!.id,
