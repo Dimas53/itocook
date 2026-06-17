@@ -13,9 +13,7 @@ interface DirectusUser {
   avatar?: string
 }
 
-const config = useRuntimeConfig()
-const directusUrl = config.public.directusUrl
-
+// ── Helpers ────────────────────────────────────────────────────────────────
 interface BalanceRecord {
   id: string
   amount: string
@@ -201,16 +199,6 @@ async function submitTopup() {
 const transactionsExpanded = ref(false)
 const balancesExpanded = ref(false)
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-function formatDate(iso: string): string {
-  const d = new Date(iso)
-  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
-
-function isNegative(amount: number): boolean {
-  return amount < 0
-}
-
 // ── Init ───────────────────────────────────────────────────────────────────
 onMounted(async () => {
   await Promise.all([fetchUsers(), fetchBalances(), fetchTransactions(), fetchPastaPrice()])
@@ -242,29 +230,7 @@ onMounted(async () => {
           <template v-if="!balancesExpanded">
             <SliderList :items="balanceEntries" :visible-count="5" :item-height="56">
               <template #item="{ item: entry }">
-                <div class="rounded-xl bg-white border border-gray-100 px-4 flex items-center justify-between h-full">
-                  <div class="flex items-center gap-2 min-w-0 flex-1">
-                    <img
-                      v-if="entry.user.avatar"
-                      :src="`${directusUrl}/assets/${entry.user.avatar}`"
-                      :alt="`${entry.user.first_name ?? ''} ${entry.user.last_name ?? ''}`"
-                      class="w-6 h-6 rounded-full object-cover shrink-0"
-                    />
-                    <div v-else class="w-6 h-6 rounded-full shrink-0 overflow-hidden">
-                      <AvatarPlaceholder />
-                    </div>
-                    <span class="text-[14px] text-app-black font-medium truncate">
-                      {{ entry.user.first_name }} {{ entry.user.last_name }}
-                    </span>
-                  </div>
-                  <span
-                    class="text-[14px] font-semibold shrink-0 ml-2"
-                    :class="isNegative(entry.amount) ? 'text-red-500' : 'text-green-600'"
-                  >
-                    <template v-if="isNegative(entry.amount)">-€{{ Math.abs(entry.amount).toFixed(2) }}</template>
-                    <template v-else>€{{ entry.amount.toFixed(2) }}</template>
-                  </span>
-                </div>
+                <BalanceRow :entry="entry" :compact="true" />
               </template>
             </SliderList>
             <button
@@ -282,29 +248,8 @@ onMounted(async () => {
               <div
                 v-for="entry in balanceEntries"
                 :key="entry.user.id"
-                class="h-14 bg-white rounded-2xl border border-gray-100 px-4 flex items-center justify-between"
               >
-                <div class="flex items-center gap-2 min-w-0 flex-1">
-                  <img
-                    v-if="entry.user.avatar"
-                    :src="`${directusUrl}/assets/${entry.user.avatar}`"
-                    :alt="`${entry.user.first_name ?? ''} ${entry.user.last_name ?? ''}`"
-                    class="w-6 h-6 rounded-full object-cover shrink-0"
-                  />
-                  <div v-else class="w-6 h-6 rounded-full shrink-0 overflow-hidden">
-                    <AvatarPlaceholder />
-                  </div>
-                  <span class="text-[14px] text-app-black font-medium truncate">
-                    {{ entry.user.first_name }} {{ entry.user.last_name }}
-                  </span>
-                </div>
-                <span
-                  class="text-[14px] font-semibold shrink-0 ml-2"
-                  :class="isNegative(entry.amount) ? 'text-red-500' : 'text-green-600'"
-                >
-                  <template v-if="isNegative(entry.amount)">-€{{ Math.abs(entry.amount).toFixed(2) }}</template>
-                  <template v-else>€{{ entry.amount.toFixed(2) }}</template>
-                </span>
+                <BalanceRow :entry="entry" />
               </div>
             </div>
             <button
@@ -414,23 +359,7 @@ onMounted(async () => {
           <template v-if="!transactionsExpanded">
             <SliderList :items="transactions" :visible-count="5" :item-height="72">
               <template #item="{ item: tx }">
-                <div class="rounded-xl bg-white border border-gray-100 p-3 flex flex-col justify-center h-full">
-                  <div class="flex items-center justify-between">
-                    <span class="text-[12px] text-gray-500">{{ formatDate(tx.date) }}</span>
-                    <span
-                      class="text-[14px] font-semibold"
-                      :class="Number(tx.amount) >= 0 ? 'text-green-600' : 'text-red-500'"
-                    >
-                      {{ Number(tx.amount) >= 0 ? '+' : '-' }}€{{ Math.abs(Number(tx.amount)).toFixed(2) }}
-                    </span>
-                  </div>
-                  <div class="flex items-center justify-between mt-1">
-                    <span class="text-[14px] text-app-black font-medium">
-                      {{ tx.user?.first_name }} {{ tx.user?.last_name }}
-                    </span>
-                    <span class="text-[12px] text-gray-400 capitalize">{{ tx.type }}</span>
-                  </div>
-                </div>
+                <TransactionRow :tx="tx" :compact="true" />
               </template>
             </SliderList>
             <button
@@ -448,24 +377,8 @@ onMounted(async () => {
               <div
                 v-for="tx in transactions"
                 :key="tx.id"
-                class="bg-white rounded-2xl border border-gray-100 p-4"
               >
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-[12px] text-gray-500">{{ formatDate(tx.date) }}</span>
-                  <span
-                    class="text-[14px] font-semibold"
-                    :class="Number(tx.amount) >= 0 ? 'text-green-600' : 'text-red-500'"
-                  >
-                    {{ Number(tx.amount) >= 0 ? '+' : '-' }}€{{ Math.abs(Number(tx.amount)).toFixed(2) }}
-                  </span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[14px] text-app-black font-medium">
-                    {{ tx.user?.first_name }} {{ tx.user?.last_name }}
-                  </span>
-                  <span class="text-[12px] text-gray-400 capitalize">{{ tx.type }}</span>
-                </div>
-                <p v-if="tx.description" class="text-[12px] text-gray-400 mt-1 truncate">{{ tx.description }}</p>
+                <TransactionRow :tx="tx" />
               </div>
             </div>
             <button

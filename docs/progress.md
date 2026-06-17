@@ -172,7 +172,7 @@
 - [x] **Phase 2, candidate 2: useRecipeServings.ts** — extract all serving/scaling logic (~85 lines) from `recipe/[id].vue` into composable.
 - [x] **Fix: canAddToList restriction** — кнопка "Add to Shopping List" показывается только когда `isEntryCook` (повар очереди).
 - [x] **Phase 2, candidate 3: Template dedup** — extracted shared receipt info rows into `ReceiptSummary.vue`, used in ready state breakdown.
-- [ ] **Phase 2, candidate 4: Finance template dedup** — repeated user rows in balances.
+- [x] **Phase 2, candidate 4: Finance template dedup** — extracted BalanceRow + TransactionRow components, replaced slider/expanded templates in finance.vue.
 - [ ] **Phase 2, candidate 5: useDateNavigation.ts** — extract date-nav from `recipe/[id].vue`, `finance.vue`, `cook.vue`.
 - [ ] **Task B': Reminder mechanism for overdue cost entry (groundwork)
 - [ ] **Task D: Ghost participants / leave-join logic
@@ -182,7 +182,9 @@
 - [ ] **Receipt photo upload**
 
 ## Git log
-- `26a5d11` — refactor: extract useRecipeServings composable, restrict canAddToList to isEntryCook
+- `` — refactor: extract BalanceRow and TransactionRow components, dedup finance.vue templates
+- `c5159cb` — refactor: extract ReceiptSummary component, dedup receipt rows in cook.vue
+- `a700b57` — refactor: extract useRecipeServings composable, restrict canAddToList to isEntryCook
 - `0b9d369` — fix(cook): pass cq param to recipe links for reliable queue detection
 - `c88c50e` — refactor: extract useDeduction composable, replace manual sliders with SliderList, fix pasta-price PATCH
 - `f8089ec` — feat(profile): avatar upload with SVG fallback, remove pravatar everywhere
