@@ -131,6 +131,7 @@ interface DirectusRecipe {
   cook: { id: string; first_name: string; last_name: string }
   date_created: string
   photo: string | null
+  forked_from: string | null
 }
 
 interface DirectusLike {
@@ -215,7 +216,7 @@ onMounted(async () => {
       if (todayEntry.dish_name) {
         try {
           const recipeMatch = await request<{ id: string; photo: string | null; category: string }[]>('get',
-            `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(todayEntry.dish_name)}&limit=1&fields=id,photo,category`
+            `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(todayEntry.dish_name)}&sort=-date_created&limit=1&fields=id,photo,category,forked_from`
           )
           const match = recipeMatch[0]
           if (match) {
@@ -249,9 +250,10 @@ onMounted(async () => {
   // Fetch real recipes
   try {
     const data = await request<DirectusRecipe[]>('get',
-      '/items/recipes?sort=-date_created&limit=6&fields=id,dish_name,category,photo,cook.id,cook.first_name,cook.last_name,date_created'
+      '/items/recipes?sort=-date_created&limit=20&fields=id,dish_name,category,photo,cook.id,cook.first_name,cook.last_name,date_created,forked_from'
     )
-    const mapped = data.map((r) => ({
+    const deduped = dedupRecipes(data).slice(0, 6)
+    const mapped = deduped.map((r) => ({
       id: r.id,
       title: r.dish_name,
       chef: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',

@@ -80,9 +80,10 @@ const selectedCategory = ref('')
 onMounted(async () => {
   try {
     const items = await request<any[]>('get',
-      '/items/recipes?fields=id,dish_name,category,photo,user_created.first_name,user_created.last_name&sort=-date_created&limit=100'
+      '/items/recipes?fields=id,dish_name,category,photo,user_created.first_name,user_created.last_name,forked_from,date_created&sort=-date_created&limit=200'
     )
-    const mapped = items.map((item: any) => ({
+    const deduped = dedupRecipes(items)
+    const mapped = deduped.map((item: any) => ({
       id: item.id,
       dish_name: item.dish_name,
       chef: `${item.user_created?.first_name ?? ''} ${item.user_created?.last_name ?? ''}`.trim() || 'Unknown',

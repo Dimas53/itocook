@@ -802,26 +802,28 @@ const isEntryCook = computed(() => {
 })
 
 const displayCookName = computed(() => {
+  if (recipe.value?.cook_name) return recipe.value.cook_name
   if (queueEntry.value?.cook && typeof queueEntry.value.cook === 'object' && 'first_name' in queueEntry.value.cook) {
     const c = queueEntry.value.cook as { id: string; first_name?: string; last_name?: string; avatar?: string }
     return [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Unknown'
   }
-  return recipe.value?.cook_name ?? null
+  return null
 })
 
 const displayCookId = computed(() => {
+  if (recipe.value?.cook_id) return recipe.value.cook_id
   if (queueEntry.value?.cook && typeof queueEntry.value.cook === 'object') {
     return queueEntry.value.cook.id
   }
-  return recipe.value?.cook_id ?? null
+  return null
 })
 
 const displayCookAvatar = computed(() => {
-  if (queueEntry.value?.cook && typeof queueEntry.value.cook === 'object' && 'avatar' in queueEntry.value.cook && queueEntry.value.cook.avatar) {
-    return `${directusUrl}/assets/${queueEntry.value.cook.avatar}`
-  }
   if (recipe.value?.cook_avatar) {
     return `${directusUrl}/assets/${recipe.value.cook_avatar}`
+  }
+  if (queueEntry.value?.cook && typeof queueEntry.value.cook === 'object' && 'avatar' in queueEntry.value.cook && queueEntry.value.cook.avatar) {
+    return `${directusUrl}/assets/${queueEntry.value.cook.avatar}`
   }
   return null
 })

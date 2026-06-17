@@ -570,7 +570,8 @@ interface CookQueueEntry {
   dish_name: string | null
   category: string | null
   status: string | null
-  cook: string | { id: string; first_name: string; last_name: string }
+  cook: string | { id: string; first_name: string; last_name: string; avatar?: string }
+  recipe: string | null
 }
 
 interface OrderEntry {
@@ -777,11 +778,10 @@ async function fetchTodayEntry() {
 async function fetchPastDishes() {
   try {
     const items = await request<any[]>('get',
-      '/items/recipes?sort=-date_created&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created'
+      '/items/recipes?sort=-date_created&limit=200&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created,forked_from'
     )
-    pastDishes.value = items
-      .filter((i: any) => i.dish_name)
-      .map((r: any) => ({
+    const deduped = dedupRecipes(items).filter((i: any) => i.dish_name)
+    pastDishes.value = deduped.map((r: any) => ({
         id: r.id,
         dish_name: r.dish_name,
         category: r.category ?? null,

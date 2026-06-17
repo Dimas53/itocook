@@ -161,28 +161,21 @@
 - [x] **Shopping list UX: colorful cart, per-group select-all, red delete** — empty state cart icon in red circle; each recipe group in By Recipe view has its own select-all checkbox in the header row (checkbox → name → date right-aligned); All Items view has global select-all + "Delete all checked" button; `PhTrash` changed to `text-red-500`
 - [x] **Fix: Cancel queue → auto-cleanup shopping list** — `cancelCooking()` deletes `shopping_list_items` for the linked recipe (same logic as `confirmDeduction`)
 
-## Next session — plan
-
-### Phase 4: Feature Screens
-**Goal:** Final layout of all screens according to the current screen map.
-
-- [x] Navigation (BottomTabBar), Home, HeroBlock, RecipeCard, BalanceWidget, DutyWidget
-- [x] Kitchen screen, Cook Page, Recipe Detail
-- [x] Task A': Split "Lunch is ready" from cost entry — decoupled into independent steps
-- [x] Task C: Cook cancels cook_queue entry — cancel button + confirm dialog in pre-ready states
-- [x] Task F: Pasta/inventory logic
-- [x] Photo upload: permissions + deferred upload + cleanup
-- [x] Ingredient emoji icons + quick-pick dropdown
-- [x] All Recipes page + Add to Queue flow
-- [ ] Task B': Reminder mechanism for overdue cost entry (groundwork)
-- [ ] Task D: Ghost participants / leave-join logic
-- [ ] AI Recipe — chat with AI, JSON recipe render, serving recalculation
-- [ ] Duty screen — duty calendar, confirmation, auto-assignment (DutyWidget готов, схема готова, нужна отдельная страница)
-- [ ] Common screen — group purchases, announcements, polls
-- [x] Finance page — balance table, top-up form, transaction history, pasta price setting (Task E)
-- [ ] Notifications — feed, quick actions
-- [x] Shopping list from recipe — share button with navigator.share / clipboard fallback + toast
-- [ ] Receipt photo upload
+## Current session — done
+- [x] **Dedup: show only one recipe per dish_name everywhere** — created `frontend/app/utils/dedupRecipes.ts` utility (group by `dish_name`, prefer latest fork if any, else latest original). Applied to:
+  - `recipes.vue` (All Recipes) — `limit=200`, dedup before likeCount map
+  - `index.vue` (Recent Dishes) — `limit=20`, dedup + `slice(0,6)`
+  - `kitchen.vue` (Dish History) — `limit=50`, dedup + `slice(0,5)`
+  - `cook.vue` (Pick from history) — `limit=200`, dedup in `fetchPastDishes()`
+  - HeroBlock match queries (`index.vue`, `kitchen.vue`) — added `sort=-date_created` to prefer latest recipe
+- [x] **Cleanup: delete unused Directus collections** — `cooked_recipes`, `order_items` (empty), `test_api` removed from schema. Removed O2M alias field `cooked_recipes` from `recipes` first. No frontend code refs found.
+- [x] **Fix: recipe author mismatch** — `recipe/[id].vue` `displayCookName/Id/Avatar` теперь берут `recipe.cook` в приоритете, `queueEntry.cook` только как fallback. Раньше queueEntry переопределял автора, что давало неверное имя если для этого блюда была другая запись в очереди.
+- [ ] **Task B': Reminder mechanism for overdue cost entry (groundwork)
+- [ ] **Task D: Ghost participants / leave-join logic
+- [ ] **AI Recipe** — chat with AI, JSON recipe render, serving recalculation
+- [ ] **Common screen** — group purchases, announcements, polls
+- [ ] **Notifications** — feed, quick actions
+- [ ] **Receipt photo upload**
 
 ## Git log
 - `f8089ec` — feat(profile): avatar upload with SVG fallback, remove pravatar everywhere
@@ -249,4 +242,5 @@
 - `a2be88b` — feat(duty): add monthly calendar with cell states and popover (Task 6)
 - `344e137` — fix(duty): add id to fields, proxy confirm PATCH through server route
 - `b973505` — fix(duty): sync calendar after confirm, allow clicking past dates
+- `648d1f3` — feat(shopping-list): cook_date, per-group select-all, auto-cleanup, fork fix
 

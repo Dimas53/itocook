@@ -377,7 +377,7 @@ watch(selectedSlot, async (slot) => {
     }
     // Fallback: dish_name match
     const recipeMatch = await request<{ id: string; photo: string | null; category: string | null }[]>('get',
-      `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(slot.dishName)}&limit=1&fields=id,photo,category`
+      `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(slot.dishName)}&sort=-date_created&limit=1&fields=id,photo,category`
     )
     const match = recipeMatch[0]
     if (match) {
@@ -426,9 +426,10 @@ onMounted(async () => {
   // ── Dish history from real recipes ──
   try {
     const recipeData = await request<any[]>('get',
-      '/items/recipes?sort=-date_created&limit=5&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created'
+      '/items/recipes?sort=-date_created&limit=50&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created,forked_from'
     )
-    const mapped = recipeData.map((r) => ({
+    const deduped = dedupRecipes(recipeData).slice(0, 5)
+    const mapped = deduped.map((r) => ({
       id: r.id,
       dish_name: r.dish_name,
       cookName: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
