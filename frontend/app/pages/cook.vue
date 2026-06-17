@@ -356,22 +356,11 @@
                 <span class="text-gray-500">Total receipt</span>
                 <span class="font-bold text-app-black text-[16px]">€{{ formattedReceipt }}</span>
               </div>
-              <div v-if="deduction.pastaBreakdown" class="flex justify-between text-[14px]">
-
-                <span class="text-gray-500">{{ deduction.pastaBreakdown.label }}</span>
-
-                <span class="font-semibold text-app-black">€{{ deduction.pastaBreakdown.amount.toFixed(2) }}</span>
-              </div>
-              <div class="flex justify-between text-[14px]">
-                <span class="text-gray-500">Participants</span>
-                <span class="font-semibold text-app-black">{{ pm.participantsList.length }}</span>
-              </div>
-              <div class="flex justify-between text-[14px]">
-                <span class="text-gray-500">Share per person</span>
-                <span class="font-semibold text-app-black">
-                  €{{ sharePerPerson }}
-                </span>
-              </div>
+              <ReceiptSummary
+                :pasta-breakdown="deduction.pastaBreakdown"
+                :participants-count="pm.participantsList.length"
+                :share-per-person="sharePerPerson"
+              />
               <hr class="border-gray-100" />
               <div class="flex justify-between text-[14px]">
                 <span class="text-gray-500">Total</span>
