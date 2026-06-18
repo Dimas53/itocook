@@ -29,29 +29,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'All fields are required' })
   }
 
-  // ── Шаг 1: логинимся как админ Directus ──────────────────────────────
-  // directus api — POST /auth/login с credentials админа
-  // config.directusUrl = http://directus:8055 (на сервере через Docker)
-  const adminRes = await fetch(`${config.directusUrl}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: config.directusAdminEmail,
-      password: config.directusAdminPassword,
-    }),
-  })
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    throw createError({ statusCode: 400, message: 'Invalid email format' })
+  }
 
-  const adminJson = await adminRes.json()
-
-  if (!adminRes.ok) {
-    const err = adminJson as DirectusError
+  if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
     throw createError({
-      statusCode: 500,
-      message: err.errors?.[0]?.message || 'Admin login failed',
+      statusCode: 400,
+      message: 'Password must be at least 8 characters with uppercase, lowercase, and a digit',
     })
   }
 
-  const adminToken = (adminJson as { data: { access_token: string } }).data.access_token
+  if (firstName.length > 100 || lastName.length > 100) {
+    throw createError({ statusCode: 400, message: 'Name must be under 100 characters' })
+  }
+
+  const adminToken = await getAdminToken(config)
 
   // ── Шаг 2: создаём нового пользователя через Admin API ───────────────
   // directus api — POST /users с Bearer-токеном админа

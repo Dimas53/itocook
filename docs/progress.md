@@ -115,7 +115,12 @@
 - **⚠️ Admin password was changed.** After Docker restart, Directus admin login will use the new password from `.env`. The old `admin` password no longer works.
 - [x] **Security fix: rate limiting on signup** — in-memory rate limiter on `/api/auth/signup` (max 5 req / 60s per IP). Map resets on server restart. No npm packages added.
 
-## Current session
+## Current session — security
+- [x] **Security fix: signup input validation** — email regex, password 8+ chars with upper+lower+digit, name length 1-100
+- [x] **Security fix: admin token caching** — created `server/utils/adminToken.ts` (in-memory cache with 23h TTL); refactored all 8 server routes (signup, deduction confirm, duty confirm/upsert, pasta-price get/patch, users count/list) to use `getAdminToken(config)` instead of per-request `POST /auth/login`
+- [x] **Fix: TS errors from refactoring** — added null guard for `json.data.access_token` in `adminToken.ts`; restored `DirectusError` interface in `deduction/confirm.post.ts`
+
+## Refactoring session — Phase 1–2
 - [x] **Refactoring analysis** — analyzed 5 pages (3855 total lines) for extraction opportunities; identified 13 composable candidates, 4 cross-cutting patterns (slider, shopping list cleanup, participants fetch, date helpers); primary target: `confirmDeduction()` in `cook.vue` (64 lines, 5+ sequential API calls per participant). Findings saved to `docs/refactoring-plan.md`.
 - [x] **Fix: Consistent avatar URLs** — standardized all `pravatar.cc` `u` parameter to use `user.id` across `app.vue`, `index.vue`, `recipe/[id].vue`, `profile.vue`. Previously used `email` or `displayCookName`, causing different avatars per screen for the same user.
 - [x] **Fix: Avatars in finance Balances** — added user avatar (24px rounded-full) next to each name in both slider and expanded balance list on `finance.vue`.
@@ -270,4 +275,5 @@
 - `a955fa1` — fix(security): move confirmDeduction to admin-proxy server route
 - `0ffe1d6` — fix(security): rotate admin password, key/secret, tighten CORS/TTL
 - `661a824` — fix(security): rate limit signup — 5 req / 60s per IP
+- `e5bff35` — fix(auth): input validation on signup, admin token caching refactor
 
