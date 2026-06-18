@@ -182,6 +182,9 @@
 - [ ] **Receipt photo upload**
 
 ## Git log
+- `1a83b66` — refactor: extract formatUserName utility, replace 13 inline copies
+- `b881bf30` — fix(profile): show creation date in My Recipes; add pasta-to-ingredients sync in editor
+- `1eda3198` — fix: derive pasta cost from ingredients array; navigate to cook form on Lunch is ready
 - `fe0e9f7` — refactor: extract BalanceRow and TransactionRow components, dedup finance.vue templates
 - `c5159cb` — refactor: extract ReceiptSummary component, dedup receipt rows in cook.vue
 - `a700b57` — refactor: extract useRecipeServings composable, restrict canAddToList to isEntryCook
