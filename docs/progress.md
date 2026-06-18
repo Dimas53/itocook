@@ -130,6 +130,12 @@
 - [x] **Step 4.2: useBalanceCheck.ts JSDoc** — added detailed JSDoc to useBalanceCheck composable, check() function, and MIN_BALANCE constant. Documented safe fallback on error, no-balance-record edge case, exported MIN_BALANCE. Appended Balance Gate section to `docs/ARCHITECTURE.md`.
 - [x] **Step 4.2: useMealCost.ts JSDoc** — added detailed JSDoc to useMealCost composable, pastaPackagePrice ref, fetchPastaPrice() and computePastaCost() functions. Documented admin-proxy pattern, safe fallback price, caching, and pure-function design. Appended Meal Cost section to `docs/ARCHITECTURE.md`.
 - [x] **Step 4.3: signup.post.ts JSDoc** — added detailed JSDoc to the Nuxt server route handler, `ipRequestLog`, and `DirectusError`. Documented admin-proxy registration flow, rate-limiting, server-side validation, and error forwarding. Appended Signup Proxy section to `docs/ARCHITECTURE.md`.
+- [x] **Step 5-9: Remaining files JSDoc** — added JSDoc to all remaining files in one pass:
+  - `server/utils/adminToken.ts` — token caching, Directus login, error edge cases
+  - `middleware/cook.ts` — route guard redirect rules, bypass conditions
+  - `utils/dedupRecipes.ts` — dedup algorithm, callers, edge cases
+  - `utils/ingredientIcons.ts` — emoji lookup, match strategy, fallback
+  - `components/HeroBlock.vue` — all exports, props, emits, image priority, functions
 
 ## Refactoring session — Phase 1–2
 - [x] **Refactoring analysis** — analyzed 5 pages (3855 total lines) for extraction opportunities; identified 13 composable candidates, 4 cross-cutting patterns (slider, shopping list cleanup, participants fetch, date helpers); primary target: `confirmDeduction()` in `cook.vue` (64 lines, 5+ sequential API calls per participant). Findings saved to `docs/refactoring-plan.md`.
@@ -290,4 +296,7 @@
 - `e5bff35` — fix(auth): input validation on signup, admin token caching refactor
 - `187ee4b` — fix(security): add signup validation, refactor admin token caching
 - `0113efa` — docs: mark signup validation and admin token caching as done in security-audit.md
+- `ed7d576` — docs: create CONTEXT.md domain glossary (30+ terms)
+- `ec4291a` — docs: add JSDoc to composables (useDirectus, useAuth, useDeduction, useParticipants, useBalanceCheck, useMealCost), cook.vue, signup.post; create ARCHITECTURE.md with design decisions
+- `<commit hash>` — docs: add JSDoc to adminToken, cook middleware, dedupRecipes, ingredientIcons, HeroBlock; append remaining sections to ARCHITECTURE.md
 

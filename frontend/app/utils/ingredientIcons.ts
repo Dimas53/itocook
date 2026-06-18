@@ -1,3 +1,16 @@
+/**
+ * Map of ingredient names to emoji icons.
+ *
+ * Keys are lowercase ingredient names (singular/plural). Lookup is
+ * case-insensitive and supports substring matching via `getIngredientIcon`.
+ *
+ * **Used by:** shopping list page to display a visual icon next to each ingredient.
+ *
+ * **Callers:**
+ * - `pages/shopping-list.vue` — ingredient rows
+ * - `pages/recipe/[id].vue` — ingredient list
+ * - `pages/recipe/create.vue` — ingredient editor
+ */
 export const INGREDIENT_ICONS: Record<string, string> = {
   'chicken': '🐔',
   'chicken breast': '🐔',
@@ -128,8 +141,33 @@ export const INGREDIENT_ICONS: Record<string, string> = {
   'wine': '🍷',
 }
 
+/**
+ * Fallback emoji displayed when no icon matches an ingredient.
+ */
 export const DEFAULT_INGREDIENT_ICON = '🍽️'
 
+/**
+ * Look up the best matching emoji icon for a given ingredient name.
+ *
+ * **Lookup strategy (in order):**
+ *   1. Exact (case-insensitive) match in `INGREDIENT_ICONS`.
+ *   2. Longest-key-first substring match — "chicken breast" matches "chicken breast"
+ *      before "chicken".
+ *   3. Fallback to `DEFAULT_INGREDIENT_ICON` (`🍽️`).
+ *
+ * **Callers:**
+ * - `components/IngredientRow.vue` (if extracted)
+ * - Template-level in `pages/shopping-list.vue`
+ *
+ * **Edge cases:**
+ * - Empty/null name → returns default icon immediately.
+ * - Whitespace is trimmed before lookup.
+ * - Compound ingredient names (e.g. "red pepper") match the longer key
+ *   ("red pepper" over "pepper") because keys are sorted by length descending.
+ *
+ * @param name Raw ingredient name (e.g. "Chicken Breast", "  SALT ").
+ * @returns Emoji string or the default fallback.
+ */
 export function getIngredientIcon(name: string): string {
   if (!name) return DEFAULT_INGREDIENT_ICON
   const normalized = name.trim().toLowerCase()

@@ -80,3 +80,52 @@ Key design decisions:
 - **IP-based rate limiting**: An in-memory `Map<string, number[]>` tracks request timestamps per IP (60-second sliding window, max 5). This is a lightweight DoS deterrent — acceptable for single-server, though it resets on restart and doesn't scale horizontally.
 - **Duplicate email handling**: Directus returns a 400 with a uniqueness-violation message. The route forwards this verbatim to the client, so the frontend can display "email already exists" without having to parse Directus codes.
 - **Directus role hardcoded**: The User role UUID (`1927ae8a-...`) is hardcoded. This is a tradeoff — avoids an extra lookup, but requires the UUID to stay in sync if the Directus role is ever recreated.
+
+## Admin Token: `server/utils/adminToken.ts`
+
+Caches the Directus admin Bearer token to avoid logging in on every server-proxy request. Used by all Nuxt server routes that proxy admin-privileged operations to Directus (signup, deduction, duty upsert, user list, settings).
+
+Key design decisions:
+- **23-hour TTL**: Directus tokens expire after 24 hours. Caching for 23 hours provides a 1-hour safety margin against expiration race conditions — enough that no request should ever get a 401 from a stale token.
+- **In-memory cache**: Resets on server restart. Acceptable for a single-server deployment. For horizontal scaling, this would need Redis or a shared cache.
+- **Error on missing token**: If Directus returns a 200 but no `access_token` in the body, the function throws a 500. This guards against silent misconfiguration (e.g. misconfigured Directus login endpoint that returns HTML instead of JSON).
+- **Called on-demand**: The admin token is not pre-fetched at server start; the first request that needs it triggers login. This avoids a startup dependency on Directus being available.
+
+## Cook Route Guard: `middleware/cook.ts`
+
+Nuxt route middleware that protects the `/cook` page. Only the user who is the assigned cook for the current day can access the cook panel.
+
+Key design decisions:
+- **Non-user roles bypass queue check**: Finance/admin users (role UUID !== the User role) are allowed through without checking for a cook_queue entry. This lets them access the cook panel for testing or administrative purposes.
+- **`?action=become` bypass**: The middleware allows access when the query param `?action=become` is present. This lets the cook panel start in the `assign` state — the user can assign themselves as cook even without an existing queue entry. Used by the "I'm cooking today!" flow from HeroBlock.
+- **Fail-safe redirect**: Network errors or missing queue entries both redirect to `/`. The catch block ensures a Directus outage doesn't leave the user on a broken page.
+- **Status filter**: Only non-cancelled entries are considered. If the cook cancelled their cooking, they must re-enter via `?action=become`.
+
+## Recipe Dedup: `utils/dedupRecipes.ts`
+
+Deduplicates recipes by `dish_name` to avoid showing N copies of the same dish when multiple cooks have forked it. Used on all recipe-list pages (home, kitchen, all recipes, cook autocomplete).
+
+Key design decisions:
+- **Forks preferred over originals**: Within a dish-name group, forked recipes take priority. This ensures the user sees "their version" of the dish rather than the original.
+- **Date-based tiebreaker**: Within the fork (or original) subgroup, the most recently created entry wins. This surfaces the latest modifications.
+- **Empty dish_name skipped**: Recipes with null/empty names are silently filtered out rather than grouped under an empty key.
+- **Generic type**: The function accepts any type extending `DedupItem` so it can work with both raw Directus responses and mapped objects.
+
+## Ingredient Icons: `utils/ingredientIcons.ts`
+
+Maps ingredient names to emoji icons for the shopping list and recipe detail views. Uses a large static record with a fallback substring-matching strategy.
+
+Key design decisions:
+- **Exact match first, then substring**: `getIngredientIcon` first tries an exact case-insensitive match. If that fails, it sorts keys by length descending and checks if the ingredient name contains the key (or vice versa). This ensures "chicken breast" matches the specific key before the generic "chicken".
+- **Whitespace/empty handled**: Empty strings return the fallback icon immediately; whitespace is trimmed before lookup.
+- **Compound variant coverage**: The record includes common synonyms and plurals (e.g. "egg"/"eggs", "chili"/"chili pepper", "aubergine"/"eggplant") to avoid falling back to `🍽️` for common variations.
+
+## HeroBlock: `components/HeroBlock.vue`
+
+The "Who's cooking today?" hero component used on the Home and Kitchen pages. Has three visual states: loading, no-cook (CTA to become cook), and cook-assigned (dish info, participant count, image).
+
+Key design decisions:
+- **Three image priorities**: Uploaded recipe photo → category-based image → chef-cook onboarding graphic → `other.png` fallback. The image priority logic lives both in `useRecipeImage` (for the first two) and directly in the component (for the last two).
+- **`isNoRecipe` gate**: When a cook has neither photo nor category, the component shows a friendly `chef-cook.png` illustration instead of a generic category image. This is the "chef is thinking" state — the user has been assigned as cook but hasn't entered a dish name yet.
+- **`useRecipeImage` inside computed**: The `dishImage` computed calls `useRecipeImage` as a plain function (not in setup context). This is technically outside Nuxt's composable lifecycle, but it works because `useRuntimeConfig()` doesn't need setup context and the returned computed is consumed immediately via `.value`.
+- **Star SVG decoration**: A rotated star polygon is overlaid as a subtle background decoration using absolute positioning with `opacity-10` — one of the few allowed uses of `absolute` per the design system rules.

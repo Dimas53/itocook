@@ -132,6 +132,13 @@
 <script setup lang="ts">
 import { PhChefHat, PhForkKnife, PhUsers } from '@phosphor-icons/vue'
 
+/**
+ * Data about the current cook and their dish, passed from parent pages.
+ *
+ * - `photo` / `category` control which image is shown:
+ *   uploaded photo > category image > chef-cook onboarding graphic.
+ * - `queueId` is used to open the participant list modal.
+ */
 export interface CookInfo {
   name: string
   dish: string
@@ -141,29 +148,62 @@ export interface CookInfo {
 }
 
 const props = defineProps<{
+  /** Show skeleton loading state. */
   loading: boolean
+  /** Current cook info, or null when no one is cooking today. */
   cook: CookInfo | null
+  /** Whether the current user has joined this meal. */
   joined?: boolean
+  /** Number of confirmed participants (for display). */
   participantCount?: number
+  /** Total number of WG members (for display: `"3 of 10 confirmed"`). */
   totalCount?: number
+  /** Link to the recipe detail page (click dish to navigate). */
   recipeId?: string
+  /** There is already an active queue for today (disables "become cook"). */
   hasExistingQueue?: boolean
 }>()
 
 const emit = defineEmits<{
+  /** Current user taps the Join button. */
   join: []
+  /** Current user taps "I'm cooking today!". */
   'become-cook': []
+  /** Current user taps the dish area (navigates to recipe detail or opens cook panel). */
   'view-dish': []
+  /** Current user taps "Cook →" (navigates to /cook). */
   'go-to-cook': []
+  /** Current user taps the participant count (opens participant list modal). */
   'show-participants': []
 }>()
 
 const router = useRouter()
 
+/**
+ * Fallback onboarding image shown when a cook has no linked recipe
+ * and no category (i.e. the dish hasn't been fully set up yet).
+ */
 const CHEF_COOK = '/images/onboarding/chef-cook.png'
 
+/**
+ * True when a cook is assigned but has neither a photo nor a category.
+ * In this case the cook is probably still in the "thinking" state
+ * and hasn't decided what to cook yet — show the CHEF_COOK graphic.
+ */
 const isNoRecipe = computed(() => props.cook && !props.cook.photo && !props.cook.category)
 
+/**
+ * Resolved dish image based on the current cook's data.
+ *
+ * Priority:
+ *   1. Uploaded recipe photo (Directus asset) — circular crop with border.
+ *   2. Category-based image from `/images/categories/` — rounded rect.
+ *   3. `chef-cook.png` onboarding graphic — when no recipe/category set.
+ *   4. `other.png` fallback — when no cook at all.
+ *
+ * Uses `useRecipeImage` composable for the first two cases, then
+ * falls back to hardcoded paths for the no-recipe / no-cook states.
+ */
 const dishImage = computed(() => {
   if (!props.cook) return { src: '/images/categories/other.png', isUploaded: false }
   if (isNoRecipe.value) return { src: CHEF_COOK, isUploaded: false }
@@ -173,6 +213,7 @@ const dishImage = computed(() => {
   }).value
 })
 
+/** Navigate to recipe detail if a recipe exists, otherwise emit view-dish. */
 function onDishClick() {
   if (props.recipeId) {
     router.push(`/recipe/${props.recipeId}`)
@@ -181,6 +222,7 @@ function onDishClick() {
   }
   }
 
+/** Emit become-cook only if no cook and no existing queue for today. */
 function onBecomeCook() {
   if (props.cook || props.hasExistingQueue) return
   emit('become-cook')

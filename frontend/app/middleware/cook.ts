@@ -1,3 +1,20 @@
+/**
+ * Route guard for `/cook` (Cook Panel).
+ *
+ * Only the assigned cook for the current day is allowed to access the page.
+ * Admin/finance users bypass the cook-queue check but must be logged in.
+ *
+ * **Redirect rules:**
+ * - Not logged in → `/auth`
+ * - Admin/finance role → allow (no queue check)
+ * - `?action=become` query param → allow (used to jump directly to cook assignment)
+ * - No active cook_queue entry for today → redirect to `/`
+ * - Network/API error → redirect to `/` (fail safe)
+ *
+ * **Callers:**
+ * - Applied automatically by Nuxt to all routes matching the `cook` pattern
+ *   (configured in page meta or file-based routing).
+ */
 export default defineNuxtRouteMiddleware(async (to) => {
   const { user } = useAuth()
   const { request } = useDirectus()
