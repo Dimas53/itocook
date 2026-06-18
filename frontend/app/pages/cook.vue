@@ -473,6 +473,30 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Cook Panel — state-machine-driven page for the assigned cook.
+ *
+ * Route: /cook (with optional ?date=YYYY-MM-DD, ?recipeId=, ?newRecipe=).
+ * Guarded by middleware/cook.ts: only a user with a non-cancelled cook_queue
+ * entry for today can access. If the page URL has a past date, onMounted
+ * redirects to /kitchen.
+ *
+ * States: assign -> dish -> scheduled -> cooking -> ready -> done.
+ * The 'ready' state stays until confirmDeduction succeeds, then flips to 'done'.
+ *
+ * Key responsibilities:
+ *  - Assign current user as cook (with balance gate check)
+ *  - Set dish name + category, link to existing recipe or create fork
+ *  - Start cooking, mark ready (split from cost entry per Task A')
+ *  - Enter receipt with pasta-cost preview and deduction confirmation
+ *  - Cancel cooking with cleanup of orders + shopping list
+ *  - Sync status on tab visibility change (admin edits from other sessions)
+ *
+ * Directus collections:
+ *  - READ/WRITE: cook_queue, orders, recipes
+ *  - READ: balances (via useBalanceCheck)
+ *  - WRITE (admin-proxy): balances, transactions (via useDeduction.confirmDeduction)
+ */
 import {
   PhX,
   PhChefHat,
@@ -503,7 +527,11 @@ const { user } = useAuth()
 const router = useRouter()
 const route = useRoute()
 
-// ── Types ──
+/**
+ * Cook queue entry returned by Directus.
+ * The `cook` field can be a plain UUID string (if not expanded) or
+ * an object with user details (if fields=cook.* is specified in the query).
+ */
 interface CookQueueEntry {
   id: string
   date: string
@@ -514,17 +542,21 @@ interface CookQueueEntry {
   recipe: string | null
 }
 
+/**
+ * Confirmed order entry. Fetched during cancel to iterate and DELETE
+ * each participant's order for the cancelled queue entry.
+ */
 interface OrderEntry {
   id: string
-  user: {
-    id: string
-    first_name: string
-    last_name: string
-  }
+  user: { id: string; first_name: string; last_name: string }
   status: string
 }
 
-
+/**
+ * Past dish shown in the history picker (SliderList).
+ * Built from the recipes collection, deduplicated via dedupRecipes(),
+ * and enriched with cook name + relative date for display.
+ */
 interface HistoryDish {
   id: string
   dish_name: string
@@ -533,6 +565,11 @@ interface HistoryDish {
   dateLabel: string
 }
 
+/**
+ * Date from ?date= query param (e.g. /cook?date=2026-06-18).
+ * Falls back to today if param is missing. Used as the source of truth
+ * for all date-dependent queries (cook_queue filter, past-date guard).
+ */
 const pageDateStr = computed(() => {
   return (route.query.date as string) || formatDateISO(new Date())
 })
@@ -562,20 +599,51 @@ const isToday = computed(() => pageDateStr.value === formatDateISO(new Date()))
 
 const CATEGORIES = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'pizza', 'other'] as const
 
+/**
+ * True when both dish name and category are filled.
+ * Enables/disables all schedule/save buttons in the dish state.
+ */
 const canSchedule = computed(() =>
   dishName.value.trim().length > 0 && !!selectedCategory.value
 )
 
+/**
+ * Finds a past dish whose name partially matches the current dishName input.
+ * Uses case-insensitive .includes() (equivalent to Directus _icontains).
+ * Returns null if no match — triggers the "Create Recipe" fallback buttons.
+ */
 const matchedRecipe = computed(() => {
   if (!dishName.value.trim()) return null
   const name = dishName.value.toLowerCase()
   return pastDishes.value.find(d => d.dish_name.toLowerCase().includes(name)) || null
 })
 
+/**
+ * Cached recipe ID matching the current dish name.
+ * Populated by searchExistingRecipe().
+ * - If it points to the user's own recipe: no fork needed.
+ * - If it points to another user's recipe: saveDish() will fork it.
+ * - null means no existing recipe found; user must create one or save without recipe link.
+ */
 const existingRecipeId = ref<string | null>(null)
 const recipeSearchDone = ref(false)
 
-// ── Computed state machine ──
+/**
+ * State machine driving the full cook panel UI.
+ *
+ * Transitions:
+ *   loading  → initial fetch in progress (skeleton shown)
+ *   assign   → no cook_queue entry exists for this user+date
+ *   dish     → entry exists but no dish_name set yet (user must enter name + category)
+ *   scheduled → dish + category saved, status='scheduled' (waiting for Start Cooking)
+ *   cooking  → status='cooking' (meal in progress, participants visible)
+ *   ready    → status='ready' (lunch served, receipt entry form shown)
+ *   done     → receipt confirmed (deductionResult=true), summary shown
+ *
+ * State machine computed — each condition is checked in order.
+ * 'ready' requires deductionResult=false (has not completed deduction yet).
+ * 'done' requires deductionResult=true (deduction cycle finished).
+ */
 const state = computed(() => {
   if (loading.value) return 'loading'
   if (!cookEntry.value) return 'assign'
@@ -603,6 +671,7 @@ const formattedReceipt = computed(() => {
   return isNaN(val) ? '0.00' : val.toFixed(2)
 })
 
+/** Per-person share: (receipt + pasta cost) / participant count. */
 const sharePerPerson = computed(() => {
   const base = parseFloat(receiptAmount.value)
   if (isNaN(base) || pm.participantsList.length === 0) return '0.00'
@@ -610,12 +679,19 @@ const sharePerPerson = computed(() => {
   return (total / pm.participantsList.length).toFixed(2)
 })
 
+/** Grand total = receipt + optional pasta cost. */
 const grandTotalDisplay = computed(() => {
   const base = parseFloat(receiptAmount.value)
   const total = (isNaN(base) ? 0 : base) + deduction.pastaCost
   return total.toFixed(2)
 })
 
+/**
+ * True when today's date is past 14:00 and receipt has not been entered.
+ * Triggers the "Cost entry overdue" red badge in the ready state.
+ * Cutoff is hardcoded to 14:00 local time on the same day.
+ * Only applies to today (isToday check) — future/past dates never show this.
+ */
 const receiptOverdue = computed(() => {
   if (!isToday) return false
   const now = new Date()
@@ -623,7 +699,12 @@ const receiptOverdue = computed(() => {
   return now > cutoff
 })
 
-// ── Fetch today's cook entry ──
+/**
+ * Fetch the cook_queue entry for the current user and the displayed date.
+ * Uses the pageDateStr (from ?date= query param or today).
+ * Filters out cancelled entries. If found, populates cookEntry ref
+ * and pre-fills dishName if one was already saved.
+ */
 async function fetchTodayEntry() {
   loading.value = true
   try {
@@ -643,7 +724,12 @@ async function fetchTodayEntry() {
   loading.value = false
 }
 
-// ── Fetch past dishes from recipes collection ──
+/**
+ * Fetch the last 200 recipes, deduplicate by dish_name (via dedupRecipes),
+ * and populate the history picker (SliderList). Each entry includes the
+ * original cook name and a relative date label.
+ * Used in the dish state so the cook can pick past dishes to speed up entry.
+ */
 async function fetchPastDishes() {
   try {
     const items = await request<any[]>('get',
@@ -667,6 +753,18 @@ const recipeIdFromQuery = route.query.recipeId as string | undefined
 
 // ── Actions ──
 
+/**
+ * Assign current user as cook for the given date.
+ *
+ * 1. Checks balance gate (useBalanceCheck — threshold: -30 EUR).
+ *    If balance is too low, shows ActionBlockedModal and returns.
+ * 2. Creates a cook_queue entry with status='scheduled'.
+ * 3. Creates a confirmed order for the cook (auto-join) so the cook
+ *    appears in the participant list immediately.
+ * 4. Fetches past dishes to populate the history picker.
+ *
+ * Directus writes: POST /items/cook_queue, POST /items/orders
+ */
 async function assignAsCook() {
   const { check } = useBalanceCheck()
   const result = await check()
@@ -699,6 +797,20 @@ async function assignAsCook() {
   saving.value = false
 }
 
+/**
+ * Search for an existing recipe by exact dish_name match.
+ *
+ * Strategy (two-pass):
+ *   1. Try user's own recipes first (filter[user_created]).
+ *   2. Fallback to any recipe with that name (will be forked in saveDish
+ *      if it belongs to another user).
+ *
+ * Sets existingRecipeId for use by saveDish() and the template (Edit/View buttons).
+ * recipeSearchDone flag is set to true regardless of result so the template
+ * can show "Edit Recipe" or "Add Recipe" buttons in scheduled/cooking states.
+ *
+ * @returns The recipe ID or null if no match found
+ */
 async function searchExistingRecipe(name: string): Promise<string | null> {
   recipeSearchDone.value = false
   existingRecipeId.value = null
@@ -728,6 +840,11 @@ async function searchExistingRecipe(name: string): Promise<string | null> {
   return null
 }
 
+/**
+ * Transition the cook_queue entry from 'scheduled' to 'cooking'.
+ * Called when the cook presses "Start Cooking". After the status update,
+ * re-fetches participants (some may have joined since scheduling).
+ */
 async function startCooking() {
   if (!cookEntry.value) return
   saving.value = true
@@ -743,6 +860,21 @@ async function startCooking() {
   saving.value = false
 }
 
+/**
+ * Save dish name + category to the queue entry, then optionally fork a recipe.
+ *
+ * Steps:
+ *   1. PATCH the cook_queue entry with dish_name, category, status='scheduled'.
+ *   2. Search for an existing recipe matching the dish name.
+ *   3. If a recipe exists and belongs to ANOTHER user:
+ *      a. Check if a fork already exists for this user (reuse to avoid duplicates).
+ *      b. If not, create a fork (copy with forked_from pointing to original).
+ *      c. Link the queue entry to the (forked) recipe via PATCH.
+ *   4. If the recipe is the user's own, just link it directly (no fork).
+ *
+ * Fork-on-cook pattern: each cook gets their own copy so they can modify
+ * ingredients/steps without affecting the original author's version.
+ */
 async function saveDish() {
   if (!cookEntry.value || !dishName.value.trim()) return
   saving.value = true
@@ -799,11 +931,13 @@ async function saveDish() {
   saving.value = false
 }
 
+/** Prefill dish name and category from a history selection. */
 function selectPastDish(item: HistoryDish) {
   dishName.value = item.dish_name
   if (item.category) selectedCategory.value = item.category
 }
 
+/** Save the matched recipe's dish_name + invoke saveDish fork logic. */
 async function saveMatchedDish() {
   if (!cookEntry.value) return
   const recipe = matchedRecipe.value
@@ -812,6 +946,7 @@ async function saveMatchedDish() {
   await saveDish()
 }
 
+/** Navigate to recipe creation with dish name, date, category pre-filled. */
 function createRecipeAndAdd() {
   const returnTo = `/cook?date=${pageDateStr.value}`
   router.push(
@@ -819,6 +954,7 @@ function createRecipeAndAdd() {
   )
 }
 
+/** Navigate to recipe detail (if recipe exists) or create page. */
 function editDish() {
   if (!cookEntry.value?.dish_name) return
   const id = existingRecipeId.value
@@ -829,6 +965,13 @@ function editDish() {
   }
 }
 
+/**
+ * Transition from 'cooking' to 'ready' state.
+ * Only sets the status — does NOT trigger deduction. The receipt entry
+ * form is shown independently in the 'ready' state (Task A' refactor:
+ * split "mark ready" from "confirm deduction").
+ * TODO: Notify participants that lunch is ready (future push notification).
+ */
 async function markReady() {
   if (!cookEntry.value) return
   saving.value = true
@@ -845,6 +988,17 @@ async function markReady() {
   saving.value = false
 }
 
+/**
+ * Cancel the entire cook entry — full cleanup.
+ *
+ * 1. PATCH cook_queue to status='cancelled'.
+ * 2. Find all confirmed orders for this queue entry and DELETE each.
+ * 3. Clean up shopping list items linked to the recipe (via useDeduction).
+ * 4. Redirect to /kitchen.
+ *
+ * Does NOT touch balances or transactions (the meal never happened).
+ * Shows a confirmation dialog before executing (showCancelDialog).
+ */
 async function cancelCooking() {
   if (!cookEntry.value) return
   cancelling.value = true
@@ -875,6 +1029,20 @@ async function cancelCooking() {
   showCancelDialog.value = false
 }
 
+/**
+ * Process financial deduction and close the meal cycle.
+ *
+ * Calls deduction.confirmDeduction() which POSTs to the admin-proxy server
+ * route (/api/deduction/confirm). The server route creates transactions
+ * and updates balances for each participant using an admin Directus token
+ * (avoiding per-user write permissions on balances/transactions).
+ *
+ * On success:
+ *  - Stores the deducted total for the 'done' summary view
+ *  - Resets pastaBreakdown and pastaCost (already processed)
+ *  - Sets cook_entry status to 'completed' locally
+ *  - Sets deductionResult=true which triggers the 'done' state
+ */
 async function handleConfirmDeduction() {
   if (!cookEntry.value) return
   try {
@@ -896,7 +1064,13 @@ async function handleConfirmDeduction() {
   }
 }
 
-// ── Refresh when page becomes visible ──
+/**
+ * Full re-fetch triggered on tab visibility change.
+ * Re-fetches queue entry, participants, and recipe search.
+ * If no dish_name is set yet, also fetches past dishes (for history picker).
+ * This keeps the page in sync with admin-side changes (e.g. admin
+ * cancels entry from Directus panel while cook has the page open).
+ */
 async function refreshCookData() {
   await fetchTodayEntry()
   if (cookEntry.value && !cookEntry.value.dish_name) {
@@ -909,6 +1083,12 @@ async function refreshCookData() {
   }
 }
 
+/**
+ * visibilitychange handler — re-fetches cook data when the tab becomes visible.
+ * Registered in onMounted, cleaned up in onUnmounted.
+ * Without this, admin changes (cancel, status update) would only appear
+ * on manual page refresh.
+ */
 function onVisibilityChange() {
   if (document.visibilityState === 'visible') {
     refreshCookData()
@@ -916,10 +1096,28 @@ function onVisibilityChange() {
 }
 
 // ── Init ──
+/**
+ * Watch existingRecipeId — when a recipe is linked/cached, load its
+ * pasta package cost for the deduction preview in the 'ready' state.
+ * Calls useDeduction.loadPastaCost() which fetches the recipe's
+ * pasta_packages field and the app_settings price.
+ */
 watch(existingRecipeId, () => {
   deduction.loadPastaCost(existingRecipeId.value)
 })
 
+/**
+ * Page initialisation (runs once on mount).
+ *
+ * 1. Past-date guard: if ?date= is a past date, redirect to /kitchen.
+ *    The cook panel only works for today or future dates.
+ * 2. Fetch queue entry, participants, past dishes, recipe search.
+ * 3. Handle return from recipe/create with ?newRecipe= param:
+ *    fetch the recipe and auto-save as the dish.
+ * 4. Handle prefill from ?recipeId= param (navigated from "Cook This"
+ *    button on recipe detail): watch for 'dish' state and auto-save.
+ * 5. Register visibilitychange listener for status sync.
+ */
 onMounted(async () => {
   // Past-date guard: redirect to kitchen
   if (pageDateStr.value < formatDateISO(new Date())) {

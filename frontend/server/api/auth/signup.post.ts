@@ -1,17 +1,43 @@
 import { defineEventHandler, readBody, createError, getRequestIP } from 'h3'
 
+/**
+ * In-memory rate-limit store keyed by client IP.
+ * Each entry is an array of UNIX timestamps (ms) for requests within the last 60 seconds.
+ * Reset on server restart — acceptable for a single-server deployment.
+ */
 const ipRequestLog = new Map<string, number[]>()
 
 interface DirectusError {
   errors: Array<{ message: string }>
 }
 
-// ─── POST /api/auth/signup ──────────────────────────────────────────────
-// Nuxt server-route. Прокси для регистрации новых пользователей.
-// Нужен потому что Directus не позволяет создавать пользователей
-// через публичный API — только через Admin API с токеном админа.
-// ────────────────────────────────────────────────────────────────────────
-
+/**
+ * POST /api/auth/signup  —  Nuxt server route.
+ *
+ * Proxies user registration to the Directus Admin API.
+ * Directus does not allow user creation through its public API;
+ * only the Admin API (Bearer token) can create users.
+ *
+ * **Callers:**
+ * - `useAuth.signUp()` in the frontend composable.
+ *
+ * **Flow:**
+ *   1. IP-based rate-limit check (max 5 requests per 60s per IP).
+ *   2. Validate required fields: email, password, firstName, lastName.
+ *   3. Validate email format (basic regex).
+ *   4. Validate password strength: >= 8 chars, uppercase, lowercase, digit.
+ *   5. Validate name length (<= 100 characters each).
+ *   6. Obtain admin token via server/utils/adminToken.ts.
+ *   7. POST to Directus `/users` with admin Bearer token, assigning the User role.
+ *   8. Return `{ success: true }` or throw an H3 error with the Directus error message.
+ *
+ * **Edge cases:**
+ * - Duplicate email: Directus returns a 400 with "email" uniqueness violation message,
+ *   which is forwarded verbatim to the client.
+ * - Network error when fetching admin token: bubbles up as a 500 from `getAdminToken`.
+ * - Rate-limit exceeded: 429 with a descriptive message instead of a raw Directus error.
+ * - Missing fields: 400 before any API call.
+ */
 export default defineEventHandler(async (event) => {
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
   const now = Date.now()
@@ -47,9 +73,6 @@ export default defineEventHandler(async (event) => {
 
   const adminToken = await getAdminToken(config)
 
-  // ── Шаг 2: создаём нового пользователя через Admin API ───────────────
-  // directus api — POST /users с Bearer-токеном админа
-  // ВАЖНО: роль '1927ae8a-...' — это UUID роли User в Directus
   const createRes = await fetch(`${config.directusUrl}/users`, {
     method: 'POST',
     headers: {

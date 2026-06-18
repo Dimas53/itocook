@@ -122,6 +122,14 @@
 
 ## Current session — documentation
 - [x] **Block 4: CONTEXT.md** — created `docs/CONTEXT.md` — domain glossary with 30+ terms; each entry includes 1-2 sentence definition, file/collection locations, and related terms. Conducted interview on ambiguous terms (cook in 3 meanings, deduction vs cost entry, fork, ghost participant, etc.). Interview resolved term splits and established glossary scope.
+- [x] **Step 4.2: useDirectus.ts JSDoc** — added comprehensive JSDoc with business context, caller list, edge cases, and gotchas to `useDirectus.ts` (top-level composable, tokenCookie, request, uploadFile, deleteFile). Created `docs/ARCHITECTURE.md` with core-layer documentation and design rationale.
+- [x] **Step 4.2: useAuth.ts JSDoc + TS fix** — fixed TS parsing crash in useDirectus.ts JSDoc (backticks and @link tags caused vue-tsc errors). Added full JSDoc to useAuth.ts with business context, edge cases (admin-proxy signup, silent catch in isTodayCook, no server-side logout, auto-login after signup), caller list, and Directus endpoints. Appended auth-layer section to `docs/ARCHITECTURE.md`.
+- [x] **Step 4.2: cook.vue JSDoc** — expanded detailed JSDoc on script setup, state machine, all action functions (assignAsCook, saveDish, cancelCooking, markReady, etc.), key computeds, lifecycle hooks, interfaces. Appended Cook Panel section to `docs/ARCHITECTURE.md`.
+- [x] **Step 4.2: useDeduction.ts JSDoc** — added detailed JSDoc to DeductionParams interface, useDeduction composable, all exported functions (loadPastaCost, cleanupShoppingList, confirmDeduction) and reactive state refs (deducting, pastaCost, pastaBreakdown). Documented admin-proxy pattern, dual-source pasta cost, two-strategy shopping list cleanup, best-effort error handling, and plain-object reactive wrapping requirement. Appended Deduction section to `docs/ARCHITECTURE.md`.
+- [x] **Step 4.2: useParticipants.ts JSDoc** — added detailed JSDoc to ParticipantSummary interface, useParticipants composable, all exported refs (confirmed, hasJoined, loading, joinBlockedReason, participantsList) and functions (fetch, join). Documented reactive cookQueueId pattern, balance gate in join(), plain-object/reactive requirement, and silent error handling. Appended Participants section to `docs/ARCHITECTURE.md`.
+- [x] **Step 4.2: useBalanceCheck.ts JSDoc** — added detailed JSDoc to useBalanceCheck composable, check() function, and MIN_BALANCE constant. Documented safe fallback on error, no-balance-record edge case, exported MIN_BALANCE. Appended Balance Gate section to `docs/ARCHITECTURE.md`.
+- [x] **Step 4.2: useMealCost.ts JSDoc** — added detailed JSDoc to useMealCost composable, pastaPackagePrice ref, fetchPastaPrice() and computePastaCost() functions. Documented admin-proxy pattern, safe fallback price, caching, and pure-function design. Appended Meal Cost section to `docs/ARCHITECTURE.md`.
+- [x] **Step 4.3: signup.post.ts JSDoc** — added detailed JSDoc to the Nuxt server route handler, `ipRequestLog`, and `DirectusError`. Documented admin-proxy registration flow, rate-limiting, server-side validation, and error forwarding. Appended Signup Proxy section to `docs/ARCHITECTURE.md`.
 
 ## Refactoring session — Phase 1–2
 - [x] **Refactoring analysis** — analyzed 5 pages (3855 total lines) for extraction opportunities; identified 13 composable candidates, 4 cross-cutting patterns (slider, shopping list cleanup, participants fetch, date helpers); primary target: `confirmDeduction()` in `cook.vue` (64 lines, 5+ sequential API calls per participant). Findings saved to `docs/refactoring-plan.md`.
@@ -197,6 +205,7 @@
 - [ ] **Receipt photo upload**
 
 ## Git log
+- `ed7d576` — docs: create CONTEXT.md domain glossary (30+ terms)
 - `1a83b66` — refactor: extract formatUserName utility, replace 13 inline copies
 - `b881bf30` — fix(profile): show creation date in My Recipes; add pasta-to-ingredients sync in editor
 - `1eda3198` — fix: derive pasta cost from ingredients array; navigate to cook form on Lunch is ready
