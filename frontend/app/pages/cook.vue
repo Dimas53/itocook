@@ -668,7 +668,7 @@ async function fetchPastDishes() {
         id: r.id,
         dish_name: r.dish_name,
         category: r.category ?? null,
-        cookName: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
+        cookName: formatUserName(r.cook),
         dateLabel: formatDateRelative(new Date(r.date_created)),
       }))
   } catch {

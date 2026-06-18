@@ -495,7 +495,7 @@ async function fetchMyOrders() {
         let cookName = ''
         let isCook = false
         if (cq && cq.cook && typeof cq.cook === 'object') {
-          cookName = [cq.cook.first_name, cq.cook.last_name].filter(Boolean).join(' ') || 'Unknown'
+          cookName = formatUserName(cq.cook)
           isCook = cq.cook.id === user.value?.id
         }
         return {

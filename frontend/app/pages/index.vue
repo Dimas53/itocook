@@ -198,9 +198,7 @@ onMounted(async () => {
     if (todayEntry) {
       todayEntryId.value = todayEntry.id
       await fetchParticipants()
-      const cookName = todayEntry.cook
-        ? [todayEntry.cook.first_name, todayEntry.cook.last_name].filter(Boolean).join(' ')
-        : 'Unknown'
+      const cookName = formatUserName(todayEntry.cook)
 
       // Try to find matching recipe
       let heroCategory: string | null = null
@@ -248,7 +246,7 @@ onMounted(async () => {
     const mapped = deduped.map((r) => ({
       id: r.id,
       title: r.dish_name,
-      chef: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
+      chef: formatUserName(r.cook),
       category: r.category,
       photo: r.photo,
     }))

@@ -677,7 +677,7 @@ const displayCookName = computed(() => {
   if (recipe.value?.cook_name) return recipe.value.cook_name
   if (queueEntry.value?.cook && typeof queueEntry.value.cook === 'object' && 'first_name' in queueEntry.value.cook) {
     const c = queueEntry.value.cook as { id: string; first_name?: string; last_name?: string; avatar?: string }
-    return [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Unknown'
+    return formatUserName(c)
   }
   return null
 })
@@ -922,7 +922,7 @@ onMounted(async () => {
     let cookId: string | null = null
     let cookAvatar: string | null = null
     if (item.cook && typeof item.cook === 'object') {
-      cookName = [item.cook.first_name, item.cook.last_name].filter(Boolean).join(' ') || 'Unknown'
+      cookName = formatUserName(item.cook)
       cookId = item.cook.id
       cookAvatar = (item.cook as { avatar?: string }).avatar ?? null
     }

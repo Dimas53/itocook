@@ -66,7 +66,7 @@
                 <AvatarPlaceholder />
               </div>
               <span class="text-[14px] font-medium text-app-black">
-                {{ [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown' }}
+                {{ formatUserName(p) }}
               </span>
             </div>
           </div>

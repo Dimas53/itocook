@@ -248,3 +248,35 @@ frontend/app/
 | `finance.vue` | 630 | ~400 | −230 (36%) |
 | `kitchen.vue` | 475 | ~420 | −55 (12%) |
 | `recipe/create.vue` | 395 | ~380 | −15 (4%) |
+
+---
+
+## Audit 2026-06-18 — Remaining Opportunities
+
+### 🔥 Trivial (5–10 min each)
+
+1. **`formatDateISO` — replace local copies with auto-import** — `kitchen.vue:254`, `index.vue:168`, `middleware/cook.ts:18` all redefine the same function already in `utils/dates.ts:7`. (18 lines saved)
+
+2. **`formatUserName()` — shared utility** — Pattern `[first, last].filter(Boolean).join(' ') || 'Unknown'` repeated **13 times** across 8+ files (kitchen.vue, index.vue, cook.vue, recipe/[id].vue, profile.vue, duty.vue, useParticipants.ts, layouts/app.vue, DutyWidget.vue). Extract to `utils/` as `formatUserName(user, fallback?)`. (~25 lines saved)
+
+3. **`getMonday` + `MONTH_NAMES` + `formatDateStr` in `kitchen.vue`** — Identical copies of what's already in `utils/dates.ts`. Replace with auto-imported versions. (12 lines saved)
+
+4. **`parseISODate(iso: string): Date`** — `new Date(str + 'T12:00:00')` repeated **8 times** in 6 files (kitchen.vue, cook.vue, recipe/[id].vue, shopping-list.vue, profile.vue, WeekCalendar.vue). Extract to `utils/dates.ts`. (~8 lines saved)
+
+5. **`parseJsonField<T>(val): T | null`** — `typeof x === 'string' ? JSON.parse(x) : x` repeated in `recipe/[id].vue` and `recipe/create.vue` for ingredients/steps. Extract to utility. (~12 lines saved)
+
+6. **Dead code removal** — Commented-out template block in `index.vue:47-72` (16 lines), stale `console.log` in `recipe/[id].vue:993`.
+
+### ⚡ Easy (15–20 min)
+
+7. **`ActionBlockedModal.vue`** — The "Action blocked" overlay (heading + message + OK button with `#app-shield` icon) is duplicated in `index.vue`, `kitchen.vue`, `recipe/[id].vue`, `cook.vue`. Extract as shared component. (~60 lines saved)
+
+8. **`useCookQueueStatus()`** — `startCooking()` and `markReady()` are nearly identical in `cook.vue` and `recipe/[id].vue` (both do PATCH status + set local status). Extract to composable. (~30 lines saved)
+
+9. **`formatDateReadable(iso: string): string`** — `shopping-list.vue:252` and `profile.vue:469` define identical date formatters (`toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })`). Extract to `dates.ts`. (8 lines saved)
+
+### 🧩 Medium (20–30 min)
+
+10. **`batchFetchLikeCounts(recipeIds): Record<string, number>`** — The batch-fetch loop (`request → filter[recipe][_in] → countMap`) is duplicated in `index.vue:264-275` and `kitchen.vue:440-450`. Extract as composable or util.
+
+11. **Split `onMounted` in `index.vue` (89 lines)** — Does 3 distinct things: (a) fetch cook queue + hero data, (b) fetch recipes + dedup, (c) batch-fetch likes. Extract hero logic to `useTodayHero()` or similar.

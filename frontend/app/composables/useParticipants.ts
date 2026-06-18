@@ -26,7 +26,7 @@ export function useParticipants(cookQueueId: Ref<string | null>) {
       hasJoined.value = !!user.value && orders.some(o => o.user.id === user.value!.id)
       participantsList.value = orders.map((o) => ({
         id: o.user.id,
-        name: [o.user.first_name, o.user.last_name].filter(Boolean).join(' ') || 'Unknown',
+        name: formatUserName(o.user),
       }))
     } catch {}
     loading.value = false

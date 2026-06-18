@@ -91,7 +91,7 @@ const todayEntry = computed(() =>
 const todayUserName = computed(() => {
   const e = todayEntry.value
   if (!e) return null
-  return [e.user.first_name, e.user.last_name].filter(Boolean).join(' ')
+  return formatUserName(e.user, '')
 })
 
 const isMyTurn = computed(() => {

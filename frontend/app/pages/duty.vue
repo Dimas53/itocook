@@ -128,13 +128,13 @@ const isCurrentUser = computed(() => {
 const fullName = computed(() => {
   if (!entry.value) return ''
   const u = entry.value.user
-  return [u.first_name, u.last_name].filter(Boolean).join(' ')
+  return formatUserName(u, '')
 })
 
 const selectedEntryName = computed(() => {
   if (!selectedDay.value?.entry) return ''
   const u = selectedDay.value.entry.user
-  return [u.first_name, u.last_name].filter(Boolean).join(' ')
+  return formatUserName(u, '')
 })
 
 // ── Admin edit mode ──

@@ -238,10 +238,8 @@ const selectedDate = ref(formatDateISO(new Date()))
 
 function getCookName(cook: CookQueueItem['cook']): string {
   if (!cook) return ''
-  if (typeof cook === 'object') {
-    return [cook.first_name, cook.last_name].filter(Boolean).join(' ') || 'Unknown'
-  }
-  return 'Unknown'
+  if (typeof cook !== 'object') return 'Unknown'
+  return formatUserName(cook)
 }
 
 // ── Computed: week days ──
@@ -410,7 +408,7 @@ onMounted(async () => {
     const mapped = deduped.map((r) => ({
       id: r.id,
       dish_name: r.dish_name,
-      cookName: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
+      cookName: formatUserName(r.cook),
       dateLabel: formatDateShort(new Date(r.date_created)),
     }))
 
