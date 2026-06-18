@@ -797,6 +797,7 @@ async function markReady() {
       status: 'ready',
     })
     if (queueEntry.value) queueEntry.value.status = 'ready'
+    router.push(`/cook?cq=${id}`)
   } catch (e) {
     console.error('Failed to mark ready:', e)
   }

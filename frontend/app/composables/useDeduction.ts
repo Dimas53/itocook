@@ -30,10 +30,12 @@ export function useDeduction() {
       return
     }
     try {
-      const recipe = await request<{ pasta_packages: number | null }>('get',
-        `/items/recipes/${recipeId}?fields=pasta_packages`
+      const recipe = await request<{ pasta_packages: number | null; ingredients: { name: string; amount: string; unit: string }[] | string | null }>('get',
+        `/items/recipes/${recipeId}?fields=pasta_packages,ingredients`
       )
-      const packages = recipe.pasta_packages ?? 0
+      const ings = recipe.ingredients ? (typeof recipe.ingredients === 'string' ? JSON.parse(recipe.ingredients) : recipe.ingredients) : []
+      const pastaEntry = Array.isArray(ings) ? ings.find((i: { name: string }) => i.name.trim().toLowerCase() === 'pasta') : null
+      const packages = pastaEntry ? parseInt(pastaEntry.amount, 10) || 0 : (recipe.pasta_packages ?? 0)
       if (packages > 0) {
         const price = await mealCost.fetchPastaPrice()
         const cost = mealCost.computePastaCost(packages, price)
