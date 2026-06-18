@@ -5,6 +5,7 @@ interface DirectusError {
 }
 
 export default defineEventHandler(async (event) => {
+  requireAuth(event)
   const config = useRuntimeConfig(event)
 
   const adminRes = await fetch(`${config.directusUrl}/auth/login`, {

@@ -108,6 +108,9 @@
 - [x] **Fix: HeroBlock category display** — added `<span v-if="cook.category">` between dish name and "by cook.name" in `HeroBlock.vue` dish info
 - [x] **Fix: HeroBlock cook button disabled for all when queue exists** — added `hasExistingQueue` prop to `HeroBlock.vue`; disables "I'm cooking today!" and "Cook" buttons both via `:disabled` + `pointer-events-none` + JS guard in `onBecomeCook()`; `index.vue` tracks `hasTodayQueue` explicitly from `items.length > 0`; `kitchen.vue` added `hasSelectedQueue` computed
 
+## Fixes — ninth session
+- [x] **Security fix: cookie flags + server auth** — `directus_token` cookie: `httpOnly: false` (required by JS Bearer-token pattern for cross-origin Directus), `secure: !import.meta.dev`; created `server/utils/auth.ts` (requireAuth helper); added auth check to all 7 server API routes (excl. signup.post)
+
 ## Current session
 - [x] **Refactoring analysis** — analyzed 5 pages (3855 total lines) for extraction opportunities; identified 13 composable candidates, 4 cross-cutting patterns (slider, shopping list cleanup, participants fetch, date helpers); primary target: `confirmDeduction()` in `cook.vue` (64 lines, 5+ sequential API calls per participant). Findings saved to `docs/refactoring-plan.md`.
 - [x] **Fix: Consistent avatar URLs** — standardized all `pravatar.cc` `u` parameter to use `user.id` across `app.vue`, `index.vue`, `recipe/[id].vue`, `profile.vue`. Previously used `email` or `displayCookName`, causing different avatars per screen for the same user.
@@ -258,4 +261,5 @@
 - `b973505` — fix(duty): sync calendar after confirm, allow clicking past dates
 - `648d1f3` — feat(shopping-list): cook_date, per-group select-all, auto-cleanup, fork fix
 - `4a0940a` — feat(recipes): dedup by dish_name across all recipe lists, cleanup unused collections
+- `7894e5a` — fix(recipe): detect cook_queue by recipe ID first, fall back to dish_name
 

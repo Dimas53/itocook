@@ -1,4 +1,5 @@
 export default defineEventHandler(async (event) => {
+  requireAuth(event)
   const config = useRuntimeConfig()
   const body = await readBody(event)
   const token = getCookie(event, 'directus_token')

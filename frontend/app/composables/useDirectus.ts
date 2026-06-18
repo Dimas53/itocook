@@ -20,7 +20,8 @@ export const useDirectus = () => {
   const tokenCookie = useCookie<string | null>('directus_token', {
     maxAge: 60 * 60 * 24 * 7,
     sameSite: 'lax',
-    secure: false,
+    httpOnly: false,
+    secure: !import.meta.dev,
   })
 
   // directus api — universal request function for Directus
