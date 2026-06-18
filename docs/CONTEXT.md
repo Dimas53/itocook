@@ -2,6 +2,7 @@
 
 > Single source of truth for project-specific terms.
 > Use this to resolve ambiguity across files and collections.
+> Architecture docs: [ARCHITECTURE.md](ARCHITECTURE.md), [architecture/](architecture/)
 
 ---
 
@@ -12,6 +13,7 @@ A Directus **singleton** collection holding global application constants. Curren
 
 - **Files:** `frontend/server/api/settings/pasta-price.get.ts`, `frontend/server/api/settings/pasta-price.patch.ts`, `frontend/app/composables/useMealCost.ts`
 - **Related:** Deduction, Pasta Package, useMealCost
+- **Docs:** [finance.md](architecture/finance.md)
 
 ---
 
@@ -23,12 +25,14 @@ A per-user monetary account stored in the `balances` collection. One record per 
 - **Files:** `frontend/app/composables/useBalanceCheck.ts`, `frontend/app/components/BalanceWidget.vue`, `frontend/app/pages/finance.vue`, `frontend/app/pages/profile.vue`
 - **Collections:** `balances`
 - **Related:** Transaction, Deduction, Balance Gate, Finance Page
+- **Docs:** [finance.md](architecture/finance.md)
 
 ### Balance Gate
 A restriction that prevents a user from becoming cook or joining a meal when their balance drops below the threshold of **−30 €**. Implemented in `useBalanceCheck` composable. Checked before `assignAsCook()` in `cook.vue` and `join()` in `useParticipants.ts`.
 
 - **Files:** `frontend/app/composables/useBalanceCheck.ts`, `frontend/app/pages/cook.vue:671`, `frontend/app/composables/useParticipants.ts:39`
 - **Related:** Balance, Deduction
+- **Docs:** [finance.md](architecture/finance.md)
 
 ### BottomTabBar
 The persistent navigation bar at the bottom of the app (inside `layouts/app.vue`). Has 5 tabs. Tab 3 conditionally shows **Finance** (`PhChartBar`) instead of **AI Recipe** (`PhSparkle`) when the user has the finance/accountant role (checked via `isFinanceRole`).
@@ -46,12 +50,14 @@ Directus collection for kitchen cleaning duty roster. Fields: `date`, `user` (M2
 - **Files:** `frontend/app/pages/duty.vue`, `frontend/app/components/DutyWidget.vue`, `frontend/server/api/duty/confirm.post.ts`, `frontend/server/api/duty/upsert.post.ts`
 - **Collections:** `cleaning_schedule`
 - **Related:** Duty, MonthCalendar
+- **Docs:** [duty.md](architecture/duty.md)
 
 ### confirmDeduction
 Server-side action that closes a meal's financial cycle. Called from `cook.vue` `handleConfirmDeduction()` → `useDeduction.confirmDeduction()` → Nuxt server route `POST /api/deduction/confirm` (admin-proxied). Creates `transactions` and updates `balances` for each participant. Also cleans up `shopping_list_items` for the linked recipe.
 
 - **Files:** `frontend/app/composables/useDeduction.ts:70`, `frontend/app/pages/cook.vue:878`, `frontend/server/api/deduction/confirm.post.ts`
 - **Related:** Deduction, Transaction, Balance, Receipt
+- **Docs:** [finance.md](architecture/finance.md)
 
 ### Cook (field)
 A field on the `recipes` collection that stores the UUID of the user who owns the recipe. Set when a recipe is created or forked. Used to determine "My Recipes" on Profile page (`filter[user_created][_eq]=currentUser`).
@@ -59,6 +65,7 @@ A field on the `recipes` collection that stores the UUID of the user who owns th
 - **Files:** `frontend/app/pages/profile.vue` (My Recipes tab), `frontend/app/pages/cook.vue` (fork logic)
 - **Collections:** `recipes` → field `user_created`
 - **Related:** Cook (person), Fork, Recipe
+- **Docs:** [cook-queue.md](architecture/cook-queue.md)
 
 ### Cook (person)
 A user who is assigned to cook on a specific date. Represented by a `cook_queue` entry where `cook` field points to a `directus_users` record. The cook controls the meal: sets dish name, starts cooking, marks lunch ready, and enters the receipt for deduction.
@@ -66,12 +73,14 @@ A user who is assigned to cook on a specific date. Represented by a `cook_queue`
 - **Files:** `frontend/app/pages/cook.vue`, `frontend/app/composables/useAuth.ts` (`isTodayCook()`), `frontend/app/middleware/cook.ts`, `frontend/app/components/HeroBlock.vue`
 - **Collections:** `cook_queue` → field `cook` (M2O to directus_users)
 - **Related:** Cook (field), Cook Panel, cook_queue, Dish
+- **Docs:** [cook-queue.md](architecture/cook-queue.md)
 
 ### Cook Panel (Cook Page)
 The page at route `/cook`. A state-machine-driven UI for the assigned cook. States: `assign` → `dish` → `scheduled` → `cooking` → `ready` → `done`. Each state shows different controls (dish name entry, start cooking, mark ready, enter receipt, confirm deduction).
 
 - **Files:** `frontend/app/pages/cook.vue`
 - **Related:** Cook (person), State Machine, confirmDeduction
+- **Docs:** [cook-queue.md](architecture/cook-queue.md)
 
 ### cook_queue
 Core Directus collection representing a cooking assignment. Fields: `date`, `cook` (M2O to user), `dish_name`, `category`, `status` (scheduled/cooking/ready/completed/cancelled), `recipe` (M2O to recipes). One entry per cook per day.
@@ -79,6 +88,7 @@ Core Directus collection representing a cooking assignment. Fields: `date`, `coo
 - **Files:** `frontend/app/pages/cook.vue`, `frontend/app/pages/kitchen.vue`, `frontend/app/composables/useAuth.ts` (`isTodayCook()`), `frontend/app/middleware/cook.ts`, `frontend/app/components/HeroBlock.vue`
 - **Collections:** `cook_queue`
 - **Related:** Cook (person), State Machine, Dish
+- **Docs:** [cook-queue.md](architecture/cook-queue.md)
 
 ---
 
@@ -89,12 +99,14 @@ Deduplication of recipes by `dish_name`. When displaying recipe lists, only the 
 
 - **Files:** `frontend/app/utils/dedupRecipes.ts`, `frontend/app/pages/index.vue:197`, `frontend/app/pages/kitchen.vue:395`, `frontend/app/pages/cook.vue:652`, `frontend/app/pages/recipes.vue:85`
 - **Related:** Fork, Recipe
+- **Docs:** [recipe-system.md](architecture/recipe-system.md)
 
 ### Deduction
 The process of splitting a meal's total cost (receipt amount + optional pasta add-on) among all participants and updating each user's balance. Implemented in `useDeduction` composable with server-side admin-proxy for security. Each participant gets a transaction for their share.
 
 - **Files:** `frontend/app/composables/useDeduction.ts`, `frontend/app/pages/cook.vue` (ready/done states), `frontend/server/api/deduction/confirm.post.ts`
 - **Related:** confirmDeduction, Transaction, Balance, Receipt, Pasta Package
+- **Docs:** [finance.md](architecture/finance.md)
 
 ### Dish
 What the cook is preparing on a given day. Stored as `dish_name` on a `cook_queue` entry. May or may not have a linked `recipe`. A dish becomes a Recipe only when saved via create/edit flow.
@@ -102,6 +114,7 @@ What the cook is preparing on a given day. Stored as `dish_name` on a `cook_queu
 - **Files:** `frontend/app/pages/cook.vue` (dish state), `frontend/app/components/HeroBlock.vue`, `frontend/app/pages/kitchen.vue`
 - **Collections:** `cook_queue` → field `dish_name`
 - **Related:** Recipe, Cook (person), cook_queue
+- **Docs:** [cook-queue.md](architecture/cook-queue.md)
 
 ### Duty
 A scheduled kitchen cleaning assignment. Stored in `cleaning_schedule` collection. Each entry has a `date`, `user`, `department`, and `confirmed` flag. Users can confirm their own duty. Admin can edit all entries.
@@ -109,6 +122,7 @@ A scheduled kitchen cleaning assignment. Stored in `cleaning_schedule` collectio
 - **Files:** `frontend/app/pages/duty.vue`, `frontend/app/components/DutyWidget.vue`, `frontend/app/components/MonthCalendar.vue`, `frontend/server/api/duty/confirm.post.ts`, `frontend/server/api/duty/upsert.post.ts`
 - **Collections:** `cleaning_schedule`
 - **Related:** cleaning_schedule, MonthCalendar
+- **Docs:** [duty.md](architecture/duty.md)
 
 ---
 
@@ -119,6 +133,7 @@ Admin-only page at `/finance` (replaces AI Recipe tab for finance role users). S
 
 - **Files:** `frontend/app/pages/finance.vue`, `frontend/app/components/BalanceRow.vue`, `frontend/app/components/TransactionRow.vue`
 - **Related:** Balance, Transaction, isFinanceRole
+- **Docs:** [finance.md](architecture/finance.md)
 
 ### Fork
 A pattern where a user cooks another user's recipe: the system creates a copy of the original recipe owned by the current cook. The copy has `forked_from` pointing to the original recipe ID. On repeat cooking, the existing fork is reused instead of creating another copy.
@@ -126,6 +141,7 @@ A pattern where a user cooks another user's recipe: the system creates a copy of
 - **Files:** `frontend/app/pages/cook.vue:762-795`, `frontend/app/pages/profile.vue` (My Recipes)
 - **Collections:** `recipes` → field `forked_from`
 - **Related:** Recipe, Cook (person), Cook (field)
+- **Docs:** [recipe-system.md](architecture/recipe-system.md)
 
 ---
 
@@ -146,6 +162,7 @@ The "Who's cooking today?" UI component used on Home (`index.vue`) and Kitchen (
 
 - **Files:** `frontend/app/components/HeroBlock.vue`, `frontend/app/pages/index.vue`, `frontend/app/pages/kitchen.vue`
 - **Related:** Cook (person), cook_queue
+- **Docs:** [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ---
 
@@ -166,6 +183,7 @@ Reusable component extracted from `duty.vue`. Renders a grid of weekday cells (M
 
 - **Files:** `frontend/app/components/MonthCalendar.vue`, `frontend/app/pages/duty.vue`, `frontend/app/pages/recipe/[id].vue`
 - **Related:** Duty, cleaning_schedule
+- **Docs:** [duty.md](architecture/duty.md)
 
 ---
 
@@ -177,6 +195,7 @@ A record in the `orders` collection representing a user's commitment to particip
 - **Files:** `frontend/app/composables/useParticipants.ts`, `frontend/app/pages/recipe/[id].vue` (Join button), `frontend/app/pages/profile.vue` (My List)
 - **Collections:** `orders`
 - **Related:** Participant, cook_queue, Ghost Participant
+- **Docs:** [cook-queue.md](architecture/cook-queue.md)
 
 ---
 
@@ -188,6 +207,7 @@ A user who has joined a meal via a `confirmed` `orders` entry. The participant l
 - **Files:** `frontend/app/composables/useParticipants.ts`, `frontend/app/pages/cook.vue` (participants section), `frontend/app/pages/recipe/[id].vue`
 - **Collections:** `orders` (filtered by `status: confirmed` and `cook_queue`)
 - **Related:** Order, Deduction, Balance Gate
+- **Docs:** [cook-queue.md](architecture/cook-queue.md)
 
 ### Pasta Package
 An integer field on `recipes` (`pasta_packages`) that tracks how many packages of pasta were used. Also can be derived from ingredients array (entry with name "pasta"). The cost is computed as `packages × pasta_package_price` (from `app_settings`). Shown as a separate line in receipt preview.
@@ -195,6 +215,7 @@ An integer field on `recipes` (`pasta_packages`) that tracks how many packages o
 - **Files:** `frontend/app/composables/useDeduction.ts` (`loadPastaCost`), `frontend/app/composables/useMealCost.ts`, `frontend/app/components/ReceiptSummary.vue`, `frontend/app/pages/recipe/create.vue`
 - **Collections:** `recipes` → field `pasta_packages`, `app_settings` → field `pasta_package_price`
 - **Related:** Deduction, app_settings
+- **Docs:** [finance.md](architecture/finance.md)
 
 ---
 
@@ -205,6 +226,7 @@ The total cost of ingredients for a meal, entered by the cook in the `ready` sta
 
 - **Files:** `frontend/app/pages/cook.vue:340-351` (receipt input), `frontend/app/components/ReceiptSummary.vue`
 - **Related:** Deduction, confirmDeduction, Pasta Package
+- **Docs:** [finance.md](architecture/finance.md)
 
 ### Recipe
 A reusable dish definition stored in the `recipes` collection. Fields: `dish_name`, `category`, `description`, `ingredients` (JSON array), `steps` (JSON array), `photo` (file UUID), `pasta_packages`, `servings`, `forked_from`. Distinguished from "Dish" — a recipe is a saved template; a dish is what the cook prepares on a given day.
@@ -212,6 +234,7 @@ A reusable dish definition stored in the `recipes` collection. Fields: `dish_nam
 - **Files:** `frontend/app/pages/recipe/[id].vue`, `frontend/app/pages/recipe/create.vue`, `frontend/app/pages/recipes.vue`, `frontend/app/pages/cook.vue`, `frontend/app/pages/index.vue`, `frontend/app/pages/kitchen.vue`, `frontend/app/composables/useRecipeImage.ts`
 - **Collections:** `recipes`, `recipe_likes`
 - **Related:** Dish, Fork, Pasta Package, Cook (field)
+- **Docs:** [recipe-system.md](architecture/recipe-system.md)
 
 ### recipe_likes
 Junction collection tracking which users liked which recipes. Used for like counts on recipe cards and heart toggle on recipe detail. Fields: `recipe` (M2O to recipes), `user` (M2O to directus_users).
@@ -219,6 +242,7 @@ Junction collection tracking which users liked which recipes. Used for like coun
 - **Files:** `frontend/app/pages/recipe/[id].vue`, `frontend/app/pages/index.vue`, `frontend/app/pages/kitchen.vue`, `frontend/app/pages/recipes.vue`
 - **Collections:** `recipe_likes`
 - **Related:** Recipe
+- **Docs:** [recipe-system.md](architecture/recipe-system.md)
 
 ---
 
@@ -230,12 +254,14 @@ Collection for per-user shopping list entries. Fields: `user` (M2O), `recipe` (M
 - **Files:** `frontend/app/pages/shopping-list.vue`, `frontend/app/components/ShoppingListWidget.vue`, `frontend/app/composables/useDeduction.ts` (`cleanupShoppingList`), `frontend/app/pages/cook.vue` (`cancelCooking`)
 - **Collections:** `shopping_list_items`
 - **Related:** Order, Deduction
+- **Docs:** [shopping-list.md](architecture/shopping-list.md)
 
 ### State Machine
 The cook_queue lifecycle implemented as a computed `state` in `cook.vue:579-587`. States: `loading` → `assign` → `dish` → `scheduled` → `cooking` → `ready` → `done`. Each state renders a distinct UI section. Transitions are triggered by user actions (assignAsCook, saveDish, startCooking, markReady, confirmDeduction).
 
 - **Files:** `frontend/app/pages/cook.vue:579-599` (state computed + pageTitle)
 - **Related:** Cook Panel, cook_queue, confirmDeduction
+- **Docs:** [cook-queue.md](architecture/cook-queue.md)
 
 ---
 
@@ -247,6 +273,7 @@ A financial record in the `transactions` collection. Created either by admin top
 - **Files:** `frontend/app/pages/finance.vue`, `frontend/app/pages/profile.vue`, `frontend/server/api/deduction/confirm.post.ts`
 - **Collections:** `transactions`
 - **Related:** Balance, Deduction, Finance Page
+- **Docs:** [finance.md](architecture/finance.md)
 
 ---
 
@@ -257,24 +284,28 @@ The core composable that wraps `fetch` for all Directus API communication. Manag
 
 - **Files:** `frontend/app/composables/useDirectus.ts`
 - **Related:** useAuth, Server Proxy
+- **Docs:** [ARCHITECTURE.md](ARCHITECTURE.md) (Core layer section)
 
 ### useAuth
 Authentication composable providing `login`, `signUp`, `logout`, `fetchUser`, `isTodayCook`. Depends on `useDirectus`. Stores user object in `useState('auth:user')`.
 
 - **Files:** `frontend/app/composables/useAuth.ts`
 - **Related:** useDirectus, Cook (person)
+- **Docs:** [ARCHITECTURE.md](ARCHITECTURE.md) (Auth layer section)
 
 ### useDeduction
 Composable extracted from `cook.vue` during refactoring. Provides `confirmDeduction`, `loadPastaCost`, and `cleanupShoppingList`. Manages `deducting`, `pastaCost`, and `pastaBreakdown` refs.
 
 - **Files:** `frontend/app/composables/useDeduction.ts`
 - **Related:** Deduction, confirmDeduction, Pasta Package
+- **Docs:** [finance.md](architecture/finance.md)
 
 ### useParticipants
 Composable managing meal participant state. Provides `participantsList`, `confirmed` count, `hasJoined`, `join()`, `fetch()`. Initialized with `cookQueueId` ref. Returns a plain object (must be wrapped with `reactive()` in templates).
 
 - **Files:** `frontend/app/composables/useParticipants.ts`
 - **Related:** Order, Participant, useParticipantsModal
+- **Docs:** [ARCHITECTURE.md](ARCHITECTURE.md) (Participants section)
 
 ### useParticipantsModal
 Global composable for the participant list modal overlay. Module-level refs managed in `layouts/app.vue`. Opened by emitting `@show-participants` from HeroBlock on any page. Modal is teleported inside the phone frame, not to `body`.
@@ -287,3 +318,4 @@ A Nuxt server route (in `frontend/server/`) that proxies admin-privileged reques
 
 - **Files:** `frontend/server/api/auth/signup.post.ts`, `frontend/server/api/deduction/confirm.post.ts`, `frontend/server/api/duty/confirm.post.ts`, `frontend/server/api/duty/upsert.post.ts`, `frontend/server/utils/adminToken.ts`, `frontend/server/utils/auth.ts`
 - **Related:** useDirectus, confirmDeduction
+- **Docs:** [ARCHITECTURE.md](ARCHITECTURE.md) (Signup Proxy, Admin Token sections)

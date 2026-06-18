@@ -59,6 +59,15 @@
       collections before creating anything new.
 6. Read `docs/plan-main.md` — if working on architecture or new features.
 7. Read `docs/design.md` — before any UI/frontend work.
+8. If working on a specific feature, read the relevant doc before writing any code:
+    - Cook panel, queue, states → `docs/architecture/cook-queue.md`
+    - Recipe create/edit/fork/likes → `docs/architecture/recipe-system.md`
+    - Balance, deduction, transactions → `docs/architecture/finance.md`
+    - Duty calendar → `docs/architecture/duty.md`
+    - Shopping list → `docs/architecture/shopping-list.md`
+    - Login, signup, middleware → `docs/architecture/auth-flow.md`
+    - File structure, schema → `docs/project-state.md`
+    - Overall architecture → `docs/ARCHITECTURE.md`
 
 ### After EVERY response that changed a file or ran a command
 Immediately update `docs/progress.md`:

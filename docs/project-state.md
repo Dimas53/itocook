@@ -111,8 +111,6 @@ frontend/
 
 | Page | Missing |
 |---|---|
-| **Recipe Detail** | Ratings/reviews |
-| **Cook Panel** | Receipt photo upload |
 | **Profile** | Statistics (times cooked, on duty), notification settings |
 | **Kitchen** | Weekly menu, anonymous ratings |
 
@@ -129,59 +127,26 @@ frontend/
 
 ### Custom Collections (9)
 
-#### `recipes` — Main recipe catalog
-- **Fields:** `id` (UUID PK), `dish_name` (required), `cook` (M2O→users), `category` (select: salad/soup/pasta/meat/fish/dessert/pizza/other), `description` (text), `ingredients` (JSON list: name/amount/unit), `steps` (JSON list: step/description), `photo` (file UUID), `source_cook_queue` (M2O→cook_queue), `forked_from` (M2O→recipes, self-ref), `pasta_packages` (int), `servings` (int), system fields
-- **Relations:** `cook`→`directus_users`, `source_cook_queue`→`cook_queue`, `forked_from`→`recipes` (self)
-- **Policy:** Create own, Read all, Update own, Delete own
+| Collection | Purpose | Key Fields | Relations | Policy |
+|---|---|---|---|---|
+| `recipes` | Main recipe catalog | `dish_name`(req), `category`, `ingredients`(JSON), `steps`(JSON), `photo`(file), `forked_from`(self), `pasta_packages`(int), `servings`(int) | cook→users, forked_from→recipes(self), source_cook_queue→cook_queue | Create own, Read all, Update own, Delete own |
+| `cook_queue` | Scheduled cooking sessions | `date`, `dish_name`, `status`(scheduled/cooking/ready/cancelled), `category`, `recipe`(M2O) | cook→users, recipe→recipes | Create own, Read all, Update own, Delete own |
+| `orders` | Meal participation | `status`(pending/confirmed/cancelled/completed), `user`, `cook_queue` | user→users, cook_queue→cook_queue | Create own, Read own, Update own, Delete own |
+| `balances` | Per-user account | `amount`(decimal), `user`(unique) | user→users | Read own, Update(admin proxy) |
+| `transactions` | Financial records | `amount`(decimal), `type`(debit/credit), `description`, `date`, `user` | user→users | Create(admin proxy), Read own, Delete own |
+| `recipe_likes` | Recipe likes junction | `recipe`(req), `user`(req) | recipe→recipes(CASCADE), user→users(CASCADE) | Create own, Read all, Delete own |
+| `shopping_list_items` | Shopping list | `ingredient_name`(req), `amount`, `unit`, `emoji`, `is_checked`, `sort`, `cook_date`, `recipe_name` | user→users, recipe→recipes | Create own, Read own, Update own(is_checked,sort), Delete own |
+| `cleaning_schedule` | Duty roster | `date`(req), `user`(req), `department`(req), `confirmed`(bool) | user→users | Read all, Update own(confirmed only) |
+| `app_settings` | Global singleton | `pasta_package_price`(decimal, default 1.00) | — | Read all, Update(admin proxy) |
 
-#### `cook_queue` — Scheduled cooking sessions
-- **Fields:** `id` (UUID PK), `date` (date), `dish_name` (string), `status` (select: scheduled/cooking/ready/cancelled), `cook` (M2O→users), `category` (select), `recipe` (M2O→recipes, linked fork), system fields
-- **Relations:** `cook`→`directus_users`, `recipe`→`recipes`
-- **Policy:** Create own, Read all, Update own, Delete own
-
-#### `orders` — Meal participation orders
-- **Fields:** `id` (UUID PK), `status` (select: pending/confirmed/cancelled/completed), `user` (M2O→users), `cook_queue` (M2O→cook_queue), system fields
-- **Relations:** `user`→`directus_users`, `cook_queue`→`cook_queue` (backlinked as O2M `orders`)
-- **Policy:** Create own, Read own, Update own, Delete own
-
-#### `balances` — User balances (one per user)
-- **Fields:** `id` (UUID PK), `amount` (decimal), `user` (M2O→users, unique), system fields
-- **Relations:** `user`→`directus_users`
-- **Policy:** Read own, Update (admin proxy), Create (admin proxy)
-
-#### `transactions` — Financial transactions
-- **Fields:** `id` (UUID PK), `amount` (decimal), `type` (select: debit/credit), `description` (text), `date` (timestamp), `user` (M2O→users), system fields
-- **Relations:** `user`→`directus_users`
-- **Policy:** Create (admin proxy), Read own, Delete own
-
-#### `recipe_likes` — Recipe likes
-- **Fields:** `id` (UUID PK), `recipe` (M2O→recipes, required), `user` (M2O→users, required), system fields
-- **Relations:** `recipe`→`recipes` (CASCADE delete), `user`→`directus_users` (CASCADE delete)
-- **Policy:** Create own, Read all, Delete own
-
-#### `shopping_list_items` — Shopping list items
-- **Fields:** `id` (integer PK, auto-increment), `user` (M2O→users, required), `recipe` (M2O→recipes), `recipe_name` (string), `ingredient_name` (string, required), `amount` (decimal), `unit` (string), `emoji` (string), `is_checked` (boolean), `sort` (integer), `cook_date` (date), system fields
-- **Relations:** `user`→`directus_users`, `recipe`→`recipes`
-- **Policy:** Create own, Read own, Update own (is_checked, sort), Delete own
-
-#### `cleaning_schedule` — Duty roster
-- **Fields:** `id` (UUID PK), `date` (date, required), `user` (M2O→users, required), `department` (string, required), `confirmed` (boolean)
-- **Relations:** `user`→`directus_users`
-- **Policy:** Read all, Update own (confirmed only)
-
-#### `app_settings` — Global settings (singleton)
-- **Fields:** `id` (UUID PK), `pasta_package_price` (decimal, default 1.00)
-- **Policy:** Read all, Update (admin proxy)
-
-### Deleted Collections
-- ~~`cooked_recipes`~~ — legacy junction (replaced by fork pattern)
-- ~~`order_items`~~ — was empty, unused
-- ~~`test_api`~~ — test data, unused
 
 ### System Collections in Use
-- `directus_users` — user accounts, custom fields: `department` (string), `avatar` (M2O→files)
-- `directus_files` — uploaded photos (recipe images, avatars)
-- `directus_folders` — `recipe-photos` folder
+
+| Collection | Usage |
+|---|---|
+| `directus_users` | User accounts; custom fields: `department`(string), `avatar`(M2O→files) |
+| `directus_files` | Uploaded photos (recipe images, avatars) |
+| `directus_folders` | `recipe-photos` folder |
 
 ---
 
@@ -208,6 +173,178 @@ recipes
 
 cook_queue
   └── orders.cook_queue        (M2O←orders: all orders for this queue entry)
+```
+
+---
+
+
+
+```mermaid
+erDiagram
+  directus_users {
+    uuid id PK
+    string email
+    string first_name
+    string last_name
+    string department
+    uuid avatar FK
+  }
+  recipes {
+    uuid id PK
+    string dish_name
+    string category
+    uuid cook FK
+    uuid forked_from FK
+    uuid source_cook_queue FK
+    int pasta_packages
+    int servings
+  }
+  cook_queue {
+    uuid id PK
+    date date
+    string dish_name
+    string status
+    uuid cook FK
+    uuid recipe FK
+  }
+  orders {
+    uuid id PK
+    string status
+    uuid user FK
+    uuid cook_queue FK
+  }
+  balances {
+    uuid id PK
+    decimal amount
+    uuid user FK
+  }
+  transactions {
+    uuid id PK
+    decimal amount
+    string type
+    uuid user FK
+  }
+  recipe_likes {
+    uuid id PK
+    uuid recipe FK
+    uuid user FK
+  }
+  shopping_list_items {
+    int id PK
+    uuid user FK
+    uuid recipe FK
+    string ingredient_name
+    boolean is_checked
+  }
+  cleaning_schedule {
+    uuid id PK
+    date date
+    boolean confirmed
+    uuid user FK
+  }
+  app_settings {
+    uuid id PK
+    decimal pasta_package_price
+  }
+
+  directus_users ||--o{ recipes : "creates"
+  directus_users ||--o{ cook_queue : "cook"
+  directus_users ||--o{ orders : "joins"
+  directus_users ||--|| balances : "balance"
+  directus_users ||--o{ transactions : "transactions"
+  directus_users ||--o{ recipe_likes : "likes"
+  directus_users ||--o{ shopping_list_items : "items"
+  directus_users ||--o{ cleaning_schedule : "duty"
+  recipes }o--o| recipes : "forked from"
+  recipes ||--o{ recipe_likes : "liked by"
+  recipes ||--o{ shopping_list_items : "ingredients"
+  cook_queue }o--o| recipes : "linked recipe"
+  cook_queue ||--o{ orders : "participants"
+```
+
+## 4.1 Directus Relations Diagram
+
+```mermaid
+erDiagram
+  directus_users {
+    uuid id PK
+    string email
+    string first_name
+    string last_name
+    string department
+    uuid avatar FK
+  }
+  recipes {
+    uuid id PK
+    string dish_name
+    string category
+    uuid cook FK
+    uuid forked_from FK
+    uuid source_cook_queue FK
+    int pasta_packages
+    int servings
+  }
+  cook_queue {
+    uuid id PK
+    date date
+    string dish_name
+    string status
+    uuid cook FK
+    uuid recipe FK
+  }
+  orders {
+    uuid id PK
+    string status
+    uuid user FK
+    uuid cook_queue FK
+  }
+  balances {
+    uuid id PK
+    decimal amount
+    uuid user FK
+  }
+  transactions {
+    uuid id PK
+    decimal amount
+    string type
+    uuid user FK
+  }
+  recipe_likes {
+    uuid id PK
+    uuid recipe FK
+    uuid user FK
+  }
+  shopping_list_items {
+    int id PK
+    uuid user FK
+    uuid recipe FK
+    string ingredient_name
+    boolean is_checked
+  }
+  cleaning_schedule {
+    uuid id PK
+    date date
+    boolean confirmed
+    uuid user FK
+  }
+  app_settings {
+    uuid id PK
+    decimal pasta_package_price
+  }
+
+  directus_users ||--o{ recipes : "creates"
+  directus_users ||--o{ cook_queue : "cook"
+  directus_users ||--o{ orders : "joins"
+  directus_users ||--|| balances : "balance"
+  directus_users ||--o{ transactions : "transactions"
+  directus_users ||--o{ recipe_likes : "likes"
+  directus_users ||--o{ shopping_list_items : "items"
+  directus_users ||--o{ cleaning_schedule : "duty"
+  recipes }o--o| recipes : "forked from"
+  recipes ||--o{ recipe_likes : "liked by"
+  recipes ||--o{ shopping_list_items : "ingredients"
+  cook_queue }o--o| recipes : "linked recipe"
+  cook_queue ||--o{ orders : "participants"
 ```
 
 ---

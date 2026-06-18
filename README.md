@@ -1,21 +1,53 @@
 # ItoCook
 
-Office lunch management system — Nuxt 4 frontend, Directus backend, PostgreSQL database.
+Office lunch management system — **Nuxt 4** frontend, **Directus** backend, **PostgreSQL** database.
 
-## Quick Start
+## Prerequisites
+
+- Docker & Docker Compose (PostgreSQL, Directus, Nuxt, FastAPI)
+- Node.js 20+ (for local frontend development outside Docker)
+- `.env` file in project root (copy from `.env.example`)
+
+## Setup
+
+### 1. Environment
 
 ```bash
-docker-compose up -d
+cp .env.example .env
 ```
 
-Once containers are running, enter the frontend container to install dependencies:
+Fill in the values in `.env`. **Do not commit `.env` to git.**
+
+### 2. Start all services (Docker)
 
 ```bash
-docker exec -it itocook-frontend-1 sh
-cd /app && npm install && npm run dev
+docker compose up -d
 ```
 
-Or start the frontend locally:
+Waits for PostgreSQL to be healthy, then starts Directus, Nuxt frontend, and FastAPI.
+
+### 3. Verify
+
+```bash
+docker ps
+```
+
+Expected containers: `itocook-postgres`, `itocook-directus`, `itocook-frontend`, `itocook-api`.
+
+## URLs
+
+| Service    | URL                     |
+|------------|-------------------------|
+| Frontend   | http://localhost:3000    |
+| Directus   | http://localhost:8055    |
+| API        | http://localhost:8000    |
+| PostgreSQL | localhost:5432           |
+
+## Development
+
+### Run frontend locally (hot-reload)
+
+Directus and DB stay in Docker; only the frontend runs on your host:
 
 ```bash
 cd frontend
@@ -23,19 +55,35 @@ npm install
 npm run dev
 ```
 
-## Available URLs
 
-| Service    | URL                                |
-|------------|------------------------------------|
-| Frontend   | http://localhost:3000               |
-| Directus   | http://localhost:8055               |
-| API        | http://localhost:8000 (FastAPI, coming soon) |
-| PostgreSQL | localhost:5432 (connect via any DB client) |
+## Useful commands
 
-## Stack
+| Action | Command |
+|---|---|
+| Start everything | `docker compose up -d` |
+| Stop everything | `docker compose down` |
+| View logs (all) | `docker compose logs -f` |
+| View logs (service) | `docker compose logs -f frontend` |
+| Rebuild service | `docker compose up -d --build frontend` |
+| Enter container | `docker exec -it itocook-frontend sh` |
 
-- **Frontend:** Nuxt 4 / Vue 3 / TypeScript / Tailwind CSS / Pinia
-- **Backend:** Directus (headless CMS + API)
-- **API:** FastAPI / Python (planned)
-- **DB:** PostgreSQL
-- **Automation:** Directus Flows
+## Architecture
+
+- **Frontend:** Nuxt 4 / Vue 3 / TypeScript / Tailwind CSS v4 / Phosphor Icons
+- **Backend CMS:** Directus 11 — auto-generates REST API from collection definitions
+- **Auth:** Directus JWT (email/password), admin-proxy for privileged operations
+- **DB:** PostgreSQL 15
+- **Automation:** Directus Flows (event hooks, CRON, webhooks)
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design decisions, data flows, and API endpoints.
+
+## Docs
+
+| File | Contents |
+|---|---|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | High-level architecture + per-component design decisions |
+| [docs/CONTEXT.md](docs/CONTEXT.md) | Domain glossary (30+ terms with file/collection references) |
+| [docs/project-state.md](docs/project-state.md) | Full project inventory (files, schema, composables, flows) |
+| [docs/roadmap.md](docs/roadmap.md) | Development phases and milestones |
+| [docs/progress.md](docs/progress.md) | Daily progress log |
+| [docs/design.md](docs/design.md) | Design system (colors, typography, components) |

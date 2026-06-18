@@ -219,23 +219,27 @@ Update docs/progress.md after done.
 **Правило:** по 1-2 файла за сессию, не всё сразу
 
 **Приоритетный список (в порядке важности):**
+
 1. `frontend/app/composables/useDirectus.ts` — HTTP клиент, сердце всего API
 2. `frontend/app/composables/useAuth.ts` — аутентификация, login/signup/middleware
 3. `frontend/app/pages/cook.vue` — state machine + `confirmDeduction()` особенно
-4. `frontend/app/composables/useParticipants.ts` — join/leave логика
-5. `frontend/app/composables/useBalanceCheck.ts` — balance gate
-6. `frontend/app/composables/useMealCost.ts` — расчёт стоимости с pasta packages
-7. `frontend/app/server/api/auth/signup.post.ts` — почему server route, не прямой API
-8. `frontend/app/utils/dedupRecipes.ts` — логика дедупликации форков
-9. `frontend/app/utils/ingredientIcons.ts` — emoji dictionary + fuzzy match
-10. `frontend/app/components/HeroBlock.vue` — 3 состояния, props/emits
+4. `frontend/app/composables/useDeduction.ts` — логика deduction, pasta cost, cleanup
+5. `frontend/app/composables/useParticipants.ts` — join/leave логика
+6. `frontend/app/composables/useBalanceCheck.ts` — balance gate
+7. `frontend/app/composables/useMealCost.ts` — расчёт стоимости с pasta packages
+8. `frontend/server/api/auth/signup.post.ts` — почему server route, не прямой API
+9. `frontend/server/utils/adminToken.ts` — кэширование admin токена после security рефакторинга
+10. `frontend/app/middleware/cook.ts` — middleware защищающая `/cook` роут
+11. `frontend/app/utils/dedupRecipes.ts` — логика дедупликации форков
+12. `frontend/app/utils/ingredientIcons.ts` — emoji dictionary + fuzzy match
+13. `frontend/app/components/HeroBlock.vue` — 3 состояния, props/emits
 
 **Промпт (использовать на каждый файл, менять [FILEPATH]):**
 ```
 Read AGENTS.md. Apply zoom-out skill.
 Read docs/CONTEXT.md first.
 
-Analyze the file: [FILEPATH]
+Analyze this file
 
 1. Explain what this file does in the context of the whole ItoCook system
 2. Identify non-obvious logic that needs explanation (business rules, edge cases, why decisions were made)
@@ -255,13 +259,13 @@ Update docs/progress.md after done.
 ---
 
 ### Шаг 4.3 — ARCHITECTURE.md + docs/architecture/ папка
-**Основа:** перенести `notes/itocook-full-overview.md` → `docs/ARCHITECTURE.md`
+**Основа:** перенести `notes/ItoCook_Architecture_Merged_Final.md` → `docs/ARCHITECTURE_Documentation.md`
 **Скилл:** `improve-codebase-architecture`
 
 **Структура:**
 ```
 docs/
-├── ARCHITECTURE.md          ← high-level обзор (max 2 страницы), ссылки на всё
+├── ARCHITECTURE_Documentation.md          ← high-level обзор (max 2 страницы), ссылки на всё
 ├── CONTEXT.md               ← глоссарий терминов
 └── architecture/
     ├── auth-flow.md         ← login, token, middleware, server routes
@@ -277,11 +281,12 @@ docs/
 ```
 Read AGENTS.md. Apply improve-codebase-architecture skill.
 Read docs/CONTEXT.md first.
+Read docs/ARCHITECTURE.md.
 
 Task: Create the documentation structure for ItoCook.
 
-Step 1: Create docs/ARCHITECTURE.md
-- Use notes/itocook-full-overview.md as a base
+Step 1: Create docs/ARCHITECTURE_Documentation.md
+- Use notes/ItoCook_Architecture_Merged_Final.md as a base
 - Update to reflect current state (read docs/progress.md for what changed)
 - Keep it short — max 2 pages, high-level overview only
 - Include: tech stack, key architectural decisions, data flow diagram (text/ASCII),
@@ -308,6 +313,43 @@ Update docs/progress.md after done.
 ```
 
 ---
+
+
+**Промпт 4.3.1:**
+```
+Read AGENTS.md.
+Read docs/CONTEXT.md first.
+
+Add JSDoc comments to ALL remaining files in the project that don't already
+have them. Skip files from this list (already documented in priority pass):
+- frontend/app/composables/useDirectus.ts
+- frontend/app/composables/useAuth.ts
+- frontend/app/pages/cook.vue
+- frontend/app/composables/useDeduction.ts
+- frontend/app/composables/useParticipants.ts
+- frontend/app/composables/useBalanceCheck.ts
+- frontend/app/composables/useMealCost.ts
+- frontend/server/api/auth/signup.post.ts
+- frontend/server/utils/adminToken.ts
+- frontend/app/middleware/cook.ts
+- frontend/app/utils/dedupRecipes.ts
+- frontend/app/utils/ingredientIcons.ts
+- frontend/app/components/HeroBlock.vue
+
+For each remaining file add:
+- File-level comment: what it does, which collections it touches (if any)
+- JSDoc on every exported function/composable/component
+
+Do NOT rewrite any logic, only add comments.
+Process files in this order: composables → utils → components → pages → server routes.
+Do NOT touch pages/cook.vue, pages/recipe/[id].vue longer than 500 lines without
+checking with the user first.
+
+Update docs/progress.md after done.
+```
+
+---
+
 
 ### Шаг 4.4 — Дизайн-ревью (с Claude, не с агентом)
 **Почему с Claude:** агент в терминале не видит UI визуально — только код.

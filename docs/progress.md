@@ -136,6 +136,13 @@
   - `utils/dedupRecipes.ts` — dedup algorithm, callers, edge cases
   - `utils/ingredientIcons.ts` — emoji lookup, match strategy, fallback
   - `components/HeroBlock.vue` — all exports, props, emits, image priority, functions
+- [x] **Step 4.3: ARCHITECTURE_Documentation.md + architecture folder** — created `docs/ARCHITECTURE_Documentation.md` (high-level overview, 2 pages, tech stack, ASCII diagram, links to detail docs); created `docs/architecture/` folder with 6 files:
+  - `auth-flow.md` — login, signUp, admin-proxy, tokens, middleware, rate limiting, edge cases
+  - `cook-queue.md` — state machine diagram (ASCII), fork-on-cook pattern, cancel flow, participant lifecycle
+  - `finance.md` — deduction flow step-by-step (7 steps), balance gate, pasta cost, admin-proxy, edge cases
+  - `recipe-system.md` — fork pattern, dedup algorithm, photo upload pipeline, servings scaling, like counts
+  - `shopping-list.md` — CRUD flow, auto-cleanup triggers (deduction confirm + cancel), two-strategy cleanup
+  - `duty.md` — duty flow, admin edit mode, MonthCalendar reuse, department snapshot, edge cases
 
 ## Refactoring session — Phase 1–2
 - [x] **Refactoring analysis** — analyzed 5 pages (3855 total lines) for extraction opportunities; identified 13 composable candidates, 4 cross-cutting patterns (slider, shopping list cleanup, participants fetch, date helpers); primary target: `confirmDeduction()` in `cook.vue` (64 lines, 5+ sequential API calls per participant). Findings saved to `docs/refactoring-plan.md`.
@@ -299,4 +306,5 @@
 - `ed7d576` — docs: create CONTEXT.md domain glossary (30+ terms)
 - `ec4291a` — docs: add JSDoc to composables (useDirectus, useAuth, useDeduction, useParticipants, useBalanceCheck, useMealCost), cook.vue, signup.post; create ARCHITECTURE.md with design decisions
 - `38f562c` — docs: add JSDoc to adminToken, cook middleware, dedupRecipes, ingredientIcons, HeroBlock; append remaining sections to ARCHITECTURE.md
+- `0cf36c6` — docs: create project-state.md in docs/ with updated file structure, flows, composables, security measures
 
