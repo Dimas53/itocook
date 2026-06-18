@@ -1,5 +1,3 @@
-import type { Ref } from 'vue'
-
 export interface DeductionParams {
   cookEntry: { id: string; dish_name: string | null; date: string; recipe: string | null }
   participants: { id: string }[]
@@ -7,12 +5,6 @@ export interface DeductionParams {
   pastaCost: number
   dateStr: string
   userId: string | undefined
-}
-
-interface BalanceEntry {
-  id: string
-  user: string
-  amount: string
 }
 
 export function useDeduction() {
@@ -85,36 +77,22 @@ export function useDeduction() {
     const share = grandTotal / participants.length
 
     try {
-      await Promise.all(participants.map(p =>
-        request('post', '/items/transactions', {
-          user: p.id,
-          amount: -share,
-          type: 'debit',
+      const res = await fetch('/api/deduction/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cookQueueId: cookEntry.id,
+          participants: participants.map(p => ({ id: p.id, share })),
+          totalAmount: grandTotal,
+          cookId: userId,
           description: `Lunch ${dateStr}: ${cookEntry.dish_name || 'Office lunch'}`,
-          date: new Date().toISOString(),
-        })
-      ))
+        }),
+      })
 
-      const ids = participants.map(p => p.id)
-      const allBalances = await request<BalanceEntry[]>('get',
-        `/items/balances?filter[user][_in]=${ids.join(',')}&limit=${ids.length}`
-      )
-      const balanceMap = new Map(allBalances.map(b => [b.user, b]))
-
-      await Promise.all(participants.map(p => {
-        const existing = balanceMap.get(p.id)
-        if (existing) {
-          return request('PATCH', `/items/balances/${existing.id}`, {
-            amount: parseFloat(existing.amount) - share,
-          })
-        }
-        return request('post', '/items/balances', {
-          user: p.id,
-          amount: -share,
-        })
-      }))
-
-      await request('PATCH', `/items/cook_queue/${cookEntry.id}`, { status: 'completed' })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err?.message || 'Deduction failed')
+      }
 
       await cleanupShoppingList({ recipe: cookEntry.recipe, dishName: cookEntry.dish_name, cookDate: cookEntry.date, userId })
     } catch (e) {

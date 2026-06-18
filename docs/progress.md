@@ -110,6 +110,7 @@
 
 ## Fixes — ninth session
 - [x] **Security fix: cookie flags + server auth** — `directus_token` cookie: `httpOnly: false` (required by JS Bearer-token pattern for cross-origin Directus), `secure: !import.meta.dev`; created `server/utils/auth.ts` (requireAuth helper); added auth check to all 7 server API routes (excl. signup.post)
+- [x] **Security fix: confirmDeduction() moved to server admin-proxy** — created `server/api/deduction/confirm.post.ts` (requireAuth + admin token); `useDeduction.ts` now calls `/api/deduction/confirm` instead of direct Directus API; horizontal escalation risk eliminated. Found: User policy has unrestricted create/update on `balances` and `transactions` (policy `e563cf6a`) — no `$CURRENT_USER` filter — but this is now mitigated by admin-proxy.
 
 ## Current session
 - [x] **Refactoring analysis** — analyzed 5 pages (3855 total lines) for extraction opportunities; identified 13 composable candidates, 4 cross-cutting patterns (slider, shopping list cleanup, participants fetch, date helpers); primary target: `confirmDeduction()` in `cook.vue` (64 lines, 5+ sequential API calls per participant). Findings saved to `docs/refactoring-plan.md`.
@@ -262,4 +263,5 @@
 - `648d1f3` — feat(shopping-list): cook_date, per-group select-all, auto-cleanup, fork fix
 - `4a0940a` — feat(recipes): dedup by dish_name across all recipe lists, cleanup unused collections
 - `7894e5a` — fix(recipe): detect cook_queue by recipe ID first, fall back to dish_name
+- `30d9bd3` — fix(security): add requireAuth to all server routes, fix cookie flags
 
