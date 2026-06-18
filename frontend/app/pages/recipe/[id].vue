@@ -954,11 +954,16 @@ onMounted(async () => {
     } else {
       const today = new Date().toISOString().split('T')[0]
       try {
-        // Prefer queue entry where current user is cook, fallback to any match
+        // Search by recipe ID first (reliable link), then fall back to dish_name
         const userFilter = user.value?.id ? `&filter[cook][_eq]=${user.value.id}` : ''
-        const entries = await request<QueueEntry[]>('get',
-          `/items/cook_queue?filter[dish_name][_eq]=${encodeURIComponent(item.dish_name)}&filter[date][_gte]=${today}${userFilter}&limit=1&fields=id,status,date,cook.id,cook.first_name,cook.last_name,cook.avatar`
+        let entries = await request<QueueEntry[]>('get',
+          `/items/cook_queue?filter[recipe][_eq]=${item.id}&filter[date][_gte]=${today}${userFilter}&limit=1&fields=id,status,date,cook.id,cook.first_name,cook.last_name,cook.avatar`
         )
+        if (entries.length === 0) {
+          entries = await request<QueueEntry[]>('get',
+            `/items/cook_queue?filter[dish_name][_eq]=${encodeURIComponent(item.dish_name)}&filter[date][_gte]=${today}${userFilter}&limit=1&fields=id,status,date,cook.id,cook.first_name,cook.last_name,cook.avatar`
+          )
+        }
         if (entries.length > 0) {
           activeCqId.value = entries[0]!.id
           queueEntry.value = entries[0]!
