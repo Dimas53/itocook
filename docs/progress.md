@@ -269,4 +269,5 @@
 - `30d9bd3` — fix(security): add requireAuth to all server routes, fix cookie flags
 - `a955fa1` — fix(security): move confirmDeduction to admin-proxy server route
 - `0ffe1d6` — fix(security): rotate admin password, key/secret, tighten CORS/TTL
+- `661a824` — fix(security): rate limit signup — 5 req / 60s per IP
 

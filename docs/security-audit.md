@@ -96,14 +96,17 @@ The project has several critical security gaps. The most severe is the hardcoded
 
 Run these one at a time. Verify in browser after each. Do NOT run the next prompt until the previous one is confirmed working.
 
-Key findings:
-- Critical: DIRECTUS_ADMIN_PASSWORD=admin committed in .env
-- Critical: server routes do not authenticate client — any unauthenticated client can call endpoints, server logs in as admin
-- Critical: directus_token cookie without httpOnly and secure: false
-- High: confirmDeduction() runs through user token of all participants — if Directus permission is not restricted to $CURRENT_USER, this is horizontal escalation
-- High: admin session per request (2 extra HTTP calls)
-- Medium: CORS only localhost:3000, no rate limiting
-  Regarding refactoring: the main takeaway for us is that confirmDeduction() currently works through a user token, which is a potential vulnerability. But this is a Directus permissions issue, not a code issue.
+ не перевожи это пока что на английский, это инструкция для меня, а не для пользователя!!!
+
+Ключевые находки:
+- Critical: DIRECTUS_ADMIN_PASSWORD=admin закоммичен в .env
+- Critical: server routes не проверяют авторизацию клиента — любой может дёрнуть эндпоинт, сервер сам залогинится как админ
+- Critical: directus_token cookie без httpOnly и secure: false
+- High: confirmDeduction() ходит через user token всех участников — если Directus permission не ограничен $CURRENT_USER, это горизонтальная эскалация
+- High: админ-сессия на каждый запрос (2 лишних HTTP вызова)
+- Medium: CORS только localhost:3000, нет rate limiting
+  Что касается рефакторинга: main-вывод для нас — confirmDeduction() сейчас работает через user token, и это потенциальная дыра. Но это вопрос permissions в Directus, а не кода.
+
 
 ---
 
