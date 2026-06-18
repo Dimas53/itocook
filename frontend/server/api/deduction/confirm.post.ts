@@ -1,3 +1,9 @@
+/**
+ * Admin-proxied endpoint that closes a meal's financial cycle.
+ * Creates debit transactions and updates balances for each participant,
+ * then marks the cook_queue entry as completed.
+ * Touches: `transactions`, `balances`, `cook_queue`.
+ */
 import { defineEventHandler, readBody, createError } from 'h3'
 
 interface DirectusError {

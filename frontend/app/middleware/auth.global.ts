@@ -1,9 +1,8 @@
-// ─── auth.global.ts ─────────────────────────────────────────────────────
-// Global Nuxt middleware — runs on every route transition.
-// Checks for Directus token presence and validates it.
-// If no token — redirect to /auth.
-// ────────────────────────────────────────────────────────────────────────
-
+/**
+ * Global Nuxt middleware — runs on every route transition.
+ * Checks for Directus token presence and validates it.
+ * If no token — redirects to /auth. If token found and already on auth — redirects to /.
+ */
 export default defineNuxtRouteMiddleware(async (to) => {
   const publicRoutes = ['/onboarding', '/auth']
 

@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Compact recipe card used in recipe grid layouts.
+ * Touches `recipes` collection (via photo/category). Pure presentation.
+ */
 import { PhHeart } from '@phosphor-icons/vue'
 import { useRecipeImage } from '~/composables/useRecipeImage'
 

@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Common page — placeholder for future community features.
+ * No data collections currently.
+ */
 definePageMeta({ layout: 'app' })
 </script>
 

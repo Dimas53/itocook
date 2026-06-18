@@ -5,6 +5,10 @@ interface RecipeServingsData {
   ingredients?: Array<{ name?: string; amount?: string | null; unit?: string | null }>
 }
 
+/**
+ * Composable for recipe serving-size scaling.
+ * Provides scale helpers, serving presets, and persistence to `recipes` collection.
+ */
 export function useRecipeServings(recipe: Ref<RecipeServingsData | null>) {
   const { request } = useDirectus()
   const route = useRoute()
@@ -26,13 +30,15 @@ export function useRecipeServings(recipe: Ref<RecipeServingsData | null>) {
     return presets
   })
 
-  const spiceUnits = ['tsp', 'tbsp', 'teaspoon', 'teaspoons', 'tablespoon', 'tablespoons', 'tsp.', 'tbsp.', 'ч.л.', 'ч.л', 'ст.л.', 'ст.л', 'щепотка', 'pinch']
+  const spiceUnits = ['tsp', 'tbsp', 'teaspoon', 'teaspoons', 'tablespoon', 'tablespoons', 'tsp.', 'tbsp.', 'pinch']
 
+  /** Returns true if the unit is a spice (volume) unit (not scaled linearly). */
   function isSpiceUnit(unit: string | null | undefined): boolean {
     if (!unit) return false
     return spiceUnits.includes(unit.toLowerCase())
   }
 
+  /** Scale ingredient amount by the current activeServings ratio. */
   function scaleAmount(amount: string | null, unit: string | null): string {
     if (!amount) return '—'
     const num = parseFloat(amount)
@@ -48,6 +54,7 @@ export function useRecipeServings(recipe: Ref<RecipeServingsData | null>) {
 
   const isScaling = computed(() => currentServings.value !== null && currentServings.value !== baseServings.value)
 
+  /** Scale amount by arbitrary ratio (used when persisting new base servings). */
   function scaleAmountRaw(amount: string | null | undefined, unit: string | null | undefined, ratio: number): string {
     if (!amount) return ''
     const num = parseFloat(amount)
@@ -60,6 +67,7 @@ export function useRecipeServings(recipe: Ref<RecipeServingsData | null>) {
     return parseFloat(scaled.toFixed(1)).toString()
   }
 
+  /** Persist new base servings and scaled ingredients to the recipe via API. */
   async function saveServingsToRecipe(newServings: number) {
     const r = recipe.value
     if (!r || !r.ingredients) return
@@ -83,12 +91,14 @@ export function useRecipeServings(recipe: Ref<RecipeServingsData | null>) {
     savingServings.value = false
   }
 
+  /** Select a preset serving size and persist. */
   function selectServing(n: number) {
     if (recipe.value && n === (recipe.value.servings ?? 4)) return
     saveServingsToRecipe(n)
     showCustomServings.value = false
   }
 
+  /** Apply a custom (non-preset) serving size and persist. */
   function applyCustomServing() {
     const v = parseInt(customServingsInput.value, 10)
     if (isNaN(v) || v < 1 || v > 100) return
@@ -96,6 +106,7 @@ export function useRecipeServings(recipe: Ref<RecipeServingsData | null>) {
     showCustomServings.value = false
   }
 
+  /** Compute the ratio needed to scale from base to target servings. */
   function getScaleRatio(targetServings: number): number {
     return targetServings / baseServings.value
   }

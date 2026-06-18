@@ -1,3 +1,7 @@
+/**
+ * Static data for the ingredient quick-picker UI.
+ * No collections touched — purely frontend data.
+ */
 import { INGREDIENT_ICONS } from './ingredientIcons'
 
 export interface PopularIngredient {

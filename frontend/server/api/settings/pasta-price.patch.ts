@@ -1,3 +1,7 @@
+/**
+ * PATCH update pasta package price in app_settings singleton.
+ * Touches: `app_settings`.
+ */
 import { defineEventHandler, readBody, createError } from 'h3'
 
 interface DirectusError {

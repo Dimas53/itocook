@@ -430,6 +430,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Recipe detail page — photo, servings scaling, ingredients, steps, status controls, date picker, shopping list.
+ * Touches: `recipes`, `cook_queue`, `orders`, `recipe_likes`, `shopping_list_items`, `directus_files`.
+ */
 import { PhCaretLeft, PhHeart, PhForkKnife, PhCaretDown, PhSpinner, PhX, PhCookingPot, PhCheckCircle, PhUsers, PhXCircle, PhClock, PhUploadSimple, PhPlus, PhEye, PhShoppingCart, PhCopySimple, PhShareNetwork } from '@phosphor-icons/vue'
 import { getIngredientIcon } from '~/utils/ingredientIcons'
 import type { CalendarEntry } from '~/components/MonthCalendar.vue'
@@ -524,17 +528,20 @@ const pickerEntries = computed<CalendarEntry[]>(() =>
   })
 )
 
+/** Navigate date picker to previous page. */
 function prevWeekPage() {
   const step = Math.min(15, dateOffset.value)
   dateOffset.value -= step
   loadDates()
 }
 
+/** Navigate date picker to next page. */
 function nextWeekPage() {
   dateOffset.value += 15
   loadDates()
 }
 
+/** Load available dates for the "Cook This" date picker, marking taken days. */
 async function loadDates() {
   datePickerLoading.value = true
   const today = formatDateISO(new Date())
@@ -582,6 +589,7 @@ watch(showDatePicker, (open) => {
   loadDates()
 })
 
+/** Handle date selection in date picker — navigate to /cook with recipe and date. */
 function selectDate(date: string) {
   const entry = availableDates.value.find(d => d.iso === date)
   if (!entry || entry.isPast || entry.isTaken || !recipe.value?.id) return
@@ -693,6 +701,7 @@ const canEdit = computed(() => {
 const showCookRecipes = ref(false)
 const cookRecipes = ref<CookRecipeItem[]>([])
 const cookRecipesLoading = ref(false)
+/** Fetch recipes created by a specific cook for the author modal slider. */
 async function fetchCookRecipes(cookId: string) {
   cookRecipesLoading.value = true
   try {
@@ -709,6 +718,7 @@ async function fetchCookRecipes(cookId: string) {
   cookRecipesLoading.value = false
 }
 
+/** Open modal showing all recipes by the current author. */
 function openCookRecipes() {
   const id = displayCookId.value
   if (!id) return
@@ -716,10 +726,12 @@ function openCookRecipes() {
   showCookRecipes.value = true
 }
 
+/** Navigate to recipe edit page. */
 function editRecipe() {
   router.push(`/recipe/create?id=${recipe.value?.id}&name=${encodeURIComponent(recipe.value?.dish_name || '')}`)
 }
 
+/** Fetch like count and check if current user liked this recipe. */
 async function fetchLikes() {
   const recipeId = recipe.value?.id
   if (!recipeId) return
@@ -736,6 +748,7 @@ async function fetchLikes() {
   }
 }
 
+/** Toggle like/unlike for the current user on this recipe. */
 async function toggleLike() {
   if (!recipe.value?.id || !user.value?.id) return
   if (isLiked.value && myLikeId.value) {
@@ -758,6 +771,7 @@ async function toggleLike() {
   }
 }
 
+/** Transition queue entry from `scheduled` to `cooking`. */
 async function startCooking() {
   const id = activeCqId.value
   if (!id) return
@@ -773,6 +787,7 @@ async function startCooking() {
   saving.value = false
 }
 
+/** Mark queue entry as `ready` and redirect to cook panel for receipt entry. */
 async function markReady() {
   const id = activeCqId.value
   if (!id) return
@@ -806,6 +821,7 @@ const shoppingListText = computed(() => {
   return `🛒 ${recipe.value.dish_name}\n\n${lines.join('\n')}\n\nItoCook`
 })
 
+/** Generate clipboard-formatted ingredient list with emoji and scaled amounts. */
 function copyIngredientsText(): string {
   if (!recipe.value?.ingredients || recipe.value.ingredients.length === 0) return ''
   const ratio = sr.activeServings / sr.baseServings
@@ -823,6 +839,7 @@ function copyIngredientsText(): string {
 
 const canAddToList = computed(() => isEntryCook.value)
 
+/** Add all recipe ingredients to the current user's shopping list. */
 async function addToShoppingList() {
   if (!recipe.value?.ingredients?.length) return
   isAddingToList.value = true
@@ -853,6 +870,7 @@ async function addToShoppingList() {
   showShareModal.value = false
 }
 
+/** Copy scaled ingredient list to clipboard. */
 async function copyIngredients() {
   const text = copyIngredientsText()
   if (!text) return
@@ -866,6 +884,7 @@ async function copyIngredients() {
   showShareModal.value = false
 }
 
+/** Share recipe via native share or clipboard fallback. */
 async function shareShoppingList() {
   const text = shoppingListText.value
   if (!text) return

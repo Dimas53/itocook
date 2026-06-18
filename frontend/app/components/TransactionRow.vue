@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Single transaction row (user, amount, date, description).
+ * Pure presentation — no collections, receives tx data via props.
+ */
 interface TxUser {
   id: string
   first_name: string

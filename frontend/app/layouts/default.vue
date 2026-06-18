@@ -28,6 +28,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Default layout — phone frame without bottom tab bar.
+ * Used for onboarding, auth, and recipe list pages.
+ */
 const route = useRoute()
 
 const isDarkStatus = computed(() => route.meta.darkStatus === true)

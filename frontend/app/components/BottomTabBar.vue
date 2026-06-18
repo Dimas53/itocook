@@ -20,6 +20,11 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Bottom navigation bar with 5 tabs (Home, Kitchen, AI/Finance, Duty, Common).
+ * Checks user role to determine Finance tab visibility.
+ * No collections directly — uses auth state.
+ */
 import {
   PhCookingPot,
   PhCalendarBlank,

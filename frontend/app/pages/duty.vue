@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Duty page — month calendar with cleaning assignments, confirmation.
+ * Touches: `cleaning_schedule`.
+ */
 import { PhBell } from '@phosphor-icons/vue'
 import type { CalendarEntry } from '~/components/MonthCalendar.vue'
 

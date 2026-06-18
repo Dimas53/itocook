@@ -51,6 +51,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Bottom-sheet popover for selecting ingredients from predefined categories.
+ * Pure UI — uses static ingredient data, no collections.
+ */
 import { INGREDIENT_CATEGORIES, type PopularIngredient } from '~/utils/popularIngredients'
 
 const props = defineProps<{

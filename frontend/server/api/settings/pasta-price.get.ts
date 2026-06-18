@@ -1,3 +1,7 @@
+/**
+ * GET current pasta package price from app_settings singleton.
+ * Touches: `app_settings`.
+ */
 import { defineEventHandler, createError } from 'h3'
 
 export default defineEventHandler(async (event) => {

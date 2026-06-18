@@ -102,6 +102,10 @@ interface DirectusRecipe {
 
 definePageMeta({ layout: 'app' })
 
+/**
+ * Home page — today's cook hero block, recipe feed, widgets.
+ * Touches: `recipes`, `cook_queue`, `orders`, `recipe_likes`, `balances`, `cleaning_schedule`, `shopping_list_items`.
+ */
 const router = useRouter()
 const { user } = useAuth()
 const { request } = useDirectus()

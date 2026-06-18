@@ -188,6 +188,10 @@ interface HistoryItem {
   likeCount: number
 }
 
+/**
+ * Kitchen / Cook Queue page — weekly overview, history, hero block.
+ * Touches: `cook_queue`, `recipes`, `orders`, `recipe_likes`.
+ */
 // ── State ──
 const todayLoading = ref(true)
 const weekLoading = ref(true)

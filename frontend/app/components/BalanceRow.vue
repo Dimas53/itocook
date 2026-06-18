@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Single balance entry row (user avatar, name, amount with color).
+ * Pure presentation — receives data via props.
+ */
 interface BalanceUser {
   id: string
   first_name: string

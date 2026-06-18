@@ -77,6 +77,11 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * App layout — phone frame + bottom tab bar + global participants modal.
+ * Wraps all authenticated pages.
+ * Touches: `orders` (via useParticipantsModal).
+ */
 import { reactive } from 'vue'
 
 const route = useRoute()

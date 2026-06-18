@@ -1,3 +1,7 @@
+/**
+ * Composable that returns a computed recipe image source.
+ * Prioritizes uploaded photo → category fallback → generic fallback.
+ */
 import type { Ref } from 'vue'
 
 export interface RecipeWithImage {
@@ -30,6 +34,7 @@ export function useRecipeImage(
   const config = useRuntimeConfig()
   const r = isRef(source) ? source : ref(source) as Ref<RecipeWithImage | null>
 
+  /** Resolve fallback image path. */
   function pickSrc(): string {
     if (fallback) return fallback
     return CATEGORY_IMAGES.other as string

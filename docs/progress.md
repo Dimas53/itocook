@@ -217,6 +217,19 @@
 - [ ] **Notifications** — feed, quick actions
 - [ ] **Receipt photo upload**
 
+## Current session — JSDoc pass
+- [x] **Composables JSDoc** — `useLikes`, `useRecipeServings`, `useParticipantsModal`, `useRecipeImage`, `useTotalUsers`
+- [x] **Utils JSDoc** — `dates.ts`, `format.ts`, `popularIngredients.ts`
+- [x] **Components JSDoc** — `ActionBlockedModal`, `WeekCalendar`, `DutyWidget`, `TransactionRow`, `BalanceRow`, `ReceiptSummary`, `ShoppingListWidget`, `AvatarPlaceholder`, `MonthCalendar`, `BalanceWidget`, `SliderList`, `RecipeGridItem`, `RecipeCard`, `AddIngredientPopover`, `RecipeImageUpload`, `BottomTabBar`
+- [x] **Pages JSDoc** — `index`, `kitchen`, `shopping-list`, `recipe/create`, `duty`, `finance`, `profile`, `recipes`, `onboarding`, `auth`, `common`, `ai-recipe`
+- [x] **Server routes JSDoc** — all 9 API routes (deduction confirm, settings pasta-price, users list/count, duty upsert/confirm, update-me)
+- [x] **Server utils JSDoc** — `auth.ts` (requireAuth)
+- [x] **Middleware JSDoc** — `auth.global.ts`
+- [x] **Layouts JSDoc** — `app.vue`, `default.vue`
+- [x] **Skipped** `pages/recipe/[id].vue` (986 lines > 500 — needs explicit confirmation)
+- [x] **TS check** — no new TS errors introduced
+- [x] **recipe/[id].vue** — file-level + function-level JSDoc on all handlers
+
 ## Git log
 - `ed7d576` — docs: create CONTEXT.md domain glossary (30+ terms)
 - `1a83b66` — refactor: extract formatUserName utility, replace 13 inline copies
@@ -307,4 +320,5 @@
 - `ec4291a` — docs: add JSDoc to composables (useDirectus, useAuth, useDeduction, useParticipants, useBalanceCheck, useMealCost), cook.vue, signup.post; create ARCHITECTURE.md with design decisions
 - `38f562c` — docs: add JSDoc to adminToken, cook middleware, dedupRecipes, ingredientIcons, HeroBlock; append remaining sections to ARCHITECTURE.md
 - `0cf36c6` — docs: create project-state.md in docs/ with updated file structure, flows, composables, security measures
+- `939a2d1` — chore: snapshot current state before JSDoc pass
 

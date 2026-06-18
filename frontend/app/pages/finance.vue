@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Finance admin page — balances, transactions, top-up, pasta price editor.
+ * Touches: `balances`, `transactions`, `app_settings`, `directus_users`.
+ */
 import { PhArrowUp, PhCheck, PhFloppyDisk } from '@phosphor-icons/vue'
 
 definePageMeta({ layout: 'app' })

@@ -21,6 +21,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Dashboard widget showing current user balance with color coding.
+ * Touches `balances` collection.
+ */
 const { request } = useDirectus()
 const { user } = useAuth()
 

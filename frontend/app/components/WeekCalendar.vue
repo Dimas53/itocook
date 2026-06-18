@@ -35,6 +35,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Week-based calendar navigation with activity dots per day.
+ * Pure UI — no collections, receives day data via props.
+ */
 import { PhCaretLeft, PhCaretRight } from '@phosphor-icons/vue'
 
 export interface CalendarDay {

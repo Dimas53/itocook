@@ -54,6 +54,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Dashboard widget showing today's cleaning duty and "You're next" prompt.
+ * Touches `cleaning_schedule` collection.
+ */
 interface CleaningEntry {
   date: string
   department: string

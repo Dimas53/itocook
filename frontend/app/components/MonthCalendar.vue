@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Full month calendar grid (Mon-Fri) with entry dots, selection, navigation.
+ * UI component — receives `currentMonth` and `entries` via props.
+ */
 import { PhCaretLeft, PhCaretRight } from '@phosphor-icons/vue'
 
 export interface CalendarEntry {

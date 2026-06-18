@@ -175,6 +175,10 @@ import { PhShoppingCart, PhTrash, PhCheck, PhX, PhListBullets, PhRows } from '@p
 
 definePageMeta({ layout: 'default' })
 
+/**
+ * Shopping List page — grouped by recipe, toggle/clear items.
+ * Touches: `shopping_list_items`.
+ */
 interface ShoppingItem {
   id: string
   user: string

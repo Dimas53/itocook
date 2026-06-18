@@ -1,3 +1,8 @@
+/**
+ * Global composable for the participant list modal overlay.
+ * Module-level refs shared across layouts and pages.
+ * Touches `orders` collection via Directus.
+ */
 import { ref } from 'vue'
 
 const show = ref(false)
@@ -9,6 +14,7 @@ export function useParticipantsModal() {
   // so Nuxt context (useRuntimeConfig, useCookie) is captured in the right scope
   const { request } = useDirectus()
 
+  /** Fetch participants for a cook_queue ID and open the modal. */
   async function open(queueId: string | undefined) {
     console.log('[ParticipantsModal] open with queueId:', queueId)
 
@@ -48,6 +54,7 @@ export function useParticipantsModal() {
     loading.value = false
   }
 
+  /** Close the participants modal. */
   function close() {
     show.value = false
   }

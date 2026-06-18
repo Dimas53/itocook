@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Displays cost breakdown: pasta add-on, participant count, share per person.
+ * Pure presentation — receives data via props from useDeduction.
+ */
 interface PastaItem {
   label: string
   amount: number

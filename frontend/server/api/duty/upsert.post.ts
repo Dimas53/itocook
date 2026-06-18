@@ -1,3 +1,7 @@
+/**
+ * Upsert a cleaning schedule entry (create or update by id).
+ * Touches: `cleaning_schedule`.
+ */
 import { defineEventHandler, readBody, createError } from 'h3'
 
 interface DirectusError {

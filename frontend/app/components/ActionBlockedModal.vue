@@ -20,6 +20,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Modal overlay that shows when an action is blocked (e.g. balance too low).
+ * Pure UI — no collections, no data fetching.
+ */
 defineProps<{
   show: boolean
   message: string

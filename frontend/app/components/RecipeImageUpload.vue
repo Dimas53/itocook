@@ -53,6 +53,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Image uploader with drag/drop, paste, resize, and preview.
+ * Touches `directus_files` collection (via upload API).
+ */
 import { PhTrash, PhUploadSimple } from '@phosphor-icons/vue'
 
 const config = useRuntimeConfig()

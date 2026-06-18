@@ -54,6 +54,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Recipe card with loading skeleton, compact/full variants, like count.
+ * Touches `recipes` collection (via photo/category). Pure presentation.
+ */
 import { PhHeart } from '@phosphor-icons/vue'
 import { useRecipeImage } from '~/composables/useRecipeImage'
 

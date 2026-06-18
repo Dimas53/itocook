@@ -181,6 +181,10 @@ const { user } = useAuth()
 
 const categories = ['salad', 'soup', 'pasta', 'meat', 'fish', 'dessert', 'pizza', 'other']
 
+/**
+ * Recipe create/edit page — form with name, category, ingredients, steps, photo upload.
+ * Touches: `recipes`, `directus_files`.
+ */
 interface Ingredient {
   name: string
   amount: string

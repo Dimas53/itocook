@@ -1,3 +1,7 @@
+/**
+ * PATCH confirm/unconfirm a cleaning schedule entry.
+ * Touches: `cleaning_schedule`.
+ */
 import { defineEventHandler, readBody, createError } from 'h3'
 
 interface DirectusError {

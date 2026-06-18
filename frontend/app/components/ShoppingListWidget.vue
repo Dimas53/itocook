@@ -24,6 +24,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Dashboard widget showing unchecked shopping list item count.
+ * Touches `shopping_list_items` collection.
+ */
 import { PhShoppingCart, PhCaretRight } from '@phosphor-icons/vue'
 
 interface ShoppingItem {

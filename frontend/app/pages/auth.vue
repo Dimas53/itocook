@@ -185,6 +185,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Auth page — login/signup toggle form.
+ * Touches: `directus_users` (via auth server proxy).
+ */
 import { PhEye, PhEyeClosed } from '@phosphor-icons/vue'
 
 definePageMeta({

@@ -1,3 +1,7 @@
+/**
+ * GET active user count (aggregate) proxied via admin token.
+ * Touches: `directus_users`.
+ */
 import { defineEventHandler, createError } from 'h3'
 
 interface DirectusError {

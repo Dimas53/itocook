@@ -47,6 +47,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Onboarding page — initial welcome screen with brand intro.
+ * No data collections — purely presentational.
+ */
 import { PhChefHat } from '@phosphor-icons/vue'
 
 definePageMeta({ layout: 'default' })

@@ -46,6 +46,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Scrollable vertical list with up/down buttons and touch swipe.
+ * Generic UI component — no collections, renders slot content.
+ */
 import { PhCaretUp, PhCaretDown } from '@phosphor-icons/vue'
 
 const props = withDefaults(defineProps<{

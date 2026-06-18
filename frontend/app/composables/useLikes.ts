@@ -1,6 +1,13 @@
+/**
+ * Composable for fetching recipe like counts from `recipe_likes` collection.
+ */
 export function useLikes() {
   const { request } = useDirectus()
 
+  /**
+   * Fetch like counts for an array of recipe IDs.
+   * @returns A map of recipeId → count.
+   */
   async function fetchLikeCounts(recipeIds: string[]): Promise<Record<string, number>> {
     if (recipeIds.length === 0) return {}
     const likes = await request<{ recipe: string }[]>('get',

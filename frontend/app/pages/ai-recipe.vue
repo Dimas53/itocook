@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * AI Recipe page — placeholder for future AI-generated recipe feature.
+ * No data collections currently.
+ */
 definePageMeta({ layout: 'app' })
 </script>
 

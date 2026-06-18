@@ -1,3 +1,4 @@
+<!-- Pure SVG fallback avatar icon — no logic, no collections. -->
 <template>
   <div class="w-full h-full rounded-full bg-primary-pale flex items-center justify-center">
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-[60%] h-[60%]">

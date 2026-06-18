@@ -65,6 +65,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * All Recipes page — searchable, filterable recipe grid.
+ * Touches: `recipes`, `recipe_likes`.
+ */
 import { PhMagnifyingGlass, PhX } from '@phosphor-icons/vue'
 
 definePageMeta({ layout: 'default' })

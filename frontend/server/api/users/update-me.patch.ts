@@ -1,3 +1,7 @@
+/**
+ * PATCH update the current user's profile (proxied with user's own token).
+ * Touches: `directus_users`.
+ */
 export default defineEventHandler(async (event) => {
   requireAuth(event)
   const config = useRuntimeConfig()

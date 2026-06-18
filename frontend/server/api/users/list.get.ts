@@ -1,3 +1,7 @@
+/**
+ * GET active user list (filtered, sorted) proxied via admin token.
+ * Touches: `directus_users`.
+ */
 import { defineEventHandler, createError } from 'h3'
 
 interface DirectusError {

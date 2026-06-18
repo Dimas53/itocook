@@ -305,6 +305,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Profile page — user info, balance, my recipes, my orders, leave dish.
+ * Touches: `directus_users`, `balances`, `recipes`, `orders`, `cook_queue`.
+ */
 import { PhCaretLeft, PhSignOut, PhCaretRight, PhX, PhCaretDown, PhCamera } from '@phosphor-icons/vue'
 import { onMounted } from 'vue'
 

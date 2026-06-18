@@ -1,3 +1,7 @@
+/**
+ * Composable that fetches total registered user count from the server proxy.
+ * Used for UI badges (e.g., "X people are cooking" label).
+ */
 export function useTotalUsers() {
   const count = ref(0)
   const loading = ref(true)
