@@ -235,28 +235,6 @@ const weekOffset = ref(0)
 const selectedDate = ref(formatDateISO(new Date()))
 
 // ── Helpers ──
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
-const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-function getMonday(d: Date): Date {
-  const date = new Date(d)
-  const day = date.getDay()
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1)
-  date.setDate(diff)
-  date.setHours(0, 0, 0, 0)
-  return date
-}
-
-function formatDateStr(d: Date): string {
-  return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`
-}
-
-function formatDateISO(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
 
 function getCookName(cook: CookQueueItem['cook']): string {
   if (!cook) return ''
@@ -291,8 +269,8 @@ const weekSlots = computed<WeekSlot[]>(() => {
 
     slots.push({
       date: iso,
-      dayName: DAY_NAMES[i]!,
-      dateStr: formatDateStr(d),
+      dayName: DAY_NAMES_SHORT[i]!,
+      dateStr: formatDateShort(d),
       cookName: item ? getCookName(item.cook) : null,
       dishName: item?.dish_name || null,
       queueId: item?.id ?? null,
@@ -433,7 +411,7 @@ onMounted(async () => {
       id: r.id,
       dish_name: r.dish_name,
       cookName: r.cook ? [r.cook.first_name, r.cook.last_name].filter(Boolean).join(' ') : 'Unknown',
-      dateLabel: formatDateStr(new Date(r.date_created)),
+      dateLabel: formatDateShort(new Date(r.date_created)),
     }))
 
     // Batch-fetch likes

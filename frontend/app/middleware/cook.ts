@@ -15,13 +15,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
   }
 
-  function formatDateISO(d: Date): string {
-    const y = d.getFullYear()
-    const m = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    return `${y}-${m}-${day}`
-  }
-
   const date = (to.query.date as string) || formatDateISO(new Date())
   const params = new URLSearchParams()
   params.append('filter[date][_eq]', date)
