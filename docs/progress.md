@@ -298,5 +298,5 @@
 - `0113efa` — docs: mark signup validation and admin token caching as done in security-audit.md
 - `ed7d576` — docs: create CONTEXT.md domain glossary (30+ terms)
 - `ec4291a` — docs: add JSDoc to composables (useDirectus, useAuth, useDeduction, useParticipants, useBalanceCheck, useMealCost), cook.vue, signup.post; create ARCHITECTURE.md with design decisions
-- `<commit hash>` — docs: add JSDoc to adminToken, cook middleware, dedupRecipes, ingredientIcons, HeroBlock; append remaining sections to ARCHITECTURE.md
+- `38f562c` — docs: add JSDoc to adminToken, cook middleware, dedupRecipes, ingredientIcons, HeroBlock; append remaining sections to ARCHITECTURE.md
 
