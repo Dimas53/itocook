@@ -120,6 +120,9 @@
 - [x] **Security fix: admin token caching** — created `server/utils/adminToken.ts` (in-memory cache with 23h TTL); refactored all 8 server routes (signup, deduction confirm, duty confirm/upsert, pasta-price get/patch, users count/list) to use `getAdminToken(config)` instead of per-request `POST /auth/login`
 - [x] **Fix: TS errors from refactoring** — added null guard for `json.data.access_token` in `adminToken.ts`; restored `DirectusError` interface in `deduction/confirm.post.ts`
 
+## Current session — documentation
+- [x] **Block 4: CONTEXT.md** — created `docs/CONTEXT.md` — domain glossary with 30+ terms; each entry includes 1-2 sentence definition, file/collection locations, and related terms. Conducted interview on ambiguous terms (cook in 3 meanings, deduction vs cost entry, fork, ghost participant, etc.). Interview resolved term splits and established glossary scope.
+
 ## Refactoring session — Phase 1–2
 - [x] **Refactoring analysis** — analyzed 5 pages (3855 total lines) for extraction opportunities; identified 13 composable candidates, 4 cross-cutting patterns (slider, shopping list cleanup, participants fetch, date helpers); primary target: `confirmDeduction()` in `cook.vue` (64 lines, 5+ sequential API calls per participant). Findings saved to `docs/refactoring-plan.md`.
 - [x] **Fix: Consistent avatar URLs** — standardized all `pravatar.cc` `u` parameter to use `user.id` across `app.vue`, `index.vue`, `recipe/[id].vue`, `profile.vue`. Previously used `email` or `displayCookName`, causing different avatars per screen for the same user.
@@ -276,4 +279,6 @@
 - `0ffe1d6` — fix(security): rotate admin password, key/secret, tighten CORS/TTL
 - `661a824` — fix(security): rate limit signup — 5 req / 60s per IP
 - `e5bff35` — fix(auth): input validation on signup, admin token caching refactor
+- `187ee4b` — fix(security): add signup validation, refactor admin token caching
+- `0113efa` — docs: mark signup validation and admin token caching as done in security-audit.md
 
