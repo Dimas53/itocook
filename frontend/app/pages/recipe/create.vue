@@ -254,7 +254,7 @@ async function loadRecipe() {
     originalPhoto.value = item.photo || null
     form.pasta_packages = item.pasta_packages ?? null
     if (item.ingredients) {
-      const ings = typeof item.ingredients === 'string' ? JSON.parse(item.ingredients) : item.ingredients
+      const ings = parseJsonField(item.ingredients)
       form.ingredients = Array.isArray(ings) ? ings.map((i: { name?: string; amount?: string; unit?: string }) => ({
         name: i.name || '',
         amount: i.amount || '',
@@ -263,7 +263,7 @@ async function loadRecipe() {
     }
     syncPastaToIngredients()
     if (item.steps) {
-      const stps = typeof item.steps === 'string' ? JSON.parse(item.steps) : item.steps
+      const stps = parseJsonField(item.steps)
       form.steps = Array.isArray(stps) ? stps.map((s: { description?: string }) => ({
         description: s.description || '',
       })) : []
@@ -289,7 +289,7 @@ async function loadRecipeFromHistory() {
       originalPhoto.value = item.photo || null
       form.pasta_packages = item.pasta_packages ?? null
       if (item.ingredients) {
-        const ings = typeof item.ingredients === 'string' ? JSON.parse(item.ingredients) : item.ingredients
+        const ings = parseJsonField(item.ingredients)
         form.ingredients = Array.isArray(ings) ? ings.map((i: Ingredient) => ({
           name: i.name || '',
           amount: i.amount || '',
@@ -298,7 +298,7 @@ async function loadRecipeFromHistory() {
       }
       syncPastaToIngredients()
       if (item.steps) {
-        const stps = typeof item.steps === 'string' ? JSON.parse(item.steps) : item.steps
+        const stps = parseJsonField(item.steps)
         form.steps = Array.isArray(stps) ? stps.map((s: { description?: string }) => ({
           description: s.description || '',
         })) : []

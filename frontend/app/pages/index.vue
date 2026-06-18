@@ -44,15 +44,6 @@
         @show-participants="onShowParticipants"
       />
 
-<!--      &lt;!&ndash; Participant counter &ndash;&gt;
-      <div v-if="todayCook && !heroLoading" class="flex items-center gap-2 px-1">
-        <PhUsers class="w-4 h-4 text-app-black/60" weight="fill" />
-        <p class="text-[13px] text-app-black/60">
-          <span class="font-semibold text-app-black">{{ participantCount }}</span> of
-          <span class="font-semibold text-app-black">{{ totalCount }}</span> confirmed
-        </p>
-      </div>-->
-
       <!-- Widgets row -->
       <div class="grid grid-cols-2 gap-3">
         <BalanceWidget />
@@ -60,17 +51,6 @@
       </div>
 
       <!-- Search bar -->
-<!--      <div class="relative">
-        <PhMagnifyingGlass class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search dishes..."
-          class="w-full h-12 rounded-2xl bg-white border border-gray-200 pl-12 pr-4 text-[14px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary"
-          @focus="onSearchFocus"
-        />
-      </div>-->
-
       <!-- Section title -->
       <h2 class="text-[16px] font-semibold text-app-black">Recent Dishes</h2>
 
@@ -93,25 +73,11 @@
       </div>
     </div>
 
-    <!-- Balance block overlay -->
-    <div
-      v-if="joinBlockedReason"
-      class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center pb-20 pointer-events-auto"
-      @click.self="joinBlockedReason = ''"
-    >
-      <div class="bg-white rounded-2xl mx-5 p-6 w-full max-w-[21rem] shadow-xl">
-        <h3 class="text-[16px] font-bold text-app-black mb-2">Action blocked</h3>
-        <p class="text-[13px] text-app-black/70 leading-relaxed">{{ joinBlockedReason }}</p>
-        <div class="flex gap-3 mt-5">
-          <button
-            class="flex-1 h-11 rounded-full bg-primary text-white font-semibold text-[14px] active:scale-[0.98] transition-transform"
-            @click="joinBlockedReason = ''"
-          >
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
+    <ActionBlockedModal
+      :show="!!joinBlockedReason"
+      :message="joinBlockedReason"
+      @close="joinBlockedReason = ''"
+    />
   </div>
 </template>
 
