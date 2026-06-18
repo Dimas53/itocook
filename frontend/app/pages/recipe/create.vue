@@ -105,8 +105,9 @@
               <option value="tbsp">tbsp</option>
               <option value="tsp">tsp</option>
               <option value="bunch">bunch</option>
-              <option value="to taste">to taste</option>
-              <option v-if="ing.unit && !['g','kg','ml','l','pcs','tbsp','tsp','bunch','to taste',''].includes(ing.unit)" :value="ing.unit">{{ ing.unit }}</option>
+                <option value="to taste">to taste</option>
+                <option value="package">package</option>
+                <option v-if="ing.unit && !['g','kg','ml','l','pcs','tbsp','tsp','bunch','to taste','package',''].includes(ing.unit)" :value="ing.unit">{{ ing.unit }}</option>
             </select>
             <button class="w-8 shrink-0 h-8 flex items-center justify-center" @click="removeIngredient(i)">
               <PhTrash class="w-4 h-4 text-red-400" />
@@ -222,6 +223,23 @@ const pendingPhotoFile = ref<File | null>(null)
 const originalPhoto = ref<string | null>(null)
 const FOLDER_ID = 'eb01b9c5-b408-40f9-86fd-c8f2045e258d'
 
+function syncPastaToIngredients() {
+  const count = form.pasta_packages ?? 0
+  const idx = form.ingredients.findIndex(i => i.name.trim().toLowerCase() === 'pasta')
+  if (count > 0) {
+    const entry = { name: 'Pasta', amount: String(count), unit: 'package' as const }
+    if (idx >= 0) {
+      form.ingredients[idx] = entry
+    } else {
+      form.ingredients.push(entry)
+    }
+  } else if (idx >= 0) {
+    form.ingredients.splice(idx, 1)
+  }
+}
+
+watch(() => form.pasta_packages, syncPastaToIngredients)
+
 async function loadRecipe() {
   if (!editingId.value) return
   loadingRecipe.value = true
@@ -243,6 +261,7 @@ async function loadRecipe() {
         unit: i.unit || '',
       })) : []
     }
+    syncPastaToIngredients()
     if (item.steps) {
       const stps = typeof item.steps === 'string' ? JSON.parse(item.steps) : item.steps
       form.steps = Array.isArray(stps) ? stps.map((s: { description?: string }) => ({
@@ -277,6 +296,7 @@ async function loadRecipeFromHistory() {
           unit: i.unit || '',
         })) : []
       }
+      syncPastaToIngredients()
       if (item.steps) {
         const stps = typeof item.steps === 'string' ? JSON.parse(item.steps) : item.steps
         form.steps = Array.isArray(stps) ? stps.map((s: { description?: string }) => ({
@@ -351,6 +371,7 @@ async function submitRecipe() {
       }
     }
 
+    syncPastaToIngredients()
     const payload: Record<string, unknown> = {
       dish_name: form.dish_name.trim(),
       category: form.category || null,

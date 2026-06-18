@@ -552,7 +552,7 @@ const pageDateStr = computed(() => {
 })
 
 const formattedDate = computed(() => {
-  const d = new Date(pageDateStr.value + 'T12:00:00')
+  const d = parseISODate(pageDateStr.value)
   return formatDateLong(d)
 })
 

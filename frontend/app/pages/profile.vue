@@ -221,7 +221,7 @@
                 <div class="flex-1 min-w-0 mr-3">
                   <p class="text-[14px] font-semibold text-app-black truncate">{{ recipe.dish_name }}</p>
                   <p class="text-[12px] text-app-black/60 mt-0.5">
-                    {{ recipe.category || 'Uncategorized' }}
+                    {{ formatDateLabel(recipe.date_created) }} · {{ recipe.category || 'Uncategorized' }}
                   </p>
                 </div>
                 <PhCaretRight class="w-4 h-4 text-app-black/40 shrink-0" />
@@ -468,7 +468,7 @@ function getColor(index: number): string {
 
 function formatDateLabel(dateStr: string): string {
   if (!dateStr) return ''
-  const d = new Date(dateStr + 'T12:00:00')
+  const d = dateStr.includes('T') ? new Date(dateStr) : parseISODate(dateStr)
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
@@ -533,7 +533,7 @@ function promptLeaveQueue(order: MyOrder) {
     removeOrphanedOrder(order.id)
     return
   }
-  const cookingDate = new Date(order.date + 'T12:00:00')
+  const cookingDate = parseISODate(order.date)
   const now = new Date()
   const hoursUntil = (cookingDate.getTime() - now.getTime()) / (1000 * 60 * 60)
   const withinPenalty = hoursUntil >= 0 && hoursUntil < 10

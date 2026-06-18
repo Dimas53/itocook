@@ -283,7 +283,7 @@ const calendarDays = computed<CalendarDay[]>(() =>
   weekSlots.value.map((s) => ({
     date: s.date,
     dayName: s.dayName,
-    dateNum: new Date(s.date + 'T12:00:00').getDate(),
+    dateNum: parseISODate(s.date).getDate(),
     hasActivity: !!s.cookName,
     isToday: s.isToday,
     isPast: s.isPast,

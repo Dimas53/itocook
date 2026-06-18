@@ -72,8 +72,8 @@ function getDayClasses(day: CalendarDay) {
 
 const monthLabel = computed(() => {
   if (!props.days.length) return ''
-  const first = new Date(props.days[0]!.date + 'T12:00:00')
-  const last = new Date(props.days[props.days.length - 1]!.date + 'T12:00:00')
+  const first = parseISODate(props.days[0]!.date)
+  const last = parseISODate(props.days[props.days.length - 1]!.date)
   const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
   if (first.getMonth() === last.getMonth()) {
     return fmt(first)

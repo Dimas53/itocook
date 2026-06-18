@@ -250,7 +250,7 @@ function formatAmount(amount: string | null): string {
 }
 
 function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T12:00:00')
+  const d = parseISODate(dateStr)
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }
 

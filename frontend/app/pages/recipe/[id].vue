@@ -523,7 +523,7 @@ const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 const pickerMonth = computed(() => {
   if (availableDates.value.length === 0) return new Date()
   const first = availableDates.value[0]
-  const d = new Date(first.iso + 'T12:00:00')
+  const d = parseISODate(first.iso)
   d.setDate(1)
   d.setHours(0, 0, 0, 0)
   return d
@@ -617,7 +617,7 @@ const hasActiveQueue = computed(() => {
 const queueStatus = computed(() => queueEntry.value?.status ?? null)
 const queueDateStr = computed(() => {
   if (!queueEntry.value?.date) return ''
-  const d = new Date(queueEntry.value.date + 'T12:00:00')
+  const d = parseISODate(queueEntry.value.date)
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 })
 

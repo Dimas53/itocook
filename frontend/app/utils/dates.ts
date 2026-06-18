@@ -41,3 +41,7 @@ export function getMonday(d: Date): Date {
   date.setHours(0, 0, 0, 0)
   return date
 }
+
+export function parseISODate(iso: string): Date {
+  return new Date(iso + 'T12:00:00')
+}
