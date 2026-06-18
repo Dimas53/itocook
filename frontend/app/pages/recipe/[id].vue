@@ -603,8 +603,7 @@ const hasActiveQueue = computed(() => {
 const queueStatus = computed(() => queueEntry.value?.status ?? null)
 const queueDateStr = computed(() => {
   if (!queueEntry.value?.date) return ''
-  const d = parseISODate(queueEntry.value.date)
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  return formatDateReadable(queueEntry.value.date)
 })
 
 const canJoin = computed(() => queueStatus.value === 'scheduled' || queueStatus.value === 'cooking')

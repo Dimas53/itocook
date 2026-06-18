@@ -100,15 +100,12 @@ interface DirectusRecipe {
   forked_from: string | null
 }
 
-interface DirectusLike {
-  recipe: string
-}
-
 definePageMeta({ layout: 'app' })
 
 const router = useRouter()
 const { user } = useAuth()
 const { request } = useDirectus()
+const likes = useLikes()
 const config = useRuntimeConfig()
 const directusUrl = config.public.directusUrl
 
@@ -123,9 +120,6 @@ const todayEntryId = ref<string | null>(null)
 const { confirmed: participantCount, hasJoined, joinBlockedReason, join: onJoin, fetch: fetchParticipants } = useParticipants(todayEntryId)
 const { count: totalCount } = useTotalUsers()
 
-// Search
-const searchQuery = ref('')
-
 // Recipes
 const recipesLoading = ref(true)
 const recipes = ref<(Recipe & { likeCount: number })[]>([])
@@ -138,17 +132,11 @@ function onShowParticipants() {
   pm.open(todayCook.value?.queueId)
 }
 
-
 function onBecomeCook() {
   router.push('/cook?action=become')
 }
 
-function onSearchFocus() {
-  router.push('/kitchen')
-}
-
-onMounted(async () => {
-  // Fetch real cook_queue data
+async function fetchTodayHero() {
   try {
     const items = await request<any[]>('get',
       `/items/cook_queue?filter[date][_eq]=${todayISO}&filter[status][_nin]=cancelled&sort=date&fields=*,cook.id,cook.first_name,cook.last_name`
@@ -156,7 +144,6 @@ onMounted(async () => {
 
     hasTodayQueue.value = items.length > 0
 
-    // Priority: cooking > ready > scheduled
     const todayEntry = items.find((i) => i.status === 'cooking')
       || items.find((i) => i.status === 'ready')
       || items[0]
@@ -166,7 +153,6 @@ onMounted(async () => {
       await fetchParticipants()
       const cookName = formatUserName(todayEntry.cook)
 
-      // Try to find matching recipe
       let heroCategory: string | null = null
       let heroPhoto: string | null = null
       if (todayEntry.dish_name) {
@@ -193,7 +179,6 @@ onMounted(async () => {
         queueId: todayEntry.id,
       }
 
-      // Check if current user is today's cook
       if (user.value && todayEntry.cook?.id === user.value.id) {
         hasJoined.value = true
       }
@@ -202,8 +187,9 @@ onMounted(async () => {
     // Directus may not be available
   }
   heroLoading.value = false
+}
 
-  // Fetch real recipes
+async function fetchRecipes() {
   try {
     const data = await request<DirectusRecipe[]>('get',
       '/items/recipes?sort=-date_created&limit=20&fields=id,dish_name,category,photo,cook.id,cook.first_name,cook.last_name,date_created,forked_from'
@@ -217,21 +203,16 @@ onMounted(async () => {
       photo: r.photo,
     }))
 
-    // Batch-fetch likes
-    const ids = mapped.map((r) => r.id)
-    const likes = ids.length > 0
-      ? await request<DirectusLike[]>('get',
-        `/items/recipe_likes?fields=recipe&filter[recipe][_in]=${ids.join(',')}&limit=500`
-      )
-      : []
-    const countMap: Record<string, number> = {}
-    for (const like of likes) {
-      countMap[like.recipe] = (countMap[like.recipe] || 0) + 1
-    }
+    const countMap = await likes.fetchLikeCounts(mapped.map((r) => r.id))
     recipes.value = mapped.map((r) => ({ ...r, likeCount: countMap[r.id] ?? 0 }))
   } catch {
     // Directus may not be available
   }
   recipesLoading.value = false
+}
+
+onMounted(async () => {
+  await fetchTodayHero()
+  await fetchRecipes()
 })
 </script>

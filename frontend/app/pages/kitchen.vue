@@ -148,6 +148,8 @@ definePageMeta({ layout: 'app' })
 
 const router = useRouter()
 const { request } = useDirectus()
+const likes = useLikes()
+
 const { user } = useAuth()
 
 
@@ -399,16 +401,7 @@ onMounted(async () => {
     }))
 
     // Batch-fetch likes
-    const ids = mapped.map((r) => r.id)
-    const likes = ids.length > 0
-      ? await request<{ recipe: string }[]>('get',
-        `/items/recipe_likes?fields=recipe&filter[recipe][_in]=${ids.join(',')}&limit=500`
-      )
-      : []
-    const countMap: Record<string, number> = {}
-    for (const like of likes) {
-      countMap[like.recipe] = (countMap[like.recipe] || 0) + 1
-    }
+    const countMap = await likes.fetchLikeCounts(mapped.map((r) => r.id))
     historyItems.value = mapped.map((r) => ({ ...r, likeCount: countMap[r.id] ?? 0 }))
   } catch {
     // Directus may not be available

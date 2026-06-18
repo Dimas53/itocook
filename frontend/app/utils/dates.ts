@@ -45,3 +45,8 @@ export function getMonday(d: Date): Date {
 export function parseISODate(iso: string): Date {
   return new Date(iso + 'T12:00:00')
 }
+
+export function formatDateReadable(iso: string): string {
+  const d = parseISODate(iso)
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+}

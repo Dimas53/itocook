@@ -250,8 +250,7 @@ function formatAmount(amount: string | null): string {
 }
 
 function formatDate(dateStr: string): string {
-  const d = parseISODate(dateStr)
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  return formatDateReadable(dateStr)
 }
 
 async function toggleItem(item: ShoppingItem) {
