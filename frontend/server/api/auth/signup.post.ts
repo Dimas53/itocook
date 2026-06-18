@@ -1,4 +1,6 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler, readBody, createError, getRequestIP } from 'h3'
+
+const ipRequestLog = new Map<string, number[]>()
 
 interface DirectusError {
   errors: Array<{ message: string }>
@@ -11,6 +13,15 @@ interface DirectusError {
 // ────────────────────────────────────────────────────────────────────────
 
 export default defineEventHandler(async (event) => {
+  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const now = Date.now()
+  const timestamps = (ipRequestLog.get(ip) ?? []).filter(t => now - t < 60000)
+  if (timestamps.length >= 5) {
+    throw createError({ statusCode: 429, message: 'Too many requests. Try again later.' })
+  }
+  timestamps.push(now)
+  ipRequestLog.set(ip, timestamps)
+
   const config = useRuntimeConfig(event)
   const { email, password, firstName, lastName } = await readBody(event)
 

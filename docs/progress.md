@@ -113,6 +113,7 @@
 - [x] **Security fix: confirmDeduction() moved to server admin-proxy** — created `server/api/deduction/confirm.post.ts` (requireAuth + admin token); `useDeduction.ts` now calls `/api/deduction/confirm` instead of direct Directus API; horizontal escalation risk eliminated. Found: User policy has unrestricted create/update on `balances` and `transactions` (policy `e563cf6a`) — no `$CURRENT_USER` filter — but this is now mitigated by admin-proxy.
 - [x] **Security fix: .env/docker-compose hardening** — changed `DIRECTUS_ADMIN_PASSWORD` from `admin` to `ItoCook2026!dev`; rotated `DIRECTUS_KEY` and `DIRECTUS_SECRET` to random 32-hex values; set `CORS_MAX_AGE` from `5` to `600`; set `ACCESS_TOKEN_TTL` from `7d` to `24h`. ⚠️ Docker restart required for changes to take effect.
 - **⚠️ Admin password was changed.** After Docker restart, Directus admin login will use the new password from `.env`. The old `admin` password no longer works.
+- [x] **Security fix: rate limiting on signup** — in-memory rate limiter on `/api/auth/signup` (max 5 req / 60s per IP). Map resets on server restart. No npm packages added.
 
 ## Current session
 - [x] **Refactoring analysis** — analyzed 5 pages (3855 total lines) for extraction opportunities; identified 13 composable candidates, 4 cross-cutting patterns (slider, shopping list cleanup, participants fetch, date helpers); primary target: `confirmDeduction()` in `cook.vue` (64 lines, 5+ sequential API calls per participant). Findings saved to `docs/refactoring-plan.md`.
@@ -267,4 +268,5 @@
 - `7894e5a` — fix(recipe): detect cook_queue by recipe ID first, fall back to dish_name
 - `30d9bd3` — fix(security): add requireAuth to all server routes, fix cookie flags
 - `a955fa1` — fix(security): move confirmDeduction to admin-proxy server route
+- `0ffe1d6` — fix(security): rotate admin password, key/secret, tighten CORS/TTL
 
