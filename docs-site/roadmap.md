@@ -1,6 +1,6 @@
 # Roadmap
 
-Development is organized into 8 phases. Phases 1–4 are complete or in progress. Phases 5–8 cover remaining screens, notifications, IHK documentation, and MVP launch.
+Development is organized into 8 phases. Phases 1–3 are complete. Phase 4 is mostly complete (AI Recipe + Common pending). Phase 5 is partially complete. Phases 6–8 cover notifications, additional features, IHK documentation, and MVP launch.
 
 ## Phase 1: UI Skeleton ✅ 2026-06-02
 **Goal:** can open the app, navigate through screens, see the final layout of all screens. No real data — only UI.
@@ -50,25 +50,25 @@ Development is organized into 8 phases. Phases 1–4 are complete or in progress
 - [x] Home — hero, balance, duty, dish cards
 - [x] Kitchen — week calendar, dish history
 - [ ] AI Recipe — chat + JSON render
-- [ ] Duty — calendar, confirm, admin edit
+- [x] Duty — calendar, confirm, admin edit 🟡 (auto-assignment + notifications pending)
 - [ ] Common — announcements, pool collections
 
 ### Inner Screens
-- [x] Profile — avatar, my list, my recipes, logout
+- [x] Profile — avatar, my list, my recipes, **balance**, logout
 - [x] Cook Panel — 6-state machine
 - [x] All Recipes — search + filter
-- [x] Recipe Detail — photo, servings, join, like
+- [x] Recipe Detail — photo, servings, **steps**, **share**, join, like
 - [x] Recipe Create/Edit — upload, ingredients, steps
 - [x] Finance — balances, top-up, transactions
 - [x] Duty — calendar, confirm, admin edit
 - [x] Shopping List — by recipe / all items
 
-## Phase 5: Remaining Feature Screens
-- [ ] Share shopping list
-- [ ] Profile balance + transaction history
-- [ ] Recipe Detail — cooking steps display
+## Phase 5: Remaining Feature Screens 🟡
+- [x] Share shopping list
+- [x] Profile balance + transaction history
+- [x] Recipe Detail — cooking steps display
 - [ ] AI Recipe screen
-- [ ] Duty screen completion
+- [ ] Duty screen completion (auto-assignment + notifications)
 - [ ] Common screen
 
 ## Phase 6: FastAPI + Notifications

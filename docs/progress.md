@@ -244,4 +244,5 @@
 - `0cf36c6` — docs: create project-state.md in docs/ with updated file structure, flows, composables, security measures
 - `939a2d1` — chore: snapshot current state before JSDoc pass
 - `b05f707` — docs: add JSDoc annotations across all frontend files
+- `2e7803e` — docs(docs-site): add VitePress documentation site with screenshots
 

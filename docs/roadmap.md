@@ -92,8 +92,8 @@ Agent reads `docs/design.md` before laying out each screen.
 - [x] Weekly cook queue — slots by day
 - [x] Dish history: list with search, cook name, date, like counts
 - [x] "All Recipes →" link → `/recipes` page
-- [ ] Weekly menu (if planned by cook in advance)
-- [ ] Anonymous dish ratings (stars + text)
+- [ ] Weekly menu (not yet planned)
+- [ ] Anonymous dish ratings (not yet implemented)
 
 #### Tab 3 — AI Recipe (`pages/ai-recipe.vue`) ⬜
 - [ ] Chat interface with AI (cooking questions only)
@@ -104,11 +104,11 @@ Agent reads `docs/design.md` before laying out each screen.
 - [ ] Ingredient substitution via AI → button "Replace in recipe"
 - [ ] Uses `AddIngredientPopover.vue` for ingredient selection (already built)
 
-#### Tab 4 — Duty (`pages/duty.vue`) ⬜
-- [ ] "On duty today" block: name + department
-- [ ] "Confirm duty" button — only for the assigned user
-- [ ] Monthly calendar — viewable by everyone
-- [ ] Schedule editing — Admin only (inline edit or modal)
+#### Tab 4 — Duty (`pages/duty.vue`) 🟡
+- [x] "On duty today" block: name + department
+- [x] "Confirm duty" button — only for the assigned user
+- [x] Monthly calendar — viewable by everyone
+- [x] Schedule editing — Admin only (inline edit or modal)
 - [ ] Auto-assignment by department — button for Admin
 - [ ] Notifications to assigned users (trigger from Directus Flow)
 
@@ -130,7 +130,7 @@ Agent reads `docs/design.md` before laying out each screen.
 - [x] My List (dishes participated in) with leave confirmation + 10h rule
 - [x] My Recipes (created by user, pastel colors)
 - [x] Log out
-- [ ] Balance block: current balance + transaction history list
+- [x] Balance block: current balance + transaction history list
 - [ ] Notification settings: push / email / WhatsApp (toggle)
 - [ ] Statistics: how many times cooked, been on duty
 
@@ -161,8 +161,8 @@ Agent reads `docs/design.md` before laying out each screen.
 - [x] Join button (scheduled/cooking only), "Lunch is ready!" (cooking owner only)
 - [x] Edit recipe (owner or entry cook)
 - [x] Like button
-- [ ] Cooking steps display
-- [ ] Share shopping list button (share ingredients via native share sheet)
+- [x] Cooking steps display
+- [x] Share shopping list button (share ingredients via native share sheet)
 - [ ] Ratings and reviews (anonymous)
 
 #### Recipe Create/Edit (`pages/recipe/create.vue`) ✅
@@ -218,11 +218,11 @@ Agent reads `docs/design.md` before laying out each screen.
 ## Phase 5: Remaining Feature Screens 🟡
 **Goal:** Complete all tab screens, add shopping list export, finish Profile balance view.
 
-- [ ] **Share shopping list** — `navigator.share()` with ingredient list as text; button on Recipe Detail and AI Recipe; no backend needed
-- [ ] **Profile balance + transaction history** — fetch from `balances` + `transactions` collections; show current balance + list (date, description, ±amount, color-coded)
-- [ ] **Recipe Detail — cooking steps** — steps already stored in DB; render below ingredients
+- [x] **Share shopping list** — done via Recipe Detail bottom sheet (share icon → 3 actions: add to list, copy, share)
+- [x] **Profile balance + transaction history** — done: balance block + collapsible transaction history
+- [x] **Recipe Detail — cooking steps** — done: steps rendered below ingredients
 - [ ] **AI Recipe screen** — chat UI, JSON recipe render with emoji ingredients, "Add to recipes" / "Share list" buttons
-- [ ] **Duty screen** — monthly calendar, "Confirm duty", Admin edit + auto-assignment
+- [ ] **Duty screen** — auto-assignment + notifications (calendar + confirm + admin edit already done in Phase 4)
 - [ ] **Common screen** — announcements feed, pool collections with progress bars
 
 ---
