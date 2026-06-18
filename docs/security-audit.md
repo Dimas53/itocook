@@ -247,3 +247,42 @@ Do NOT install any npm packages — use only what's already available in H3/Nuxt
 
 Final step: update docs/progress.md with one summary line.
 ```
+
+---
+
+## Security Fix Progress — 2026-06-18
+
+### Выполнено (4 промпта):
+
+**Prompt 1 — Cookie flags + Server Route authentication** ✅
+- `directus_token` cookie: `secure: !import.meta.dev`, `httpOnly: false` (architectural constraint — JS читает cookie для Bearer-токена на другой origin)
+- `server/utils/auth.ts` — `requireAuth(event)` helper
+- `requireAuth()` добавлен во все 7 server routes (кроме signup)
+
+**Prompt 2 — confirmDeduction() → server route with admin proxy** ✅
+- `server/api/deduction/confirm.post.ts` — admin-proxy для создания транзакций и обновления балансов
+- `useDeduction.ts` — заменены прямые Directus-вызовы на `fetch('/api/deduction/confirm')`
+- Проверены Directus permissions: User policy (`e563cf6a`) имеет `create`/`update` без `$CURRENT_USER` на `balances` и `transactions`
+
+**Prompt 3 — .env hardening + CORS + TTL** ✅
+- Ротация `DIRECTUS_ADMIN_PASSWORD`, `DIRECTUS_KEY`, `DIRECTUS_SECRET` в `.env`
+- `.env.example` — плейсхолдеры вместо реальных значений
+- `CORS_MAX_AGE: 5 → 600`, `ACCESS_TOKEN_TTL: 7d → 24h`
+
+**Prompt 4 — Rate limiting on signup** ✅
+- In-memory rate limiter на `/api/auth/signup`: max 5 запросов / 60s per IP
+- Сброс при рестарте сервера (MVP)
+
+**5. Signup input validation** ✅
+- Валидация формата email (regex)
+- Минимальная сложность пароля (8+ символов, uppercase, lowercase, digit)
+- Проверка длины полей firstName/lastName
+
+**6. Admin token caching** ✅
+- `server/utils/adminToken.ts` — in-memory cache с TTL 23h
+- Все 8 server routes переписаны на `getAdminToken(config)` вместо per-request `POST /auth/login`
+
+### Отложено (не стоит времени сейчас):
+- CORS_ORIGIN для production
+- Admin credentials в frontend-контейнере
+- PostgreSQL порт открыт наружу
