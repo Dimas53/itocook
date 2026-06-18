@@ -87,3 +87,18 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design decisions, 
 | [docs/roadmap.md](docs/roadmap.md) | Development phases and milestones |
 | [docs/progress.md](docs/progress.md) | Daily progress log |
 | [docs/design.md](docs/design.md) | Design system (colors, typography, components) |
+
+## VitePress Documentation Site
+
+A **VitePress** site at `docs-site/` provides a browsable documentation portal built from the `docs/` content.
+
+```bash
+cd docs-site
+npm run docs:dev      # dev server at http://localhost:5173
+npm run docs:build    # static build → .vitepress/dist/
+npm run docs:preview  # preview the static build
+```
+
+**Note:** This is a **static site** — it does NOT auto-sync with `docs/`. When source files in `docs/` change, the corresponding `docs-site/` markdown pages must be updated manually, then the site rebuilt via `npm run docs:build`.
+
+**Screenshots:** Drop `.png` files into `docs-site/public/screenshots/` — they are already referenced from screenshot placeholder comments in the Screens section.

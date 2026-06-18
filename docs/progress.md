@@ -230,95 +230,18 @@
 - [x] **TS check** — no new TS errors introduced
 - [x] **recipe/[id].vue** — file-level + function-level JSDoc on all handlers
 
+## Current session — VitePress docs site
+- [x] **VitePress setup** — `docs-site/` created with vitepress, config, landing page
+- [x] **Overview section** — what-is-itocook, tech-stack, status pages
+- [x] **Architecture section** — system-overview, schema (with Mermaid ERD), data-flows
+- [x] **Features section** — 6 pages copied from `docs/architecture/` (cook-queue, recipe-system, finance, duty, shopping-list, auth-flow)
+- [x] **Screens section** — 6 pages with descriptions and screenshot placeholders
+- [x] **Design System section** — colors, typography, components specs
+- [x] **Roadmap page** — all 8 phases copied from `docs/roadmap.md`
+- [x] **Build verification** — `npm run docs:build` passes cleanly
+
 ## Git log
-- `ed7d576` — docs: create CONTEXT.md domain glossary (30+ terms)
-- `1a83b66` — refactor: extract formatUserName utility, replace 13 inline copies
-- `b881bf30` — fix(profile): show creation date in My Recipes; add pasta-to-ingredients sync in editor
-- `1eda3198` — fix: derive pasta cost from ingredients array; navigate to cook form on Lunch is ready
-- `74b8b748` — docs: update progress log with recent commits
-- `245fb96d` — refactor: add parseJsonField utility, remove dead code, extract ActionBlockedModal component
-- `fe0e9f7` — refactor: extract BalanceRow and TransactionRow components, dedup finance.vue templates
-- `c5159cb` — refactor: extract ReceiptSummary component, dedup receipt rows in cook.vue
-- `a700b57` — refactor: extract useRecipeServings composable, restrict canAddToList to isEntryCook
-- `0b9d369` — fix(cook): pass cq param to recipe links for reliable queue detection
-- `c88c50e` — refactor: extract useDeduction composable, replace manual sliders with SliderList, fix pasta-price PATCH
-- `f8089ec` — feat(profile): avatar upload with SVG fallback, remove pravatar everywhere
-- `b532f5c` — feat: servings selector with scaling, participant modal in layout, duty tomorrow indicator, cook eye icon, author pill modal
-- `d80c44e` — feat(duty): add admin edit mode for cleaning_schedule assignments
-- `a2a75f6` — refactor(calendar): extract MonthCalendar component, use in duty and recipe pages
-- `9d42482` — chore: uncommitted changes from previous sessions
-- `b7ddd47` — fix(recipe): reactive image in RecipeGridItem, batch-fetch likes on all pages
-- `80afb1d` — feat(cook): persist category to cook_queue, show category image in HeroBlock, require category for schedule/save
-- `3ae6859` — feat(cook): split lunch-ready from receipt entry (Task A')
-- `10cd5b6` — feat(cook): cancel cooking, fix naming collision in useTotalUsers, replace hardcoded user count
-- `b7a7ca1` — fix(cook): deferred recipe photo upload, folder PATCH fallback, scroll history with swipe + arrows, hide tab bar on cook page
-- `04fc50f` — feat(recipe): add pasta_packages field and pasta cost in deduction (Task F); fix(kitchen): remove redundant become-cook button under calendar
-- `d695b45` — fix(hero): add JS guard on Cook button — disabled attr alone wasn't reliable; remove invert class from status bar as intended
-- `14e2c08` — fix(hero): guard HeroBlock Cook button with JS check — disabled attr alone wasn't blocking navigation
-- `bf2f2bd` — fix(layout): safe-area top bar on app layout, layout assignment, HeroBlock Cook disabled, remove empty today.vue
-- `30a4658` — feat: today cooking button, history author attribution, safe-area fix, hero empty-state
-- `4ffb29c` — feat(cook): two-button dish selection with recipe match detection
-- `94fc7a4` — feat(onboarding): replace absolute layout with flex, add lang=ts
-- `376d90f` — feat(layout): add BottomTabBar with 5 tabs, wire into default layout
-- `adff924` — feat(auth): add fake login flow, form validation, route protection, darkStatus
-- `8d69f3b` — feat(widgets): add decorative star SVG to BalanceWidget and DutyWidget
-- `d47aa2e` — feat(finance): add slider with arrows to Balances block (5 per screen)
-- `5a16375` — chore: update git log in progress.md
-- `ef1d539` — feat(auth): replace fake login with real Directus auth + signup proxy
-- `96cde43` — chore: update git log in progress.md
-- `b130126` — feat(docs): sync progress log, reorder roadmap phases, update AGENTS workflow
-- `7caac6a` — feat(schema): create 5 Directus collections + dynamic login redirect
-- `ba67cc7` — fix(frontend): typescript and syntax cleanup
-- `46c47da` — fix(auth): replace Transition v-if with v-show, add autocomplete attributes
-- `4d4b236` — fix(auth): smooth opacity-only field transition, stable form height
-- `514a823` — chore: add camera indicator to notch, commit frequency rules, update progress
-- `aef7403` — feat(profile): add profile page, home header block with avatar, Gravatar → pravatar
-- `da4b884` — feat(layout): add app layout with floating BottomTabBar and stub pages
-- `b847eb4` — feat(navigation): update BottomTabBar with Phase 4 icons, routes, and admin logic
-- `e5a2f1c` — feat(home): build Home screen with HeroBlock, RecipeCard, BalanceWidget, DutyWidget
-- `8c3d1b4` — chore(home): add hero decorative assets, polish HeroBlock layout
-- `11a4f05` — feat(recipe): add Recipe Detail page with ekilu-style layout, collapsible ingredients, sticky join button
-- `b91dc64` — chore(frontend): migrate to Nuxt 4 app/ structure, fix nested form, add optimizeDeps
-- `d7702c6` — feat(auth): add password visibility toggle, increase input font to text-base
-- `e5f0e46` — feat(kitchen): add Kitchen screen with cook queue, weekly schedule, dish history
-- `78b5df0` — fix(kitchen): day offset bug, WeekCalendar pill design, HeroBlock reuse
-- `6903498` — chore(docs): add directus api comments, update progress, add notes rule to AGENTS.md
-- `20971d4` — feat(cook): date query support, HeroBlock cook button, CORS fix, ACCESS_TOKEN_TTL
-- `d484638` — chore(docs): update git log in progress.md
-- `ebc1235` — fix: participants composable, remove auto-redirect, cook panel date, calendar dot, recipe edit, TS fixes
-- `472cacb` — fix(profile): skip orphaned orders from deleted cook_queue entries
-- `c577090` — feat(hero): show chef-cook.png fallback when queue entry has no linked recipe
-- `6df42de` — feat(recipes): track cooking history via cooked_recipes junction
-- `2cdf2fb` — fix(photo): permissions, deferred cleanup, all 7 TS errors
-- `84db77c` — feat(finance): admin finance page with balances, top-up, history, pasta price setting (Task E)
-- `f4ebfec` — feat: add pizza category, fix today cook flow, prefill recipe from history, disable hero cook when queue exists
-- `97871ba` — feat(recipe): add weekday-only date picker with 3-week pagination and month indicator
-- `b28a32c` — feat(recipe): add share shopping list with native share + clipboard fallback
-- `d5eebb6` — feat(profile): add balance display and transaction history
-- `f42c115` — feat(profile): extract SliderList component, refactor all profile lists
-- `51d9fa3` — feat(schema): add department field to users, create cleaning_schedule collection
-- `9ae8bf2` — feat(profile): move department selector to top, use select dropdown
-- `2a0c684` — fix(profile): compact department select styling
-- `be230b5` — feat(profile): move department to Preferences bottom sheet
-- `703c66f` — fix(profile): preferences sheet inside frame, height, select padding
-- `fed5e9b` — fix(profile): proxy PATCH /users/me via server route to bypass CORS
-- `c1f0aa1` — chore(seed): create 6 test users with departments + cleaning_schedule entries
-- `a2be88b` — feat(duty): add monthly calendar with cell states and popover (Task 6)
-- `344e137` — fix(duty): add id to fields, proxy confirm PATCH through server route
-- `b973505` — fix(duty): sync calendar after confirm, allow clicking past dates
-- `648d1f3` — feat(shopping-list): cook_date, per-group select-all, auto-cleanup, fork fix
-- `4a0940a` — feat(recipes): dedup by dish_name across all recipe lists, cleanup unused collections
-- `7894e5a` — fix(recipe): detect cook_queue by recipe ID first, fall back to dish_name
-- `30d9bd3` — fix(security): add requireAuth to all server routes, fix cookie flags
-- `a955fa1` — fix(security): move confirmDeduction to admin-proxy server route
-- `0ffe1d6` — fix(security): rotate admin password, key/secret, tighten CORS/TTL
-- `661a824` — fix(security): rate limit signup — 5 req / 60s per IP
-- `e5bff35` — fix(auth): input validation on signup, admin token caching refactor
-- `187ee4b` — fix(security): add signup validation, refactor admin token caching
-- `0113efa` — docs: mark signup validation and admin token caching as done in security-audit.md
-- `ed7d576` — docs: create CONTEXT.md domain glossary (30+ terms)
-- `ec4291a` — docs: add JSDoc to composables (useDirectus, useAuth, useDeduction, useParticipants, useBalanceCheck, useMealCost), cook.vue, signup.post; create ARCHITECTURE.md with design decisions
-- `38f562c` — docs: add JSDoc to adminToken, cook middleware, dedupRecipes, ingredientIcons, HeroBlock; append remaining sections to ARCHITECTURE.md
 - `0cf36c6` — docs: create project-state.md in docs/ with updated file structure, flows, composables, security measures
 - `939a2d1` — chore: snapshot current state before JSDoc pass
+- `b05f707` — docs: add JSDoc annotations across all frontend files
 

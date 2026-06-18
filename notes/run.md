@@ -44,3 +44,22 @@ docker ps
 
 MCP user directus
 dkIHulcJZ18e3ZuENS943XlY8K_S3nMZ
+
+## Сайт документации (VitePress)
+
+В `docs-site/` живёт VitePress-сайт, собранный из файлов `docs/`.
+
+```bash
+cd docs-site
+npm run docs:dev      # dev-сервер → http://localhost:5173
+npm run docs:build    # статическая сборка → .vitepress/dist/
+npm run docs:preview  # превью собранного сайта
+```
+
+**Разделы:** Overview, Architecture, Features, Screens, Design System, Roadmap.
+
+Обновлять его надо **вручную**. VitePress — это статический генератор: он просто компилирует markdown из `docs-site/` в HTML. Когда ты добавляешь фичи в код, нужно:
+1. Обновить соответствующие markdown-файлы в `docs-site/`
+2. Пересобрать: `npm run docs:build`
+
+Скриншоты экранов клади в `docs-site/public/screenshots/` — ссылки на них уже расставлены в разделе Screens.
