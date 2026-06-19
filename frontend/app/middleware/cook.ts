@@ -5,7 +5,7 @@
  * Admin/finance users bypass the cook-queue check but must be logged in.
  *
  * **Redirect rules:**
- * - Not logged in → `/auth`
+ * - Not logged in → `/onboarding`
  * - Admin/finance role → allow (no queue check)
  * - `?action=become` query param → allow (used to jump directly to cook assignment)
  * - No active cook_queue entry for today → redirect to `/`
@@ -20,7 +20,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const { request } = useDirectus()
 
   if (!user.value) {
-    return navigateTo('/auth')
+    return navigateTo('/onboarding')
   }
 
   const isUserRole = user.value.role === '1927ae8a-4442-4097-91ce-0c290b3fc1d4'

@@ -1,7 +1,7 @@
 /**
  * Global Nuxt middleware — runs on every route transition.
  * Checks for Directus token presence and validates it.
- * If no token — redirects to /auth. If token found and already on auth — redirects to /.
+ * If no token — redirects to /onboarding. If token found and already on auth — redirects to /.
  */
 export default defineNuxtRouteMiddleware(async (to) => {
   const publicRoutes = ['/onboarding', '/auth']
@@ -14,6 +14,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   // ── Public pages ──────────────────────────────────────────────────────
   if (publicRoutes.includes(to.path)) {
+    // Onboarding is always shown regardless of auth state
+    if (to.path === '/onboarding') return
     // If token exists but user not loaded — try to fetch
     if (token && !user.value) {
       try {
@@ -29,9 +31,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   // ── Protected pages ──────────────────────────────────────────────────
-  // directus api — no token → go to login
+  // directus api — no token → go to onboarding
   if (!token) {
-    return navigateTo('/auth')
+    return navigateTo('/onboarding')
   }
 
   // Token exists — verify it's still valid
@@ -40,9 +42,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
       // directus api — GET /users/me — validate token
       await fetchUser()
     } catch {
-      // directus api — token expired → clear and redirect to login
+      // directus api — token expired → clear and redirect to onboarding
       logout()
-      return navigateTo('/auth')
+      return navigateTo('/onboarding')
     }
   }
 })

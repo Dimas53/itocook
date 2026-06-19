@@ -587,7 +587,7 @@ async function updateDepartment(value: string) {
 
 async function handleLogout() {
   logout()
-  await navigateTo('/auth')
+  await navigateTo('/onboarding')
 }
 
 onMounted(() => {

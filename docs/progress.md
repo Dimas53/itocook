@@ -240,9 +240,15 @@
 - [x] **Roadmap page** — all 8 phases copied from `docs/roadmap.md`
 - [x] **Build verification** — `npm run docs:build` passes cleanly
 
+## Current session — onboarding redesign
+- [x] **UX: Onboarding redesign** — chef mirrored, logo PNG, copy: Cook. Split. Done.
+- [x] **UX: Onboarding splash** — always shown on app open, auto-redirect after 2.5s based on auth state
+- [x] **UX: Onboarding as entry point** — /onboarding is now the default redirect for unauthenticated users, auto-proceeds after 2.5s
+
 ## Git log
 - `0cf36c6` — docs: create project-state.md in docs/ with updated file structure, flows, composables, security measures
 - `939a2d1` — chore: snapshot current state before JSDoc pass
 - `b05f707` — docs: add JSDoc annotations across all frontend files
 - `2e7803e` — docs(docs-site): add VitePress documentation site with screenshots
+- `17479c3` — docs: update roadmap checkboxes — mark completed items (duty, profile balance, recipe steps, shopping share)
 
