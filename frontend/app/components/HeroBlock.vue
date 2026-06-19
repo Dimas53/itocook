@@ -216,7 +216,9 @@ const dishImage = computed(() => {
 /** Navigate to recipe detail if a recipe exists, otherwise emit view-dish. */
 function onDishClick() {
   if (props.recipeId) {
-    router.push(`/recipe/${props.recipeId}`)
+    const cq = props.cook?.queueId
+    const url = cq ? `/recipe/${props.recipeId}?cq=${cq}` : `/recipe/${props.recipeId}`
+    router.push(url)
   } else {
     emit('view-dish')
   }

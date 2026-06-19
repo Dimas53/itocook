@@ -709,7 +709,7 @@ async function fetchTodayEntry() {
   loading.value = true
   try {
     const items = await request<CookQueueEntry[]>('get',
-      `/items/cook_queue?filter[date][_eq]=${pageDateStr.value}&filter[cook][_eq]=${user.value?.id}&filter[status][_nin]=cancelled&limit=1&fields=*,cook.id,cook.first_name,cook.last_name`
+      `/items/cook_queue?filter[date][_eq]=${pageDateStr.value}&filter[cook][_eq]=${user.value?.id}&filter[status][_nin]=cancelled&sort=-date_created&limit=1&fields=*,cook.id,cook.first_name,cook.last_name`
     )
     const existing = items[0]
     if (existing) {

@@ -5,19 +5,7 @@
       <img src="/images/onboarding/chef-cook.png" alt="Chef" class="w-full h-full object-contain" />
     </div>
 
-    <!-- Content Zone (Flex Row) -->
-<!--    <div class="flex-1 px-5 flex items-start justify-between gap-4 min-h-0">
-      <div>
-        <h1 class="font-bold text-[36px] text-white leading-[1.1]">
-          Quick<br />& Easy<br />Recipes! 🔥
-        </h1>
-        <p class="text-[14px] text-white/85 font-normal mt-4 max-w-[200px]">
-          Quick and easy recipes save time, taste great, and bring smiles.
-        </p>
-      </div>
-      <img src="/images/onboarding/sauce_frame.png" alt="Sauce" class="w-[140px] object-contain self-start" />
-    </div>-->
-    <!-- Content Zone (Flex Row) -->
+
     <!-- Logo -->
     <div class="px-5 flex justify-start">
       <img

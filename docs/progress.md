@@ -251,4 +251,5 @@
 - `b05f707` — docs: add JSDoc annotations across all frontend files
 - `2e7803e` — docs(docs-site): add VitePress documentation site with screenshots
 - `17479c3` — docs: update roadmap checkboxes — mark completed items (duty, profile balance, recipe steps, shopping share)
+- `5d3cc65` — feat(onboarding): splash screen as entry point with 2.5s auto-redirect
 

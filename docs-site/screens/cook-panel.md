@@ -11,7 +11,6 @@ The cook panel has 6 states, each showing different controls:
 ### `assign`
 - "I'm cooking today!" button
 - Shows when no cook is assigned for today
-<img src="/screenshots/cook-assign.png" alt="Cook panel — assign state" class="screenshot" />
 <img src="/screenshots/cook-assign_2.png" alt="Cook panel — assign state (alternate)" class="screenshot" />
 
 ### `dish`

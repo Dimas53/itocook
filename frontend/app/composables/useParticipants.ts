@@ -106,10 +106,17 @@ export function useParticipants(cookQueueId: Ref<string | null>) {
       return
     }
 
+    let recipeName: string | null = null
+    try {
+      const entry = await request<{ dish_name: string | null }>('get', `/items/cook_queue/${cookQueueId.value}?fields=dish_name`)
+      recipeName = entry?.dish_name ?? null
+    } catch {}
+
     await request('post', '/items/orders', {
       user: user.value?.id,
       cook_queue: cookQueueId.value,
       status: 'confirmed',
+      recipe_name: recipeName,
     })
     hasJoined.value = true
     await fetch()
