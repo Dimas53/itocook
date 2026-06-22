@@ -232,8 +232,11 @@ Agent reads `docs/design.md` before laying out each screen.
 No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt UI.
 
 - [x] **Step 0–1:** `notifications` collection + 4 Directus Flows (Cook Assigned, Lunch Ready, Balance Low, Morning Reminder) + 1 Utility Flow
-- [x] **Step 2:** `useNotifications` composable (poll 60s) + `NotificationBell` component (badge, navigation) — installed on all pages
-- [x] **Step 3:** `/notifications` page (UI list, skeleton, empty state, card with icon per type, timeAgo, markAsRead, auto markAllAsRead)
+  - ✅ All 4 business flows + Utility flow fixed and tested (2026-06-22)
+  - **Fixes applied:** `$trigger.key` → `$trigger.keys[0]`, `$trigger.body.*` → `$trigger.*` (child flow), `item-read` result format (`Array.isArray` guard), hardcoded user UUID → real user from fetch, Condition `fetch_queue.data._empty` → Run Script with `Array.isArray` guard, redundant operations removed, flow chains reconnected
+  - **Code changes:** `&filter[user][_eq]=$CURRENT_USER` added to `useNotifications.ts` API call; notification card icon size/semantic colors updated in `notifications.vue`
+- [x] **Step 2:** `useNotifications` composable (poll 20s) + `NotificationBell` component (badge, navigation) — installed on all pages
+- [x] **Step 3:** `/notifications` page (UI list, skeleton, empty state, card with icon per type, timeAgo, markAsRead, markAllAsRead)
 - [ ] **Step 4:** Duty reminder Flow (schedule + create notification for assigned user)
 - [ ] **Step 5:** Fix cook_queue + orders status choices in Directus schema (add `completed` to cook_queue, add `left_late`/`pending_cook_approval` to orders)
 - [ ] **Step 6:** Ghost-participant logic: <10h leave → warning, <1h leave → penalty charge; cook approval for late joins; billable count includes ghost participants

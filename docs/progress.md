@@ -266,7 +266,33 @@
 - [x] **FIX 5:** Removed auto markAllAsRead (`setTimeout` 3s) from notifications.vue — пользователь сам управляет прочитанным.
 - [x] **FIX 6:** Read cards opacity-70 → opacity-60. Polling interval 60000 → 20000 в useNotifications.ts.
 
+## Fixes — current session (Cook Assigned flow)
+- [x] **Fix: Condition filter syntax** — точечная нотация `$trigger.payload.status` → вложенные объекты `$trigger > payload > status`
+- [x] **Fix: Transform-дубликат удалён** — transform `build_payloads` (8e42b084) лежал на одной клетке с exec — удалён
+- [x] **Fix: Exec code fetch_users.data** — `item-read` возвращает массив напрямую, не `{data: [...]}` — исправлено на `Array.isArray` guard
+- [x] **Fix: Child flow шаблоны** — `{{$trigger.body.*}}` → `{{$trigger.*}}` (operation-triggered flow кладёт данные на корень `$trigger`)
+- [x] **Fix: Trigger items.create → items.update** — нотификации теперь приходят только при обновлении `dish_name` (выбор блюда), не при создании пустой записи
+- [x] **Fix: Condition dish_name._nnull** — убрана проверка `status` (на `items.update` в payload только changed fields); добавлена проверка `$trigger.payload.dish_name._nnull`
+- [x] **Fix: Cook name "Someone"** — exec код теперь ищет UUID повара в массиве `fetch_users` через `users.find(u => u.id === cookId)`
+- [x] **Fix: Message format with date** — добавлена операция `fetch_entry` (`item-read` по `$trigger.keys[0]`) для получения полной записи; exec использует `fetch_entry.date` для форматирования "Jun 22"
+- [x] **Fix: Admin permissions on notifications** — созданы `read`+`update` permission записи для Admin policy (`50751c00`) с фильтром `user._eq = $CURRENT_USER`; также добавлен `filter[user][_eq]=$CURRENT_USER` в `useNotifications.ts` для фронта (admin_access bypass)
+- [x] **Tested:** update cook_queue с dish_name → 44 cook_assigned нотификации созданы, данные очищены
+- [x] **Fix (Lunch Ready flow):** Fetch Confirmed Orders filter `$trigger.key` → `$trigger.keys[0]`
+- [x] **Fix (Lunch Ready flow):** exec code `fetch_orders.data` → `Array.isArray` guard (тот же баг что и в Cook Assigned)
+- [x] **Tested:** update cook_queue status → ready → `lunch_ready` нотификация создана для пользователя с confirmed order
+- [x] **Fix (Balance Low flow):** exec код — DUMMY_USER → `fetch_balance.user` с Array.isArray guard
+- [x] **Fix (Balance Low flow):** переподключена цепочка — `check_amount` → `fetch_balance` → `exec_notify` → `do_create`
+- [x] **Fix (Balance Low flow):** точка входа с `exec_notify` → `check_amount`
+- [x] **Fix (Balance Low flow):** `$trigger.key` → `$trigger.keys[0]` в fetch_balance (как в Lunch Ready)
+- [x] **Fix (Balance Low flow):** позиции операций исправлены (перекрытие fetch_balance/exec_notify на 37,1)
+- [x] **Tested:** update balance 0 → -15 → `balance_low` нотификация для `a56ff53c`
+- [x] **Fix (Morning Reminder):** Condition `No cook today?` удалён, заменён на Run Script с `Array.isArray` guard + `throw Error` если повар есть
+- [x] **Fix (Morning Reminder):** exec `build_payloads` — `fetch_users.data` → `Array.isArray` guard
+- [x] **Fix (Morning Reminder):** старая Condition операция удалена через REST API
+- [x] **Tested:** flow запущен вручную → 11 `morning_reminder` нотификаций для 11 active users, данные очищены
+
 ## Git log
+- `0e52a36` — feat(notifications): Phase 6 Steps 2-3 — NotificationBell, /notifications page, CORS proxy, server route fixes
 - `13d75fa` — feat(ui): onboarding gradient bg + dot pattern, finance header, bottom bar color
 - `558b193` — fix(layout): iphone screen bg-app-bg, status bar bg-app-bg, remove pb-[100px] from content
 - `7e602c6` — feat(mobile): responsive layout — hide iPhone frame on real devices, BottomTabBar fixed positioning, add safe-area padding

@@ -20,7 +20,7 @@ export function useNotifications() {
     loading.value = true
     try {
       const data = await request<Notification[]>('get',
-        '/items/notifications?sort=-date_created&limit=20'
+        '/items/notifications?sort=-date_created&limit=20&filter[user][_eq]=$CURRENT_USER'
       )
       notifications.value = data ?? []
     } catch {

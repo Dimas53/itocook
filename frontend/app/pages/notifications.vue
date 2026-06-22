@@ -6,8 +6,8 @@ definePageMeta({ layout: 'app' })
 const { notifications, loading, fetchNotifications, markAllAsRead } = useNotifications()
 
 const ICON_MAP: Record<string, { icon: object; bg: string; color: string }> = {
-  cook_assigned:   { icon: PhCookingPot,   bg: 'bg-green-pastel',   color: 'text-green-700' },
-  lunch_ready:     { icon: PhForkKnife,    bg: 'bg-yellow-pastel',  color: 'text-yellow-700' },
+  cook_assigned:   { icon: PhCookingPot,   bg: 'bg-yellow-pastel',   color: 'text-yellow-700' },
+  lunch_ready:     { icon: PhForkKnife,    bg: 'bg-green-pastel',  color: 'text-green-700' },
   morning_reminder:{ icon: PhSun,          bg: 'bg-primary-light',   color: 'text-primary' },
   balance_low:     { icon: PhWarning,      bg: 'bg-red-50',         color: 'text-red-500' },
   duty_reminder:   { icon: PhBroom,        bg: 'bg-primary-pale',   color: 'text-primary' },
@@ -76,12 +76,12 @@ onMounted(() => {
         >
           <div class="flex items-center gap-3">
             <div
-              class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+              class="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
               :class="ICON_MAP[n.type]?.bg || 'bg-gray-100'"
             >
               <component
                 :is="ICON_MAP[n.type]?.icon || PhBellSlash"
-                class="w-4 h-4"
+                class="w-8 h-8"
                 :class="ICON_MAP[n.type]?.color || 'text-gray-500'"
               />
             </div>
