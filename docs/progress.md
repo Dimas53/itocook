@@ -254,7 +254,21 @@
 - [x] **Fix: BottomTabBar floating style preserved** — tab bar keeps `left-4 right-4` and `rounded-3xl` on mobile, only position becomes `fixed`
 - [x] **Fix: desktop padding-top restored** — returned inline `style="padding-top: calc(48px + ...)"` in `app.vue`
 
+## Phase 6 — In-App Notifications
+- [x] **Step 0: Create `notifications` collection in Directus** — collection with fields: id (uuid PK), user (M2O→directus_users), type (dropdown: 7 types), message (text), read (boolean, default false), date_created (auto). Permissions for User policy: read (own only, filter `user = $CURRENT_USER`), update (only `read` field, same filter), create/delete DENY.
+- [x] **Step 1: 4 Directus Flows + 1 Utility Flow** — Cook Assigned (event→cook_queue.items.create), Lunch Ready (event→cook_queue.items.update→ready), Balance Low (event→balances.items.update→amount<-10), Morning Reminder (schedule 8:00 Mon-Fri). Utility Flow `[Util] Create Notification` (operation trigger, item-create). All flows tested except schedule.
+- [x] **Step 2: useNotifications composable + NotificationBell component** — `useNotifications.ts` (fetch, markAsRead, markAllAsRead, unreadCount, poll 60s), `NotificationBell.vue` (PhBell/PhBellRinging, badge with unread count, @click → /notifications). Bell installed on all 4 pages (index, kitchen, finance, duty).
+- [x] **Step 3: Notifications page** — `app/pages/notifications.vue` with list of cards (icon per type, timeAgo, read/unread styling), skeleton loading, empty state (PhBellSlash), tap-to-markAsRead, auto markAllAsRead after 3s on mount.
+- [x] **FIX 1:** CORS fix — created `server/api/notifications/read.patch.ts` (admin-proxy batch PATCH), updated `useNotifications.ts` to use `$fetch('/api/notifications/read')` instead of calling Directus CORS endpoint directly.
+- [x] **FIX 2:** Icon mapping fix — replaced `PhTriangle` → `PhWarning` for `balance_low` type in notifications.vue (correct icon component now renders).
+- [x] **FIX 3:** Server route `read.patch.ts` — fixed batch PATCH body format: `{ keys: [...ids], data: { read: true } }` (was wrong `filter` format → 500). Added `console.error` logging.
+- [x] **FIX 4:** Removed tap-to-read from individual cards in `notifications.vue` — `handleTap` removed, `@click` removed, `cursor-pointer`/`active:scale` removed. Only "Mark all read" button remains functional.
+- [x] **FIX 5:** Removed auto markAllAsRead (`setTimeout` 3s) from notifications.vue — пользователь сам управляет прочитанным.
+- [x] **FIX 6:** Read cards opacity-70 → opacity-60. Polling interval 60000 → 20000 в useNotifications.ts.
+
 ## Git log
+- `13d75fa` — feat(ui): onboarding gradient bg + dot pattern, finance header, bottom bar color
+- `558b193` — fix(layout): iphone screen bg-app-bg, status bar bg-app-bg, remove pb-[100px] from content
 - `7e602c6` — feat(mobile): responsive layout — hide iPhone frame on real devices, BottomTabBar fixed positioning, add safe-area padding
 - `0cf36c6` — docs: create project-state.md in docs/ with updated file structure, flows, composables, security measures
 - `939a2d1` — chore: snapshot current state before JSDoc pass

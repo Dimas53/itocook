@@ -13,9 +13,7 @@
       >
         <PhShoppingCart class="w-6 h-6 text-app-black" />
       </button>
-      <button v-else class="w-10 h-10 flex items-center justify-center" @click.stop>
-        <PhBell class="w-6 h-6 text-app-black" />
-      </button>
+      <NotificationBell v-else />
     </div>
 
     <div class="px-5 pb-[100px] space-y-5">
@@ -140,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import { PhBell, PhChefHat, PhHeart, PhMagnifyingGlass, PhShoppingCart } from '@phosphor-icons/vue'
+import { PhChefHat, PhHeart, PhMagnifyingGlass, PhShoppingCart } from '@phosphor-icons/vue'
 import type { CalendarDay } from '~/components/WeekCalendar.vue'
 import type { CookInfo } from '~/components/HeroBlock.vue'
 

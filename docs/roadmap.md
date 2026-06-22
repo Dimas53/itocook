@@ -227,17 +227,17 @@ Agent reads `docs/design.md` before laying out each screen.
 
 ---
 
-## Phase 6: FastAPI + Notifications
+## Phase 6: In-App Notifications 🟡
 **Goal:** business logic notifications work automatically; ghost-participant billing logic added.
+No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt UI.
 
-- [ ] Directus Flows for email: "cook assigned", "lunch ready", morning reminder
-- [ ] FastAPI endpoint: trigger notifications (email)
-- [ ] Morning reminder if no cook is assigned (8:00–10:00)
-- [ ] "Lunch ready" notification to participants
-- [ ] Alert for negative balance (< −10 €)
-- [ ] Kitchen duty reminder
-- [ ] **Task B'** — Reminder for cook with stale scheduled entry; auto-expire after threshold
-- [ ] **Task D** — Ghost-participant logic: <1h leave penalty, cook approval for late join/leave; deferred-charge on confirmDeduction
+- [x] **Step 0–1:** `notifications` collection + 4 Directus Flows (Cook Assigned, Lunch Ready, Balance Low, Morning Reminder) + 1 Utility Flow
+- [x] **Step 2:** `useNotifications` composable (poll 60s) + `NotificationBell` component (badge, navigation) — installed on all pages
+- [x] **Step 3:** `/notifications` page (UI list, skeleton, empty state, card with icon per type, timeAgo, markAsRead, auto markAllAsRead)
+- [ ] **Step 4:** Duty reminder Flow (schedule + create notification for assigned user)
+- [ ] **Step 5:** Fix cook_queue + orders status choices in Directus schema (add `completed` to cook_queue, add `left_late`/`pending_cook_approval` to orders)
+- [ ] **Step 6:** Ghost-participant logic: <10h leave → warning, <1h leave → penalty charge; cook approval for late joins; billable count includes ghost participants
+- [ ] **Step 7:** Notification preferences in profile (toggle per type, stored in `directus_users`, checked in Flows)
 
 ---
 

@@ -3,7 +3,7 @@
  * Duty page — month calendar with cleaning assignments, confirmation.
  * Touches: `cleaning_schedule`.
  */
-import { PhBell } from '@phosphor-icons/vue'
+
 import type { CalendarEntry } from '~/components/MonthCalendar.vue'
 
 interface CleaningEntry {
@@ -222,9 +222,7 @@ onMounted(async () => {
         <p class="text-[14px] text-gray-500">Cleaning</p>
         <h1 class="text-[20px] font-semibold text-app-black -mt-0.5">Duty Roster</h1>
       </div>
-      <button class="w-10 h-10 flex items-center justify-center">
-        <PhBell class="w-6 h-6 text-app-black" />
-      </button>
+      <NotificationBell />
     </div>
 
     <div class="px-5 pb-[100px] space-y-5">

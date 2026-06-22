@@ -3,7 +3,7 @@
  * Finance admin page — balances, transactions, top-up, pasta price editor.
  * Touches: `balances`, `transactions`, `app_settings`, `directus_users`.
  */
-import { PhArrowUp, PhBell, PhCheck, PhFloppyDisk } from '@phosphor-icons/vue'
+import { PhArrowUp, PhCheck, PhFloppyDisk } from '@phosphor-icons/vue'
 
 definePageMeta({ layout: 'app' })
 
@@ -216,9 +216,7 @@ onMounted(async () => {
         <p class="text-[14px] text-gray-500">Administration</p>
         <h1 class="text-[20px] font-semibold text-app-black -mt-0.5">Finance</h1>
       </div>
-      <button class="w-10 h-10 flex items-center justify-center">
-        <PhBell class="w-6 h-6 text-app-black" />
-      </button>
+      <NotificationBell />
     </div>
 
     <div class="space-y-6 pb-8 px-5">

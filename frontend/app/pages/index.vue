@@ -22,9 +22,7 @@
           </p>
         </div>
       </div>
-      <button class="w-10 h-10 flex items-center justify-center" @click.stop>
-        <PhBell class="w-6 h-6 text-app-black" />
-      </button>
+      <NotificationBell />
     </div>
 
     <!-- Content -->
@@ -82,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { PhBell, PhUsers, PhMagnifyingGlass } from '@phosphor-icons/vue'
+import { PhUsers, PhMagnifyingGlass } from '@phosphor-icons/vue'
 import type { CookInfo } from '~/components/HeroBlock.vue'
 import type { Recipe } from '~/components/RecipeCard.vue'
 

@@ -199,7 +199,6 @@ Step 3: Do NOT create the /notifications page yet (that's next step).
 Verify: run the app, check that bell renders in header, unread count shows correctly after manually creating a notification record via Directus admin.
 
 Final step: update docs/progress.md.
-```
 
 ---
 
@@ -208,7 +207,7 @@ Final step: update docs/progress.md.
 **Сессия:** отдельная
 **Скиллы:** `vue`, `nuxt`, `frontend-ui-engineering`
 
-```
+
 Read AGENTS.md first. Use skills: vue, nuxt, frontend-ui-engineering.
 
 CONTEXT: ItoCook — Nuxt 4, SPA mode. Design system in docs/design.md.
@@ -244,7 +243,7 @@ Card design per notification:
 On mount: fetchNotifications(), markAllAsRead() after 3 seconds of viewing
 
 Final step: update docs/progress.md.
-```
+
 
 ---
 
@@ -253,7 +252,7 @@ Final step: update docs/progress.md.
 **Сессия:** можно добавить в Шаг 1 или отдельно
 **Скиллы:** `directus`
 
-```
+
 Read AGENTS.md first. Use skills: directus.
 
 CONTEXT: ItoCook. cleaning_schedule collection exists with fields:
@@ -274,7 +273,7 @@ Operation chain:
 
 After creating, verify Flow appears in Directus Flows list via MCP.
 Final step: update docs/progress.md.
-```
+
 
 ---
 
@@ -283,7 +282,7 @@ Final step: update docs/progress.md.
 **Сессия:** отдельная
 **Скиллы:** `directus`, `vue`
 
-```
+
 Read AGENTS.md first. Use skills: directus, vue.
 
 CONTEXT: ItoCook. cook_queue statuses: assign → dish → scheduled → cooking → ready → completed / cancelled.
@@ -340,7 +339,7 @@ If any exist, show a section "Pending join requests" with:
 Keep it simple — no realtime, just fetch on page load and after each action.
 
 Final step: update docs/progress.md.
-```
+
 
 ---
 
@@ -351,7 +350,7 @@ Final step: update docs/progress.md.
 
 > Самый сложный шаг. Затрагивает orders, cook.vue, useParticipants, confirmDeduction.
 
-```
+
 Read AGENTS.md first. Use skills: directus, vue, incremental-implementation.
 
 CONTEXT: ItoCook.
@@ -467,7 +466,7 @@ Verify the full flow manually:
 5. confirmDeduction → User A gets charged
 
 Final step: update docs/progress.md.
-```
+
 
 ---
 
@@ -476,7 +475,7 @@ Final step: update docs/progress.md.
 **Сессия:** быстрая, можно добавить в шаг 2 или отдельно
 **Скиллы:** `vue`, `nuxt`
 
-```
+
 Read AGENTS.md first. Use skills: vue, nuxt.
 
 CONTEXT: ItoCook. profile.vue exists. Directus users table has custom fields area.
@@ -507,7 +506,7 @@ Step 3: Update Directus Flows (Flows 1-4 from Step 1) to check user preference b
   This can be done with a Condition operation in the Flow checking {{user.notif_TYPE}}.
 
 Final step: update docs/progress.md.
-```
+
 
 ---
 
