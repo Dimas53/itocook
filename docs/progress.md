@@ -290,6 +290,12 @@
 - [x] **Fix (Morning Reminder):** exec `build_payloads` — `fetch_users.data` → `Array.isArray` guard
 - [x] **Fix (Morning Reminder):** старая Condition операция удалена через REST API
 - [x] **Tested:** flow запущен вручную → 11 `morning_reminder` нотификаций для 11 active users, данные очищены
+- [x] **Fix (avatars):** Public policy на `directus_files` — добавлен `read` (все поля `*`, без фильтра). Аватары теперь доступны без сессии (инкогнито, другие браузеры)
+- [x] **Step 4: Duty Reminder Flow** — создан и протестирован. CRON `0 8 * * 1-5`. Цепочка с двумя ветками:
+  - **Manual** (ключи из UI): `check_mode`(exec, `body.keys`) → `route`(condition) → `fetch_entry`(item-read, key=`check_mode.key`) → `build_manual`(exec) → `notify_users`(trigger → Utility)
+  - **Schedule** (без ключей): → `get_today` → `fetch_all`(item-read date=check_mode.today, confirmed=false) → `build_schedule`(exec, Array.isArray guard) → `notify_schedule`(trigger → Utility)
+- **Bug found & fixed:** `$trigger.keys` не существует — ключи лежат в `$trigger.body.keys`. Все нотификации уходили Клаусу потому что exec не находил ключи и шёл по schedule-ветке (сегодня неподтверждён только Клаус).
+- [x] **Step 4b: Duty Assigned event flow** — `items.create` на `cleaning_schedule` → exec (`$trigger.payload.user` + `date`) → trigger (Utility flow). Создана и протестирована. Создание записи → нотификация назначенному юзеру "You have been assigned to kitchen duty on YYYY-MM-DD. Please confirm!"
 
 ## Git log
 - `bd0b8d0` — fix(notifications): fix all 4 Directus notification flows + frontend filter

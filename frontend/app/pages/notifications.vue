@@ -1,19 +1,28 @@
 <script setup lang="ts">
-import { PhBellSlash, PhCheck, PhCookingPot, PhForkKnife, PhSun, PhWarning, PhBroom, PhClock, PhUserPlus } from '@phosphor-icons/vue'
+import { PhBellSlash, PhCheck, PhCookingPot, PhForkKnife, PhChefHat, PhWarning, PhBroom, PhClock, PhUserPlus } from '@phosphor-icons/vue'
 
 definePageMeta({ layout: 'app' })
 
-const { notifications, loading, fetchNotifications, markAllAsRead } = useNotifications()
+const { notifications, loading, fetchNotifications, markAsRead, markAllAsRead } = useNotifications()
 
 const ICON_MAP: Record<string, { icon: object; bg: string; color: string }> = {
   cook_assigned:   { icon: PhCookingPot,   bg: 'bg-yellow-pastel',   color: 'text-yellow-700' },
   lunch_ready:     { icon: PhForkKnife,    bg: 'bg-green-pastel',  color: 'text-green-700' },
-  morning_reminder:{ icon: PhSun,          bg: 'bg-primary-light',   color: 'text-primary' },
+  morning_reminder:{ icon: PhChefHat,          bg: 'bg-primary-light',   color: 'text-primary' },
   balance_low:     { icon: PhWarning,      bg: 'bg-red-50',         color: 'text-red-500' },
   duty_reminder:   { icon: PhBroom,        bg: 'bg-primary-pale',   color: 'text-primary' },
   cook_reminder:   { icon: PhClock,        bg: 'bg-yellow-pastel',  color: 'text-yellow-700' },
   join_pending:    { icon: PhUserPlus,     bg: 'bg-green-light',    color: 'text-green-700' },
 }
+
+const sortedNotifications = computed(() => {
+  const list = [...notifications.value]
+  list.sort((a, b) => {
+    if (a.read !== b.read) return a.read ? 1 : -1
+    return new Date(b.date_created).getTime() - new Date(a.date_created).getTime()
+  })
+  return list
+})
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -38,10 +47,11 @@ onMounted(() => {
       <h1 class="text-[36px] font-bold text-app-black">Notifications</h1>
       <button
         v-if="notifications.some(n => !n.read)"
-        class="text-[14px] text-primary font-semibold active:scale-[0.98] transition-transform"
+        class="h-8 px-3 rounded-full bg-primary-light text-primary text-[12px] font-semibold flex items-center gap-1 active:scale-[0.98] transition-transform"
         @click="markAllAsRead"
       >
-        Mark all read
+        <PhCheck class="w-3.5 h-3.5" />
+        Dismiss all
       </button>
     </div>
 
@@ -69,27 +79,33 @@ onMounted(() => {
       <!-- Notifications list -->
       <div v-else class="space-y-3">
         <div
-          v-for="n in notifications"
+          v-for="n in sortedNotifications"
           :key="n.id"
-          class="rounded-2xl p-4 shadow-sm"
+          class="rounded-2xl p-3 shadow-sm transition-all duration-200 flex items-center gap-3"
           :class="n.read ? 'bg-white opacity-60' : 'bg-primary-pale/30 border-l-4 border-primary'"
         >
-          <div class="flex items-center gap-3">
-            <div
-              class="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
-              :class="ICON_MAP[n.type]?.bg || 'bg-gray-100'"
-            >
-              <component
-                :is="ICON_MAP[n.type]?.icon || PhBellSlash"
-                class="w-8 h-8"
-                :class="ICON_MAP[n.type]?.color || 'text-gray-500'"
-              />
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-[14px] text-app-black">{{ n.message }}</p>
-              <p class="text-[12px] text-gray-400 mt-0.5">{{ timeAgo(n.date_created) }}</p>
-            </div>
+          <div
+            class="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+            :class="ICON_MAP[n.type]?.bg || 'bg-gray-100'"
+          >
+            <component
+              :is="ICON_MAP[n.type]?.icon || PhBellSlash"
+              class="w-7 h-7"
+              :class="ICON_MAP[n.type]?.color || 'text-gray-500'"
+            />
           </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[14px] text-app-black">{{ n.message }}</p>
+            <p class="text-[12px] text-gray-400 mt-0.5">{{ timeAgo(n.date_created) }}</p>
+          </div>
+          <button
+            class="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 active:scale-[0.98] transition-transform"
+            :class="n.read ? 'bg-primary border-primary' : 'border-gray-300'"
+            @click="markAsRead(n.id)"
+            :disabled="n.read"
+          >
+            <PhCheck v-if="n.read" class="w-4 h-4 text-white" weight="bold" />
+          </button>
         </div>
       </div>
 

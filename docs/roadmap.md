@@ -237,7 +237,8 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
   - **Code changes:** `&filter[user][_eq]=$CURRENT_USER` added to `useNotifications.ts` API call; notification card icon size/semantic colors updated in `notifications.vue`
 - [x] **Step 2:** `useNotifications` composable (poll 20s) + `NotificationBell` component (badge, navigation) — installed on all pages
 - [x] **Step 3:** `/notifications` page (UI list, skeleton, empty state, card with icon per type, timeAgo, markAsRead, markAllAsRead)
-- [ ] **Step 4:** Duty reminder Flow (schedule + create notification for assigned user)
+- [x] **Step 4:** Duty reminder Flow — CRON `0 8 * * 1-5`, нотификация `duty_reminder` для не подтвердивших дежурство
+- [x] **Step 4b:** Duty Assigned event flow — при создании cleaning_schedule → нотификация назначенному юзеру
 - [ ] **Step 5:** Fix cook_queue + orders status choices in Directus schema (add `completed` to cook_queue, add `left_late`/`pending_cook_approval` to orders)
 - [ ] **Step 6:** Ghost-participant logic: <10h leave → warning, <1h leave → penalty charge; cook approval for late joins; billable count includes ghost participants
 - [ ] **Step 7:** Notification preferences in profile (toggle per type, stored in `directus_users`, checked in Flows)
