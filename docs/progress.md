@@ -292,6 +292,7 @@
 - [x] **Tested:** flow запущен вручную → 11 `morning_reminder` нотификаций для 11 active users, данные очищены
 
 ## Git log
+- `bd0b8d0` — fix(notifications): fix all 4 Directus notification flows + frontend filter
 - `0e52a36` — feat(notifications): Phase 6 Steps 2-3 — NotificationBell, /notifications page, CORS proxy, server route fixes
 - `13d75fa` — feat(ui): onboarding gradient bg + dot pattern, finance header, bottom bar color
 - `558b193` — fix(layout): iphone screen bg-app-bg, status bar bg-app-bg, remove pb-[100px] from content
