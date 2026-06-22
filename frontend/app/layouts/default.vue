@@ -1,6 +1,6 @@
 <template>
   <div class="iphone-frame min-h-screen flex items-center justify-center bg-app-bg p-4">
-    <div class="iphone-screen relative w-[390px] h-[844px] rounded-[50px] border-[6px] border-app-black shadow-2xl overflow-hidden bg-white">
+    <div class="iphone-screen relative w-[390px] h-[844px] rounded-[50px] border-[6px] border-app-black shadow-2xl overflow-hidden bg-app-bg">
 
       <!-- Phone brow / notch -->
       <div class="dynamic-island absolute top-3 left-1/2 -translate-x-1/2 w-[126px] h-[34px] bg-app-black rounded-full z-50">

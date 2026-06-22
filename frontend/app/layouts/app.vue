@@ -1,6 +1,6 @@
 <template>
   <div class="iphone-frame min-h-screen flex items-center justify-center bg-app-bg p-4">
-    <div class="iphone-screen relative w-[390px] h-[844px] rounded-[50px] border-[6px] border-app-black shadow-2xl overflow-hidden bg-white">
+    <div class="iphone-screen relative w-[390px] h-[844px] rounded-[50px] border-[6px] border-app-black shadow-2xl overflow-hidden bg-app-bg">
 
       <!-- Phone brow / notch -->
       <div class="dynamic-island absolute top-3 left-1/2 -translate-x-1/2 w-[126px] h-[34px] bg-app-black rounded-full z-50">
@@ -8,7 +8,7 @@
       </div>
 
       <!-- Top bar (safe area backdrop + status bar) -->
-      <div class="status-bar absolute top-0 left-0 right-0 z-40 bg-white" style="padding-top: env(safe-area-inset-top, 44px);">
+      <div class="status-bar absolute top-0 left-0 right-0 z-40 bg-app-bg" style="padding-top: env(safe-area-inset-top, 44px);">
         <div class="h-12 px-7 flex justify-between items-center pointer-events-none select-none">
           <span class="text-[15px] text-black font-normal tracking-tight mt-[14px]">9:41</span>
           <img
@@ -20,7 +20,7 @@
       </div>
 
       <!-- Content area with top/bottom padding for notch + tab bar + safe area -->
-      <div class="app-content h-full overflow-y-auto scrollbar-hide pb-[100px]" style="padding-top: calc(48px + env(safe-area-inset-top, 44px));">
+      <div class="app-content h-full overflow-y-auto scrollbar-hide" style="padding-top: calc(48px + env(safe-area-inset-top, 44px));">
         <NuxtPage />
       </div>
 
