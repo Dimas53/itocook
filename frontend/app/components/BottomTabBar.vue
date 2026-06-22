@@ -1,6 +1,7 @@
 <template>
   <div
-    class="bottom-tab-bar absolute left-4 right-4 z-50 rounded-3xl h-[64px] backdrop-blur-md bg-black/30 flex items-center justify-between px-4"
+    class="bottom-tab-bar absolute left-4 right-4 z-50 rounded-3xl h-[64px] flex items-center justify-between px-4"
+    style="background: rgba(99, 73, 182, 0.71); backdrop-filter: blur(2px);"
     :style="{ bottom: '16px' }"
   >
     <button

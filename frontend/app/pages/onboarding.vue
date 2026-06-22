@@ -1,5 +1,8 @@
 <template>
-  <div class="h-full bg-primary overflow-hidden flex flex-col">
+  <div
+    class="h-full overflow-hidden flex flex-col relative"
+    style="background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(to bottom, #8966FA 0%, #5B3FD4 100%); background-size: 24px 24px, 100% 100%;"
+  >
     <!-- Hero Zone (Top 50%) -->
     <div class="h-[50%] mt-16 flex items-center justify-center">
       <img src="/images/onboarding/chef-cook.png" alt="Chef" class="w-full h-full object-contain" />
@@ -10,7 +13,7 @@
       <img
         src="/images/onboarding/itocook-logo.png"
         alt="itocook"
-        class=" -mt-12 object-contain"
+        class=" -mt-8 object-contain"
       />
     </div>
 

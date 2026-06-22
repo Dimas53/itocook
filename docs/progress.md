@@ -245,6 +245,9 @@
 - [x] **UX: Onboarding splash** — always shown on app open, auto-redirect after 2.5s based on auth state
 - [x] **UX: Onboarding as entry point** — /onboarding is now the default redirect for unauthenticated users, auto-proceeds after 2.5s
 
+## Fixes — current session
+- [x] **UX: Onboarding visual improvements** — added radial dot pattern overlay (CSS radial-gradient, white@8%, 24px grid); removed feature pills; changed background from flat `bg-primary` to vertical gradient `#8966FA → #5B3FD4` via inline style with layered `background-image`
+
 ## Current session — mobile layout fix
 - [x] **Mobile layout: iPhone frame hidden on real devices** — added `@media (max-width: 480px)` CSS block in `main.css`; added semantic classes (`iphone-frame`, `iphone-screen`, `dynamic-island`, `status-bar`, `bottom-tab-bar`, `app-content`) to layouts and components; frame, border, shadow, Dynamic Island, status bar fully hidden on mobile; BottomTabBar switches to `fixed` with safe-area padding; content uses `padding-top: 16px` via `.app-content`.
 - [x] **Fix: black border on mobile** — added `border: none !important` to `.iphone-screen`
@@ -252,6 +255,7 @@
 - [x] **Fix: desktop padding-top restored** — returned inline `style="padding-top: calc(48px + ...)"` in `app.vue`
 
 ## Git log
+- `7e602c6` — feat(mobile): responsive layout — hide iPhone frame on real devices, BottomTabBar fixed positioning, add safe-area padding
 - `0cf36c6` — docs: create project-state.md in docs/ with updated file structure, flows, composables, security measures
 - `939a2d1` — chore: snapshot current state before JSDoc pass
 - `b05f707` — docs: add JSDoc annotations across all frontend files
