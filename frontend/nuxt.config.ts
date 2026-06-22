@@ -28,7 +28,7 @@ export default defineNuxtConfig({
     viteEnvironmentApi: true,
   },
 
-  devtools: { enabled: true },
+  devtools: { enabled: false },
 
   compatibilityDate: '2025-01-01',
 

@@ -12,3 +12,54 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+.glass {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.glass-light {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 480px) {
+  .iphone-frame {
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .iphone-screen {
+    border-radius: 0 !important;
+    border: none !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    box-shadow: none !important;
+  }
+
+  .dynamic-island,
+  .status-bar {
+    display: none !important;
+  }
+
+  .bottom-tab-bar {
+    position: fixed !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  }
+
+  .app-content {
+    padding-top: 16px !important;
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}

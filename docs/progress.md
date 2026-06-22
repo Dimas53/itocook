@@ -245,6 +245,12 @@
 - [x] **UX: Onboarding splash** — always shown on app open, auto-redirect after 2.5s based on auth state
 - [x] **UX: Onboarding as entry point** — /onboarding is now the default redirect for unauthenticated users, auto-proceeds after 2.5s
 
+## Current session — mobile layout fix
+- [x] **Mobile layout: iPhone frame hidden on real devices** — added `@media (max-width: 480px)` CSS block in `main.css`; added semantic classes (`iphone-frame`, `iphone-screen`, `dynamic-island`, `status-bar`, `bottom-tab-bar`, `app-content`) to layouts and components; frame, border, shadow, Dynamic Island, status bar fully hidden on mobile; BottomTabBar switches to `fixed` with safe-area padding; content uses `padding-top: 16px` via `.app-content`.
+- [x] **Fix: black border on mobile** — added `border: none !important` to `.iphone-screen`
+- [x] **Fix: BottomTabBar floating style preserved** — tab bar keeps `left-4 right-4` and `rounded-3xl` on mobile, only position becomes `fixed`
+- [x] **Fix: desktop padding-top restored** — returned inline `style="padding-top: calc(48px + ...)"` in `app.vue`
+
 ## Git log
 - `0cf36c6` — docs: create project-state.md in docs/ with updated file structure, flows, composables, security measures
 - `939a2d1` — chore: snapshot current state before JSDoc pass
@@ -252,4 +258,5 @@
 - `2e7803e` — docs(docs-site): add VitePress documentation site with screenshots
 - `17479c3` — docs: update roadmap checkboxes — mark completed items (duty, profile balance, recipe steps, shopping share)
 - `5d3cc65` — feat(onboarding): splash screen as entry point with 2.5s auto-redirect
+- `e01656a` — fix: cq param in HeroBlock, recipe_name on order create, sort cook_queue, cleanup onboarding comments
 
