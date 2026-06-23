@@ -1,7 +1,7 @@
 <template>
   <div class="relative w-full h-full overflow-hidden flex flex-col">
     <div class="absolute top-0 left-0 w-full h-[300px] shrink-0 overflow-hidden">
-      <img src="/images/login_bg.jpg" alt="" class="w-full h-full object-cover" />
+      <img :src="'/images/login_bg.jpg'" alt="" class="w-full h-full object-cover" />
       <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t to-transparent" />
     </div>
 

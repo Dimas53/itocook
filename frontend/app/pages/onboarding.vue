@@ -5,13 +5,13 @@
   >
     <!-- Hero Zone (Top 50%) -->
     <div class="h-[50%] mt-16 flex items-center justify-center">
-      <img src="/images/onboarding/chef-cook.png" alt="Chef" class="w-full h-full object-contain" />
+      <img :src="'/images/onboarding/chef-cook.png'" alt="Chef" class="w-full h-full object-contain" />
     </div>
 
     <!-- Logo -->
     <div class="px-5 flex justify-start">
       <img
-        src="/images/onboarding/itocook-logo.png"
+        :src="'/images/onboarding/itocook-logo.png'"
         alt="itocook"
         class=" -mt-8 object-contain"
       />
