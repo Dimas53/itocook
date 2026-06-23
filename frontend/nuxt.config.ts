@@ -25,11 +25,7 @@ export default defineNuxtConfig({
         { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
       ],
     },
-    strategies: 'injectManifest',
-    injectManifest: {
-      swSrc: 'app/public/sw.js',
-      swDest: 'compiled-sw.js',
-    },
+    strategies: 'generateSW',
   },
 
   css: [
