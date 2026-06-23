@@ -1,5 +1,7 @@
 import { defineNuxtConfig } from 'nuxt/config'
 
+const isProd = process.env.NODE_ENV === 'production'
+
 export default defineNuxtConfig({
   future: {
     compatibilityVersion: 4,
@@ -9,24 +11,33 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxt/icon',
-    '@vite-pwa/nuxt',
+    ...(isProd ? ['@vite-pwa/nuxt'] : []),
   ],
 
-  pwa: {
-    manifest: {
-      name: 'ItoCook',
-      short_name: 'ItoCook',
-      description: 'Office kitchen management',
-      theme_color: '#ffffff',
-      background_color: '#ffffff',
-      display: 'standalone',
-      icons: [
-        { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-        { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-      ],
-    },
-    strategies: 'generateSW',
-  },
+  ...(isProd
+    ? {
+        pwa: {
+          strategies: 'injectManifest',
+          srcDir: 'public',
+          filename: 'sw.js',
+          manifest: {
+            name: 'ItoCook',
+            short_name: 'ItoCook',
+            description: 'Office kitchen management',
+            theme_color: '#7C3AED',
+            background_color: '#ffffff',
+            display: 'standalone',
+            icons: [
+              { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+              { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+            ],
+          },
+          injectManifest: {
+            injectionPoint: 'self.__WB_MANIFEST',
+          },
+        },
+      }
+    : {}),
 
   css: [
     '@/assets/css/main.css'
