@@ -1,3 +1,5 @@
+self.__WB_MANIFEST;
+
 self.addEventListener('push', (event) => {
   let data = {}
   try {
