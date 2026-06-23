@@ -26,8 +26,6 @@ export default defineNuxtConfig({
       ],
     },
     strategies: 'injectManifest',
-    srcDir: 'public',
-    filename: 'sw.js',
   },
 
   css: [
