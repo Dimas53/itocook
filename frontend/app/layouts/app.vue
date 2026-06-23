@@ -12,7 +12,7 @@
         <div class="h-12 px-7 flex justify-between items-center pointer-events-none select-none">
           <span class="text-[15px] text-black font-normal tracking-tight mt-[14px]">9:41</span>
           <img
-            src="/images/ios_bar.svg"
+            :src="'/images/ios_bar.svg'"
             alt="status-bar"
             class="h-[12px] object-contain mt-[14px]"
           >
