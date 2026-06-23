@@ -18,7 +18,7 @@ node_modules/
 dist/
 .nitro/
 .cache/
-package-lock.json
+# package-lock.json is committed for deterministic npm ci builds
 yarn.lock
 pnpm-lock.yaml
 bun.lockb
