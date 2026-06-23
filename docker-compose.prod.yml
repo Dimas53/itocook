@@ -1,0 +1,83 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: itocook-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  directus:
+    image: directus/directus:11
+    container_name: itocook-directus
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - directus_uploads:/directus/uploads
+      - directus_extensions:/directus/extensions
+    environment:
+      KEY: ${DIRECTUS_KEY}
+      SECRET: ${DIRECTUS_SECRET}
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
+      PUBLIC_URL: https://itocook.duckdns.org/cms
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: "https://itocook.duckdns.org"
+      CORS_METHODS: "GET,POST,PATCH,DELETE,OPTIONS"
+      CORS_HEADERS: "Content-Type,Authorization"
+      CORS_MAX_AGE: "600"
+      ACCESS_TOKEN_TTL: "24h"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: itocook-frontend
+    restart: unless-stopped
+    environment:
+      NUXT_PUBLIC_DIRECTUS_URL: https://itocook.duckdns.org/cms
+      NUXT_PUBLIC_VAPID_PUBLIC_KEY: ${NUXT_PUBLIC_VAPID_PUBLIC_KEY}
+      NUXT_DIRECTUS_ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
+      NUXT_DIRECTUS_ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
+    depends_on:
+      - directus
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: itocook-api
+    restart: unless-stopped
+    environment:
+      PYTHONUNBUFFERED: "1"
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: ${VAPID_SUBJECT}
+      DIRECTUS_URL: http://directus:8055
+      DIRECTUS_ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
+      DIRECTUS_ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
+      CORS_ORIGIN: "https://itocook.duckdns.org"
+    depends_on:
+      - postgres
+      - directus
+
+volumes:
+  postgres_data:
+  directus_uploads:
+  directus_extensions:

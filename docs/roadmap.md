@@ -245,6 +245,23 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 
 ---
 
+## Phase 6b: Deploy & PWA ✅ 2026-06-23
+**Goal:** production deployment on Hetzner VPS with PWA support (add to home screen, push notifications).
+
+- [x] **Step 0:** Clean server — remove OpenWebUI, docker prune, clean nginx
+- [x] **Step 1:** DuckDNS setup — itocook.duckdns.org + cron update
+- [x] **Step 2:** frontend/Dockerfile.prod — multi-stage build
+- [x] **Step 3:** api/Dockerfile — remove `--reload`
+- [x] **Step 4:** docker-compose.prod.yml — 4 services, no dev volumes, domain URLs
+- [x] **Step 5:** .github/workflows/deploy.yml — auto-deploy on push to main
+- [x] **Step 6:** PWA setup — `@vite-pwa/nuxt`, manifest, injectManifest strategy
+- [x] **Step 7:** PWA icons — 192x192 + 512x512 placeholders
+- [x] **Step 8:** Deployment docs — `docs/deployment.md`
+- [ ] **Step 9:** Server .env + git clone + docker compose up
+- [ ] **Step 10:** Nginx config + certbot HTTPS
+- [ ] **Step 11:** SSH deploy key → GitHub Secrets
+- [ ] **Step 12:** Verify: push to main → auto-deploy + iPhone add to home screen
+
 ## Phase 7: Additional Features
 **Goal:** the app is convenient to use every day, with financial control.
 

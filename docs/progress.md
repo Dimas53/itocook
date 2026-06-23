@@ -47,6 +47,18 @@
 - **Phase 4 screens** — AI Recipe, Duty, Common, Recipe Detail, Finance, Notifications all stubs or unfinished
 - **Cook Page balance deduction** — uses user token directly, may need Directus permissions or server proxy for /items/balances and /items/transactions on behalf of other users
 - **RecipeImageUpload paste on edit** — paste listener is not blocked when editing an existing recipe with a photo; paste triggers `processFile` which replaces the preview. Workaround: OK — the deferred pattern means nothing is uploaded until save, and old photo is cleaned up on save if replaced.
+- **Server deploy not complete** — .env, git clone, docker compose up, nginx + certbot, SSH deploy key still pending
+
+## Current session — Deploy & PWA (2026-06-23)
+- [x] **frontend/Dockerfile.prod** — multi-stage build (`npm ci` → `npm run build` → `node output/server/index.mjs`)
+- [x] **api/Dockerfile** — removed `--reload` flag
+- [x] **docker-compose.prod.yml** — 4 services (postgres, directus, frontend, api), no dev volumes, domain URLs
+- [x] **.github/workflows/deploy.yml** — auto-deploy via SSH on push to main
+- [x] **@vite-pwa/nuxt** — installed, configured with `injectManifest` strategy (preserves custom sw.js)
+- [x] **PWA manifest** — name, short_name, display standalone, icons
+- [x] **PWA icons** — placeholder 192x192 + 512x512 PNGs in `public/icons/`
+- [x] **docs/deployment.md** — deployment architecture diagram, file list, server setup, CI/CD docs
+- [x] **docs/roadmap.md** — Phase 6b: Deploy & PWA added with checklist
 
 ## Fixes — current session
 - [x] **Fix: Safe area top inset (attempt 4)** — `app.vue` layout: status bar wrapper now has `bg-white` and `padding-top: env(safe-area-inset-top, 44px)`; content padding changed from `calc(60px + env(..., 0px))` to `calc(48px + env(..., 44px))`. Creates a persistent opaque top bar with solid background, preventing content from scrolling under it.
@@ -322,6 +334,7 @@
 - [x] **Chore: CORS origin 127.0.0.1** — добавлен `http://127.0.0.1:3000` в `CORS_ORIGIN` для Chrome Dev. Не решило проблему FCM — Chrome не может зарегистрировать пуш-подписку на localhost. Firefox работает стабильно.
 
 ## Git log
+- `e0a44b5` — feat(push): dedup subscriptions, click → /kitchen?date=, fix non-dish_name push
 - `570c5eb` — feat(notifications): add individual read checkbox, rename Dismiss all
 - `bd0b8d0` — fix(notifications): fix all 4 Directus notification flows + frontend filter
 - `0e52a36` — feat(notifications): Phase 6 Steps 2-3 — NotificationBell, /notifications page, CORS proxy, server route fixes
