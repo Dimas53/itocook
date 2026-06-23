@@ -245,7 +245,7 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 
 ---
 
-## Phase 6b: Deploy & PWA ✅ 2026-06-23
+## Phase 6b: Deploy & PWA ✅ 2026-06-24
 **Goal:** production deployment on Hetzner VPS with PWA support (add to home screen, push notifications).
 
 - [x] **Step 0:** Clean server — remove OpenWebUI, docker prune, clean nginx

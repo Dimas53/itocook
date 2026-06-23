@@ -1,8 +1,9 @@
 # ItoCook — Deployment & PWA
 
-> Deploy date: 2026-06-23
+> Deploy date: 2026-06-24
 > Server: Hetzner VPS (178.104.110.253)
 > Domain: itocook.duckdns.org
+> HTTPS: Let's Encrypt (certbot), expires 2026-09-21
 
 ## Architecture
 
@@ -55,12 +56,12 @@ All services run via `docker-compose.prod.yml`. Nginx terminates HTTPS and route
 
 ## Key differences from dev
 
-- **No `ports` mapping** — all traffic via Nginx
+- **Ports mapping** — `127.0.0.1:PORT:PORT` for all services (Nginx proxies to localhost)
 - **No code volume mounts** — prod builds from Docker image
 - **Named volumes** — `postgres_data`, `directus_uploads`, `directus_extensions`
 - **restart: unless-stopped** on all services
 - **CORS origin** set to production domain
-- **PWA** — `injectManifest` strategy preserves custom `sw.js`
+- **PWA** — `generateSW` strategy (switched from `injectManifest` due to Nuxt 4 `app/public/` same-file conflict)
 
 ## Server setup
 
@@ -82,7 +83,9 @@ Secrets required:
 
 ## PWA Strategy
 
-- `@vite-pwa/nuxt` with `injectManifest` strategy
-- Custom `sw.js` in `public/` is preserved (not overwritten by plugin)
-- Service worker handles push events + notification clicks
+- `@vite-pwa/nuxt` with `generateSW` strategy (Workbox-generated service worker)
+- Push notifications NOT yet implemented with `generateSW` — need workbox config or custom plugin
 - Icons in `/icons/` (192x192, 512x512)
+- Custom `sw.js` in `app/public/` is served as static asset but not compiled into the PWA SW
+
+> **Note:** `injectManifest` fails because `swSrc` and `swDest` resolve to the same path in Nuxt 4's `app/public/` layout. The PWA module copies public dir contents to the output before building, causing self-overwrite.

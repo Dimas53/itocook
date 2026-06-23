@@ -47,7 +47,9 @@
 - **Phase 4 screens** — AI Recipe, Duty, Common, Recipe Detail, Finance, Notifications all stubs or unfinished
 - **Cook Page balance deduction** — uses user token directly, may need Directus permissions or server proxy for /items/balances and /items/transactions on behalf of other users
 - **RecipeImageUpload paste on edit** — paste listener is not blocked when editing an existing recipe with a photo; paste triggers `processFile` which replaces the preview. Workaround: OK — the deferred pattern means nothing is uploaded until save, and old photo is cleaned up on save if replaced.
-- **Server deploy not complete** — .env, git clone, docker compose up, nginx + certbot, SSH deploy key still pending
+- **SSH deploy key not set up** — manual `git pull` required on server for deploys
+- **PWA push notifications** — `generateSW` strategy used (custom sw.js not compiled); push notification handling needs workbox config or switching back to `injectManifest`
+- **PWA build** — stuck on `injectManifest` where `swSrc` and `swDest` resolve to same file in Nuxt 4 `app/public/`; worked around with `generateSW`
 
 ## Current session — Deploy & PWA (2026-06-23)
 - [x] **frontend/Dockerfile.prod** — multi-stage build (`npm ci` → `npm run build` → `node output/server/index.mjs`)
@@ -228,6 +230,23 @@
 - [ ] **Common screen** — group purchases, announcements, polls
 - [ ] **Notifications** — feed, quick actions
 - [ ] **Receipt photo upload**
+
+## Deploy session — 2026-06-24
+- [x] **Server cleanup** — stopped/removed OpenWebUI, `docker system prune -af`, old nginx configs removed
+- [x] **DuckDNS** — `itocook.duckdns.org` created; `/opt/duckdns/duck.sh` with token; cron `*/5 * * * *`
+- [x] **Server dir setup** — `/opt/itocook/` with `.env` (4 `openssl rand` passwords + VAPID keys)
+- [x] **Git clone** — repo cloned to `/opt/itocook/app`
+- [x] **Deploy files** — `Dockerfile.prod`, `docker-compose.prod.yml`, `.github/workflows/deploy.yml`
+- [x] **PWA setup** — `@vite-pwa/nuxt` installed, manifest + icons + sw.js with push handling
+- [x] **Fix: public/ → app/public/** — moved `public/` inside `app/` for Nuxt 4 compat; PWA module now finds sw.js
+- [x] **Fix: :src binding for images** — changed `src="/images/..."` → `:src="'/images/...'"` to avoid Vite module resolution errors in all layouts (+ onboarding.vue, auth.vue)
+- [x] **Fix: generateSW strategy** — switched from `injectManifest` to `generateSW` due to `swSrc`/`swDest` same-file conflict in Nuxt 4's `app/public/` dir
+- [x] **Docker ports** — added `127.0.0.1:PORT:PORT` mappings for frontend, directus, api in docker-compose.prod.yml
+- [x] **Nginx proxy** — created `docs/nginx-itocook.conf`, deployed to `/etc/nginx/sites-available/itocook`, enabled with certbot HTTPS
+- [x] **HTTPS** — `certbot --nginx` for `itocook.duckdns.org` (expires 2026-09-21)
+- [x] **All 3 services verified** — Frontend (200), Directus admin (200), API (200) on https://itocook.duckdns.org
+- [ ] **SSH deploy key** — still needs to be added to GitHub Secrets for auto-deploy
+- [ ] **Push notifications** — not tested yet (need real device with add-to-home-screen)
 
 ## Current session — JSDoc pass
 - [x] **Composables JSDoc** — `useLikes`, `useRecipeServings`, `useParticipantsModal`, `useRecipeImage`, `useTotalUsers`
