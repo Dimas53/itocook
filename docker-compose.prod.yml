@@ -19,6 +19,8 @@ services:
     image: directus/directus:11
     container_name: itocook-directus
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:8055:8055"
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,6 +52,8 @@ services:
       dockerfile: Dockerfile.prod
     container_name: itocook-frontend
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
     environment:
       NUXT_PUBLIC_DIRECTUS_URL: https://itocook.duckdns.org/cms
       NUXT_PUBLIC_VAPID_PUBLIC_KEY: ${NUXT_PUBLIC_VAPID_PUBLIC_KEY}
@@ -64,6 +68,8 @@ services:
       dockerfile: Dockerfile
     container_name: itocook-api
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
     environment:
       PYTHONUNBUFFERED: "1"
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
