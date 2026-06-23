@@ -221,8 +221,20 @@ function onShowParticipants() {
 }
 
 // ── Week navigation ──
+const route = useRoute()
 const weekOffset = ref(0)
 const selectedDate = ref(formatDateISO(new Date()))
+if (route.query.date) {
+  const dateStr = String(route.query.date)
+  selectedDate.value = dateStr
+  const targetDate = parseISODate(dateStr)
+  if (!isNaN(targetDate.getTime())) {
+    const targetMonday = getMonday(targetDate)
+    const thisMonday = getMonday(new Date())
+    const diffMs = targetMonday.getTime() - thisMonday.getTime()
+    weekOffset.value = Math.round(diffMs / (7 * 24 * 60 * 60 * 1000))
+  }
+}
 
 // ── Helpers ──
 

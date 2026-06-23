@@ -110,6 +110,8 @@ export const useAuth = () => {
    * @param password User's password
    * @throws {Error} If credentials are invalid or the request fails
    */
+  const { subscribe: subscribePush } = usePushNotifications()
+
   async function login(email: string, password: string): Promise<void> {
     const data = await request<LoginResponse>('post', '/auth/login', {
       email,
@@ -117,6 +119,8 @@ export const useAuth = () => {
     })
     tokenCookie.value = data.access_token
     await fetchUser()
+
+    await subscribePush().catch(() => {})
   }
 
   /**

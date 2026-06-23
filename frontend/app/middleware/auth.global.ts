@@ -8,6 +8,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const { tokenCookie } = useDirectus()
   const { user, fetchUser, logout } = useAuth()
+  const { subscribe: subscribePush } = usePushNotifications()
 
   // directus api — read token from cookie
   const token = tokenCookie.value
@@ -41,6 +42,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     try {
       // directus api — GET /users/me — validate token
       await fetchUser()
+      subscribePush().catch(() => {})
     } catch {
       // directus api — token expired → clear and redirect to onboarding
       logout()

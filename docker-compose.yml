@@ -39,7 +39,7 @@ services:
       ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
       ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
       CORS_ENABLED: "true"
-      CORS_ORIGIN: "http://localhost:3000,http://172.25.10.68:3000"
+      CORS_ORIGIN: "http://localhost:3000,http://127.0.0.1:3000"
       CORS_METHODS: "GET,POST,PATCH,DELETE,OPTIONS"
       CORS_HEADERS: "Content-Type,Authorization"
       CORS_MAX_AGE: "600"
@@ -60,6 +60,7 @@ services:
       - /app/.nuxt
     environment:
       NUXT_PUBLIC_DIRECTUS_URL: ${NUXT_PUBLIC_DIRECTUS_URL}
+      NUXT_PUBLIC_VAPID_PUBLIC_KEY: ${NUXT_PUBLIC_VAPID_PUBLIC_KEY}
       NUXT_DIRECTUS_ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
       NUXT_DIRECTUS_ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
     depends_on:
@@ -76,6 +77,12 @@ services:
       - ./api:/app
     environment:
       - PYTHONUNBUFFERED=1
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - VAPID_SUBJECT=${VAPID_SUBJECT}
+      - DIRECTUS_URL=http://directus:8055
+      - DIRECTUS_ADMIN_EMAIL=${DIRECTUS_ADMIN_EMAIL}
+      - DIRECTUS_ADMIN_PASSWORD=${DIRECTUS_ADMIN_PASSWORD}
     depends_on:
       - postgres
 

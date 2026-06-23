@@ -14,6 +14,12 @@ docker compose up -d
 docker compose down
 ```
 
+## пересобрать контейнеры например api
+
+```bash
+docker compose build api && docker compose up -d api
+```
+
 ## Запустить только фронт локально (без Docker)
 
 ```bash

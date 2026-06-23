@@ -297,7 +297,32 @@
 - **Bug found & fixed:** `$trigger.keys` не существует — ключи лежат в `$trigger.body.keys`. Все нотификации уходили Клаусу потому что exec не находил ключи и шёл по schedule-ветке (сегодня неподтверждён только Клаус).
 - [x] **Step 4b: Duty Assigned event flow** — `items.create` на `cleaning_schedule` → exec (`$trigger.payload.user` + `date`) → trigger (Utility flow). Создана и протестирована. Создание записи → нотификация назначенному юзеру "You have been assigned to kitchen duty on YYYY-MM-DD. Please confirm!"
 
+## Web Push Notifications — implementation
+- [x] **STEP 1: .env + docker-compose** — VAPID vars уже были добавлены (предыдущая сессия). NUXT_PUBLIC_VAPID_PUBLIC_KEY также уже был в .env.
+- [x] **STEP 2: push_subscriptions collection** — коллекция уже существовала в Directus. Добавлены permissions: User policy (create + read own + delete own), Admin policy (full access).
+- [x] **STEP 3: FastAPI /send-push endpoint** — `api/requirements.txt` обновлён (pywebpush, requests). `api/app/main.py` — новый endpoint `POST /send-push`. Логика: логин в Directus как admin, получение подписок по user_id, отправка Web Push через pywebpush. Возвращает `{ sent, failed }`.
+- [x] **STEP 4: Service Worker** — создан `frontend/public/sw.js` (push event + notificationclick). Создан плейсхолдер иконки `frontend/public/images/icon-192.png`.
+- [x] **STEP 5: Nuxt composable + server route** — создан `usePushNotifications.ts` (register SW, subscribe, urlBase64ToUint8Array). Создан `server/api/push/vapid-key.get.ts`. `nuxt.config.ts` — добавлен `vapidPublicKey` в runtimeConfig.public.
+- [x] **STEP 6: subscribe() after login** — `useAuth.ts` login() вызывает `usePushNotifications().subscribe()` после fetchUser (non-blocking, catch silent).
+- [x] **STEP 7: Directus Flows — webhook step** — во все 6 flows добавлены exec + request операции для вызова `/send-push`:
+  - **Cook Assigned** — extract user IDs из fetch_users, вызывает API с user_ids + message
+  - **Lunch Ready** — extract user IDs из fetch_orders, вызывает API с user_ids
+  - **Balance Low** — вызывает API с `{{exec_notify.user}}`
+  - **Morning Reminder** — extract user IDs из fetch_users, вызывает API
+  - **Duty Reminder** — две ветки: manual (один user) + schedule (user_ids из fetch_all)
+  - **Duty Assigned** — вызывает API с `{{$trigger.payload.user}}`
+- [x] **Docker** — контейнер api пересоздан (новые env vars), pywebpush и requests установлены.
+- [x] **Fix: push_subscriptions empty after login** — root cause 1: `create` permission (ID 78) for User policy had `presets: null`. Directus rejects POST because `user` field is `required: true`, but frontend's `subscribe()` doesn't send `user`. Fixed: `presets: { user: "$CURRENT_USER" }`.
+- [x] **Fix: push_subscriptions not created on page reload** — root cause 2: `subscribePush()` вызывался только внутри `login()`. При перезагрузке страницы с активной сессией подписка не создавалась. Fixed: добавлен `subscribePush().catch(() => {})` в `middleware/auth.global.ts` после `fetchUser()`.
+- [x] **Fix: push_subscriptions not created when subscription already exists** — root cause 3: `pushManager.subscribe()` падает с `DOMException` если подписка уже существует. Fixed: добавлена проверка `getSubscription()` — если есть, используем её; если нет — создаём новую.
+- [x] **Fix: Cook Assigned flow restored** — Directus condition `$trigger.payload.dish_name._nnull` падает с `Validation failed — Value is required` когда поля нет в payload. Решение: condition пропускает всегда (`$trigger.event._nnull`), проверка перенесена в `build_payloads` exec — `if (!$trigger.payload.dish_name) return []`. При пустом массиве trigger flow ничего не создаёт. Цепочка: `check_status (always pass) → fetch_users → fetch_entry → build_payloads (dish_name check) → notify_users → push_ids → send_push`.
+- [x] **Fix: Firefox duplicate pushes** — root cause: `subscribe()` на каждом reload делал POST в Directus, создавая копии подписки. `/send-push` отправлял на все копии → пользователь получал N уведомлений. Fix: `subscribe()` теперь GET по endpoint → если уже есть, пропускает (не PATCH — CORS).
+- [x] **Fix: push_ids sends on every cook_queue update** — `push_ids` exec посылал `user_ids: [...all...]` даже когда `build_payloads` пустой. Fix: `if (payloads.length === 0) return { user_ids: [], url: '/' }` — ничего не шлёт на не-dish_name обновления.
+- [x] **Feat: notification click → /kitchen?date=...** — клик по пушу Cook Assigned ведёт на `/kitchen?date=YYYY-MM-DD` вместо `/`. SW фокусирует существующую вкладку (focus + navigate), если её нет — открывает новую. FastAPI `PushRequest` + `send_push()` принимают `url: str = '/'`.
+- [x] **Chore: CORS origin 127.0.0.1** — добавлен `http://127.0.0.1:3000` в `CORS_ORIGIN` для Chrome Dev. Не решило проблему FCM — Chrome не может зарегистрировать пуш-подписку на localhost. Firefox работает стабильно.
+
 ## Git log
+- `570c5eb` — feat(notifications): add individual read checkbox, rename Dismiss all
 - `bd0b8d0` — fix(notifications): fix all 4 Directus notification flows + frontend filter
 - `0e52a36` — feat(notifications): Phase 6 Steps 2-3 — NotificationBell, /notifications page, CORS proxy, server route fixes
 - `13d75fa` — feat(ui): onboarding gradient bg + dot pattern, finance header, bottom bar color
