@@ -17,9 +17,7 @@ export default defineNuxtConfig({
   ...(isProd
     ? {
         pwa: {
-          strategies: 'injectManifest',
-          srcDir: 'public',
-          filename: 'sw.js',
+          strategies: 'generateSW',
           manifest: {
             name: 'ItoCook',
             short_name: 'ItoCook',
@@ -32,8 +30,9 @@ export default defineNuxtConfig({
               { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
             ],
           },
-          injectManifest: {
-            injectionPoint: 'self.__WB_MANIFEST',
+          workbox: {
+            importScripts: ['/push-handler.js'],
+            runtimeCaching: [],
           },
         },
       }
