@@ -17,5 +17,5 @@ jobs:
           script: |
             cd /opt/itocook/app
             git pull origin main
-            docker compose -f docker-compose.prod.yml build
-            docker compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml --env-file /opt/itocook/.env build
+            docker compose -f docker-compose.prod.yml --env-file /opt/itocook/.env up -d
