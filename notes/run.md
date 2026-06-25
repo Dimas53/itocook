@@ -69,3 +69,38 @@ npm run docs:preview  # превью собранного сайта
 2. Пересобрать: `npm run docs:build`
 
 Скриншоты экранов клади в `docs-site/public/screenshots/` — ссылки на них уже расставлены в разделе Screens.
+
+
+
+
+Сервер
+ssh root@178.104.110.253
+# или
+ssh root@itocook.duckdns.org
+Файлы на сервере
+/opt/itocook/.env          # основной .env
+/opt/itocook/app/.env      # копия для docker compose
+/opt/itocook/app/          # папка проекта (git repo)
+Основные команды на сервере
+bash# Посмотреть запущенные контейнеры
+docker ps
+
+# Перезапустить frontend (после изменений .env)
+docker rm -f itocook-frontend && docker run -d \
+--name itocook-frontend \
+--network app_default \
+-p 127.0.0.1:3000:3000 \
+--env-file /opt/itocook/app/.env \
+-e NUXT_DIRECTUS_URL=http://directus:8055 \
+-e NUXT_DIRECTUS_ADMIN_EMAIL=admin@itocook.com \
+-e NUXT_DIRECTUS_ADMIN_PASSWORD=admin \
+app-frontend
+
+# Логи frontend
+docker logs itocook-frontend --tail 50
+
+# Пересобрать и задеплоить после git push
+cd /opt/itocook/app && git pull && docker build -f Dockerfile.prod -t app-frontend . && docker rm -f itocook-frontend && docker run -d ...
+Directus админка
+https://itocook.duckdns.org/cms/admin
+admin@itocook.com / admin
