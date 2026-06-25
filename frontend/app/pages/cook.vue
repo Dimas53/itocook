@@ -197,14 +197,15 @@
           </template>
 
           <button
-            class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-            :disabled="saving"
+            class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+            :disabled="saving || !isToday"
             @click="startCooking"
           >
             <PhSpinner v-if="saving" class="w-5 h-5 animate-spin" />
             <PhCookingPot v-else class="w-5 h-5" weight="fill" />
             {{ saving ? 'Starting...' : 'Start Cooking' }}
           </button>
+          <p v-if="!isToday" class="text-[12px] text-gray-400 text-center mt-2">Available on {{ formattedDate }}</p>
 
           <button
             class="w-full h-12 rounded-full border border-red-200 text-red-500 font-semibold text-[14px] flex items-center justify-center gap-2 bg-white/80 active:scale-[0.98] transition-transform"
@@ -288,8 +289,8 @@
           </div>
 
           <button
-            class="w-full h-14 rounded-full bg-green-pastel text-app-black font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-            :disabled="saving"
+            class="w-full h-14 rounded-full bg-green-pastel text-app-black font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+            :disabled="saving || !isToday"
             @click="markReady"
           >
             <PhSpinner v-if="saving" class="w-5 h-5 animate-spin" />
@@ -298,6 +299,7 @@
               Lunch is ready!
             </template>
           </button>
+          <p v-if="!isToday" class="text-[12px] text-gray-400 text-center mt-2">Available on {{ formattedDate }}</p>
 
           <button
             class="w-full h-12 rounded-full border border-red-200 text-red-500 font-semibold text-[14px] flex items-center justify-center gap-2 bg-white/80 active:scale-[0.98] transition-transform"
@@ -370,12 +372,6 @@
 
             <div class="rounded-xl bg-yellow-pastel p-4">
               <p class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide">Deduction preview</p>
-              <div v-if="deduction.pastaBreakdown" class="flex justify-between text-[14px] mt-2">
-
-                <span class="text-app-black/70">{{ deduction.pastaBreakdown.label }}</span>
-
-                <span class="font-medium text-app-black">€{{ deduction.pastaBreakdown.amount.toFixed(2) }}</span>
-              </div>
               <div v-for="p in pm.participantsList" :key="p.id" class="flex justify-between text-[14px] mt-2">
                 <span class="text-app-black">{{ p.name }}</span>
                 <span class="font-medium text-app-black">−€{{ sharePerPerson }}</span>
@@ -384,7 +380,7 @@
 
             <button
               class="w-full h-14 rounded-full bg-app-black text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-:disabled="!receiptAmount || parseFloat(receiptAmount) <= 0 || deduction.deducting"
+:disabled="receiptAmount === '' || deduction.deducting"
 
               @click="handleConfirmDeduction"
             >

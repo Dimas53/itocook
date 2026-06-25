@@ -33,7 +33,12 @@
         class="absolute inset-0 z-50 flex flex-col justify-end"
       >
         <div class="absolute inset-0 bg-black/40" @click="pm.close()" />
-        <div class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[60%] flex flex-col">
+        <div
+          class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[60%] flex flex-col"
+          @touchstart="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
+        >
           <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-3 shrink-0" />
           <div class="flex items-center gap-3 mb-4 shrink-0">
             <h3 class="text-[16px] font-semibold text-app-black">Participants</h3>
@@ -83,6 +88,8 @@
  * Touches: `orders` (via useParticipantsModal).
  */
 import { reactive } from 'vue'
+
+const { onTouchStart, onTouchMove, onTouchEnd } = useSwipeDismiss(() => pm.close())
 
 const route = useRoute()
 const router = useRouter()

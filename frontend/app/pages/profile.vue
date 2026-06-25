@@ -239,7 +239,12 @@
       class="absolute inset-0 z-50 flex flex-col justify-end"
     >
       <div class="absolute inset-0 bg-black/40" @click="showPreferences = false" />
-      <div class="relative bg-white rounded-t-3xl pb-8 px-5 pt-5 h-2/4 max-h-[70%] overflow-y-auto">
+      <div
+        class="relative bg-white rounded-t-3xl pb-8 px-5 pt-5 h-2/4 max-h-[70%] overflow-y-auto"
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
+      >
         <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
         <h3 class="text-[18px] font-semibold text-app-black mb-4">Preferences</h3>
 
@@ -311,6 +316,8 @@
  */
 import { PhCaretLeft, PhSignOut, PhCaretRight, PhX, PhCaretDown, PhCamera } from '@phosphor-icons/vue'
 import { onMounted } from 'vue'
+
+const { onTouchStart, onTouchMove, onTouchEnd } = useSwipeDismiss(() => { showPreferences.value = false })
 
 definePageMeta({ layout: 'app' })
 

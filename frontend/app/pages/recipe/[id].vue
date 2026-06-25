@@ -231,8 +231,8 @@
 
             <button
                 v-if="isEntryCook && queueStatus === 'scheduled'"
-                class="w-full h-14 rounded-2xl bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg"
-                :disabled="saving"
+                class="w-full h-14 rounded-2xl bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg disabled:opacity-50"
+                :disabled="saving || !isRecipeToday"
                 @click="startCooking"
             >
               <PhSpinner v-if="saving" class="w-5 h-5 animate-spin" />
@@ -241,11 +241,12 @@
                 Start Cooking
               </template>
             </button>
+            <p v-if="!isRecipeToday && isEntryCook && queueStatus === 'scheduled'" class="text-[12px] text-gray-400 text-center mt-2">Available on {{ queueDateStr }}</p>
 
             <button
                 v-else-if="isEntryCook && queueStatus === 'cooking'"
-                class="w-full h-14 rounded-2xl bg-green-pastel text-app-black font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-                :disabled="saving"
+                class="w-full h-14 rounded-2xl bg-green-pastel text-app-black font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+                :disabled="saving || !isRecipeToday"
                 @click="markReady"
             >
               <PhSpinner v-if="saving" class="w-5 h-5 animate-spin" />
@@ -254,6 +255,7 @@
                 Lunch is ready!
               </template>
             </button>
+            <p v-if="!isRecipeToday && isEntryCook && queueStatus === 'cooking'" class="text-[12px] text-gray-400 text-center mt-2">Available on {{ queueDateStr }}</p>
           </div>
         </template>
 
@@ -299,7 +301,12 @@
       class="absolute inset-0 z-50 flex flex-col justify-end"
     >
       <div class="absolute inset-0 bg-black/40" @click="showDatePicker = false" />
-      <div class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[70%] flex flex-col">
+      <div
+        class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[70%] flex flex-col"
+        @touchstart="onTouchStartDatePicker"
+        @touchmove="onTouchMoveDatePicker"
+        @touchend="onTouchEndDatePicker"
+      >
         <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-4 shrink-0" />
         <h3 class="text-[16px] font-semibold text-app-black mb-4 shrink-0">Pick a date to cook</h3>
 
@@ -311,10 +318,20 @@
           v-else
           :current-month="pickerMonth"
           :entries="pickerEntries"
+          :selected-date="selectedCookDate"
           @select="selectDate"
-          @prev-month="prevWeekPage"
-          @next-month="nextWeekPage"
+          @prev-month="prevMonth"
+          @next-month="nextMonth"
         />
+
+        <button
+          v-if="selectedCookDate"
+          class="mt-4 w-full h-12 rounded-2xl bg-primary text-white font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shrink-0"
+          @click="confirmCookDate"
+        >
+          <PhForkKnife class="w-5 h-5" weight="fill" />
+          Cook this day
+        </button>
       </div>
     </div>
     <!-- Cook recipes modal -->
@@ -323,7 +340,12 @@
       class="absolute inset-0 z-50 flex flex-col justify-end"
     >
       <div class="absolute inset-0 bg-black/40" @click="showCookRecipes = false" />
-      <div class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[60%] flex flex-col">
+      <div
+        class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[60%] flex flex-col"
+        @touchstart="onTouchStartCookRecipes"
+        @touchmove="onTouchMoveCookRecipes"
+        @touchend="onTouchEndCookRecipes"
+      >
         <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-3 shrink-0" />
         <h3 class="text-[16px] font-semibold text-app-black mb-1 shrink-0">Recipes by {{ displayCookName }}</h3>
         <p class="text-[12px] text-gray-500 mb-4 shrink-0">{{ cookRecipes.length }} recipes</p>
@@ -364,7 +386,12 @@
       class="absolute inset-0 z-50 flex flex-col justify-end"
     >
       <div class="absolute inset-0 bg-black/40" @click="showShareModal = false" />
-      <div class="relative bg-white rounded-t-3xl p-6">
+      <div
+        class="relative bg-white rounded-t-3xl p-6"
+        @touchstart="onTouchStartShare"
+        @touchmove="onTouchMoveShare"
+        @touchend="onTouchEndShare"
+      >
         <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-5 shrink-0" />
 
         <button
@@ -500,27 +527,29 @@ const queueEntry = ref<QueueEntry | null>(null)
 
 const showDatePicker = ref(false)
 const datePickerLoading = ref(false)
-const dateOffset = ref(0)
-const availableDates = ref<{ label: string; dateNum: number; iso: string; isTaken: boolean; isPast: boolean; isToday: boolean; isMonthStart: boolean }[]>([])
+const monthOffset = ref(0)
+const selectedCookDate = ref<string | null>(null)
+const monthEntries = ref<{ iso: string; isTaken: boolean; isPast: boolean; isToday: boolean }[]>([])
+
+const { onTouchStart: onTouchStartDatePicker, onTouchMove: onTouchMoveDatePicker, onTouchEnd: onTouchEndDatePicker } = useSwipeDismiss(() => { showDatePicker.value = false })
+const { onTouchStart: onTouchStartCookRecipes, onTouchMove: onTouchMoveCookRecipes, onTouchEnd: onTouchEndCookRecipes } = useSwipeDismiss(() => { showCookRecipes.value = false })
+const { onTouchStart: onTouchStartShare, onTouchMove: onTouchMoveShare, onTouchEnd: onTouchEndShare } = useSwipeDismiss(() => { showShareModal.value = false })
 
 const isLiked = ref(false)
 const likeCount = ref(0)
 const myLikeId = ref<string | null>(null)
 
 
-const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
-
 const pickerMonth = computed(() => {
-  if (availableDates.value.length === 0) return new Date()
-  const first = availableDates.value[0]
-  const d = parseISODate(first.iso)
+  const d = new Date()
   d.setDate(1)
   d.setHours(0, 0, 0, 0)
+  d.setMonth(d.getMonth() + monthOffset.value)
   return d
 })
 
 const pickerEntries = computed<CalendarEntry[]>(() =>
-  availableDates.value.map(d => {
+  monthEntries.value.map(d => {
     let cellClass = ''
     if (d.isPast) cellClass = 'text-gray-300 pointer-events-none'
     else if (d.isTaken) cellClass = 'bg-primary-light opacity-60 pointer-events-none'
@@ -528,72 +557,77 @@ const pickerEntries = computed<CalendarEntry[]>(() =>
   })
 )
 
-/** Navigate date picker to previous page. */
-function prevWeekPage() {
-  const step = Math.min(15, dateOffset.value)
-  dateOffset.value -= step
+function prevMonth() {
+  monthOffset.value--
+  selectedCookDate.value = null
   loadDates()
 }
 
-/** Navigate date picker to next page. */
-function nextWeekPage() {
-  dateOffset.value += 15
+function nextMonth() {
+  monthOffset.value++
+  selectedCookDate.value = null
   loadDates()
 }
 
-/** Load available dates for the "Cook This" date picker, marking taken days. */
+/** Load booked dates for the displayed month + next month, then generate entries for all weekdays. */
 async function loadDates() {
   datePickerLoading.value = true
-  const today = formatDateISO(new Date())
+
+  const y = pickerMonth.value.getFullYear()
+  const m = pickerMonth.value.getMonth()
+
+  const rangeStart = `${y}-${String(m + 1).padStart(2, '0')}-01`
+  const nextLastDate = new Date(y, m + 2, 0).getDate()
+  const rangeEnd = `${y}-${String(m + 2).padStart(2, '0')}-${String(nextLastDate).padStart(2, '0')}`
+
   let takenSet = new Set<string>()
   try {
     const taken = await request<{ date: string }[]>('get',
-      `/items/cook_queue?fields=date&filter[status][_neq]=cancelled&filter[date][_gte]=${today}`
+      `/items/cook_queue?fields=date&filter[status][_neq]=cancelled&filter[date][_gte]=${rangeStart}&filter[date][_lte]=${rangeEnd}&limit=200`
     )
     takenSet = new Set(taken.map(t => t.date))
   } catch { /* ignore */ }
 
   const todayStr = formatDateISO(new Date())
-  const dates: { label: string; dateNum: number; iso: string; isTaken: boolean; isPast: boolean; isToday: boolean; isMonthStart: boolean }[] = []
-  let i = 0
-  let weekdaysSkipped = 0
-  while (dates.length < 15) {
-    const d = new Date()
-    d.setDate(d.getDate() + i)
+  const entries: { iso: string; isTaken: boolean; isPast: boolean; isToday: boolean }[] = []
+
+  const lastDate = new Date(y, m + 1, 0).getDate()
+  for (let day = 1; day <= lastDate; day++) {
+    const d = new Date(y, m, day)
     const dow = d.getDay()
-    if (dow !== 0 && dow !== 6) {
-      if (weekdaysSkipped < dateOffset.value) {
-        weekdaysSkipped++
-      } else {
-        const iso = formatDateISO(d)
-        dates.push({
-          label: DAY_SHORT[dow],
-          dateNum: d.getDate(),
-          iso,
-          isTaken: takenSet.has(iso),
-          isPast: iso < todayStr,
-          isToday: iso === todayStr,
-          isMonthStart: d.getDate() === 1,
-        })
-      }
-    }
-    i++
+    if (dow === 0 || dow === 6) continue
+
+    const iso = formatDateISO(d)
+    entries.push({
+      iso,
+      isTaken: takenSet.has(iso),
+      isPast: iso < todayStr,
+      isToday: iso === todayStr,
+    })
   }
-  availableDates.value = dates
+
+  monthEntries.value = entries
   datePickerLoading.value = false
 }
 
 watch(showDatePicker, (open) => {
   if (!open) return
-  dateOffset.value = 0
+  monthOffset.value = 0
+  selectedCookDate.value = null
   loadDates()
 })
 
-/** Handle date selection in date picker — navigate to /cook with recipe and date. */
 function selectDate(date: string) {
-  const entry = availableDates.value.find(d => d.iso === date)
-  if (!entry || entry.isPast || entry.isTaken || !recipe.value?.id) return
+  const entry = monthEntries.value.find(d => d.iso === date)
+  if (!entry || entry.isPast || entry.isTaken) return
+  selectedCookDate.value = date
+}
+
+function confirmCookDate() {
+  if (!selectedCookDate.value || !recipe.value?.id) return
+  const date = selectedCookDate.value
   showDatePicker.value = false
+  selectedCookDate.value = null
   router.push(`/cook?action=become&date=${date}&recipeId=${recipe.value.id}`)
 }
 
@@ -615,6 +649,11 @@ const queueDateStr = computed(() => {
 })
 
 const canJoin = computed(() => queueStatus.value === 'scheduled' || queueStatus.value === 'cooking')
+
+const isRecipeToday = computed(() => {
+  if (!queueEntry.value?.date) return false
+  return queueEntry.value.date === formatDateISO(new Date())
+})
 
 const statusConfig = computed(() => {
   switch (queueStatus.value) {

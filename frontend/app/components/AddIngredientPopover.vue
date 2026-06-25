@@ -4,7 +4,12 @@
     class="absolute inset-0 z-50 flex flex-col justify-end"
   >
     <div class="absolute inset-0 bg-black/30" @click="close" />
-    <div class="relative bg-white rounded-t-2xl shadow-sm pb-8 px-5 pt-5 max-h-[85%] flex flex-col">
+    <div
+      class="relative bg-white rounded-t-2xl shadow-sm pb-8 px-5 pt-5 max-h-[85%] flex flex-col"
+      @touchstart="onTouchStart"
+      @touchmove="onTouchMove"
+      @touchend="onTouchEnd"
+    >
       <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-4 shrink-0" />
       <h3 class="text-[14px] font-semibold text-app-black mb-3 shrink-0">Add ingredient</h3>
       <div class="overflow-y-auto scrollbar-hide -mx-5 px-5">
@@ -56,6 +61,8 @@
  * Pure UI — uses static ingredient data, no collections.
  */
 import { INGREDIENT_CATEGORIES, type PopularIngredient } from '~/utils/popularIngredients'
+
+const { onTouchStart, onTouchMove, onTouchEnd } = useSwipeDismiss(close)
 
 const props = defineProps<{
   show: boolean

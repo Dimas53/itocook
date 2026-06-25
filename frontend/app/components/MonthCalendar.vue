@@ -122,6 +122,7 @@ function cellClasses(cell: CalendarCell): string {
   if (cell.isToday) return 'bg-primary text-white'
   if (cell.iso === props.selectedDate) return 'ring-2 ring-primary bg-white'
   if (cell.entry?.cellClass) return cell.entry.cellClass
+  if (!cell.entry) return 'text-gray-300 pointer-events-none'
   return 'bg-white border border-gray-100 text-app-black'
 }
 </script>
