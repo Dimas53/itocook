@@ -353,6 +353,9 @@
 - [x] **Chore: CORS origin 127.0.0.1** — добавлен `http://127.0.0.1:3000` в `CORS_ORIGIN` для Chrome Dev. Не решило проблему FCM — Chrome не может зарегистрировать пуш-подписку на localhost. Firefox работает стабильно.
 
 ## Git log
+- `db5aa18` — fix(ui): swipe-to-dismiss bottom sheets, full-month date picker, block future cook actions
+- `3f4de82` — fix(nginx): fix JS MIME type for Directus admin assets
+- `a1264f7` — fix(duty): allow clicking days in next/prev month in calendar
 - `e0a44b5` — feat(push): dedup subscriptions, click → /kitchen?date=, fix non-dish_name push
 - `570c5eb` — feat(notifications): add individual read checkbox, rename Dismiss all
 - `bd0b8d0` — fix(notifications): fix all 4 Directus notification flows + frontend filter
