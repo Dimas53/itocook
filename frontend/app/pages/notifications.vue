@@ -38,6 +38,10 @@ function timeAgo(dateStr: string): string {
 
 const debugLog = ref<string[]>([])
 const debugTesting = ref(false)
+const notificationPermission = computed(() => {
+  if (typeof window === 'undefined') return 'unknown'
+  return window.Notification?.permission ?? 'unknown'
+})
 
 function onDebugLog(msg: string) {
   debugLog.value.push(msg)
@@ -132,8 +136,8 @@ onMounted(() => {
         <span class="text-[13px] font-semibold text-gray-500 flex items-center gap-1">
           <PhBug class="w-4 h-4" /> Push Debug
         </span>
-        <span class="text-[11px] px-2 py-0.5 rounded-full font-mono" :class="Notification.permission === 'granted' ? 'bg-green-pastel text-green-700' : 'bg-red-50 text-red-500'">
-          {{ Notification.permission }}
+        <span class="text-[11px] px-2 py-0.5 rounded-full font-mono"         :class="notificationPermission === 'granted' ? 'bg-green-pastel text-green-700' : 'bg-red-50 text-red-500'">
+          {{ notificationPermission }}
         </span>
       </div>
       <button
