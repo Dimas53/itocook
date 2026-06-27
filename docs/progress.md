@@ -299,6 +299,7 @@
 
 ## Fixes — current session
 - [x] **Fix: add `<link rel=manifest>` to app.head in nuxt.config.ts so PWA manifest is discoverable by browser**
+- [x] **Fix: add visible push debug panel on notifications page** — `usePushNotifications.subscribe()` accepts optional `onLog` callback; debug panel at bottom of notifications.vue with Test Push Subscribe button, permission badge, and live `<pre>` log
 
 ## Fixes — current session (Cook Assigned flow)
 - [x] **Fix: Condition filter syntax** — точечная нотация `$trigger.payload.status` → вложенные объекты `$trigger > payload > status`
@@ -374,4 +375,6 @@
 - `5d3cc65` — feat(onboarding): splash screen as entry point with 2.5s auto-redirect
 - `89218c2` — feat(deploy): add deployment config, PWA setup, and docs
 - `e01656a` — fix: cq param in HeroBlock, recipe_name on order create, sort cook_queue, cleanup onboarding comments
+- `92e2fa2` — fix(pwa): add manifest link tag to app head
+- `2515543` — debug(pwa): add visible push debug panel on notifications page
 

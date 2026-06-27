@@ -7,9 +7,12 @@ export function usePushNotifications() {
     return json.publicKey
   }
 
-  async function subscribe() {
+  async function subscribe(onLog?: (msg: string) => void) {
+    const log = (msg: string) => { onLog?.(msg); console.log(msg) }
+    const err = (msg: string, e?: unknown) => { onLog?.(msg); console.error(msg, e) }
+
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      console.log('[push] не поддерживается')
+      log('[push] not supported')
       return
     }
 
@@ -17,32 +20,32 @@ export function usePushNotifications() {
     try {
       registration = await navigator.serviceWorker.register('/sw.js')
       await navigator.serviceWorker.ready
-      console.log('[push] SW готов')
+      log('[push] SW ready')
     } catch (e) {
-      console.log('[push] SW ошибка', e)
+      err('[push] SW error', e)
       return
     }
 
     const permission = await Notification.requestPermission()
-    console.log('[push] разрешение:', permission)
+    log('[push] permission: ' + permission)
     if (permission !== 'granted') return
 
     const publicKey = await getVapidPublicKey()
-    console.log('[push] VAPID key длина:', publicKey?.length)
+    log('[push] VAPID key length: ' + publicKey?.length)
 
     let subscription = await registration.pushManager.getSubscription()
-    console.log('[push] существующая подписка:', subscription?.endpoint?.slice(0, 60) ?? 'нет')
+    log('[push] existing subscription: ' + (subscription?.endpoint?.slice(0, 60) ?? 'none'))
 
     if (!subscription) {
-      console.log('[push] создаём новую подписку...')
+      log('[push] creating new subscription...')
       try {
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(publicKey)
         })
-        console.log('[push] подписка создана:', subscription.endpoint?.slice(0, 60))
+        log('[push] subscription created: ' + subscription.endpoint?.slice(0, 60))
       } catch (e) {
-        console.error('[push] ОШИБКА подписки:', e)
+        err('[push] subscription ERROR', e)
         return
       }
     }
@@ -57,17 +60,17 @@ export function usePushNotifications() {
       )
 
       if (Array.isArray(existing) && existing.length > 0) {
-        console.log('[push] уже есть в Directus, пропускаем')
+        log('[push] already in Directus, skipping')
       } else {
         await request('post', '/items/push_subscriptions', {
           endpoint: sub.endpoint,
           p256dh: sub.keys?.p256dh,
           auth: sub.keys?.auth
         })
-        console.log('[push] сохранено в Directus')
+        log('[push] saved to Directus')
       }
     } catch (e) {
-      console.error('[push] ОШИБКА сохранения:', e)
+      err('[push] save ERROR', e)
     }
   }
 
