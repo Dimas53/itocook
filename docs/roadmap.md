@@ -253,7 +253,7 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 - [x] All 6 Directus Flows call `/api/send-push`
 - [x] Firefox desktop ✅ works
 - [ ] **SW missing on server** — rolled back to db5aa18, need to restore SW setup without breaking Directus
-- [ ] **iPhone push** — not tested yet after PWA install
+- [x] **iPhone push** — tested and working on iPhone after PWA install
 - [ ] **Chrome push** — `push service error` (lower priority, FCM issue)
 
 > ⚠️ LESSONS LEARNED (26.06.2026):

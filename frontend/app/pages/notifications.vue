@@ -7,6 +7,7 @@ const { notifications, loading, fetchNotifications, markAsRead, markAllAsRead } 
 
 const ICON_MAP: Record<string, { icon: object; bg: string; color: string }> = {
   cook_assigned:   { icon: PhCookingPot,   bg: 'bg-yellow-pastel',   color: 'text-yellow-700' },
+  cook_cancelled:  { icon: PhWarning,      bg: 'bg-red-50',          color: 'text-red-500' },
   lunch_ready:     { icon: PhForkKnife,    bg: 'bg-green-pastel',  color: 'text-green-700' },
   morning_reminder:{ icon: PhChefHat,          bg: 'bg-primary-light',   color: 'text-primary' },
   balance_low:     { icon: PhWarning,      bg: 'bg-red-50',         color: 'text-red-500' },

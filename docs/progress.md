@@ -299,7 +299,7 @@
 
 ## Fixes — current session
 - [x] **Fix: add `<link rel=manifest>` to app.head in nuxt.config.ts so PWA manifest is discoverable by browser**
-- [x] **Fix: add visible push debug panel on notifications page** — `usePushNotifications.subscribe()` accepts optional `onLog` callback; debug panel at bottom of notifications.vue with Test Push Subscribe button, permission badge, and live `<pre>` log
+- [x] **Chore: remove push debug panel** — debug panel removed from notifications.vue; `subscribe()` reverted to clean signature without `onLog`; console.log/console.error restored
 
 ## Fixes — current session (Cook Assigned flow)
 - [x] **Fix: Condition filter syntax** — точечная нотация `$trigger.payload.status` → вложенные объекты `$trigger > payload > status`
@@ -355,6 +355,8 @@
 - [x] **Fix: push_ids sends on every cook_queue update** — `push_ids` exec посылал `user_ids: [...all...]` даже когда `build_payloads` пустой. Fix: `if (payloads.length === 0) return { user_ids: [], url: '/' }` — ничего не шлёт на не-dish_name обновления.
 - [x] **Feat: notification click → /kitchen?date=...** — клик по пушу Cook Assigned ведёт на `/kitchen?date=YYYY-MM-DD` вместо `/`. SW фокусирует существующую вкладку (focus + navigate), если её нет — открывает новую. FastAPI `PushRequest` + `send_push()` принимают `url: str = '/'`.
 - [x] **Chore: CORS origin 127.0.0.1** — добавлен `http://127.0.0.1:3000` в `CORS_ORIGIN` для Chrome Dev. Не решило проблему FCM — Chrome не может зарегистрировать пуш-подписку на localhost. Firefox работает стабильно.
+- [x] **iPhone push** — tested and working on iPhone after PWA install
+- [x] **Feat: Cook Cancelled Flow** — notifies all users when cook cancels via Directus Flow; adds `cook_cancelled` type to notifications collection
 
 ## Git log
 - `db5aa18` — fix(ui): swipe-to-dismiss bottom sheets, full-month date picker, block future cook actions
@@ -376,5 +378,6 @@
 - `89218c2` — feat(deploy): add deployment config, PWA setup, and docs
 - `e01656a` — fix: cq param in HeroBlock, recipe_name on order create, sort cook_queue, cleanup onboarding comments
 - `92e2fa2` — fix(pwa): add manifest link tag to app head
-- `2515543` — debug(pwa): add visible push debug panel on notifications page
+- `80920e0` — debug(pwa): add visible push debug panel on notifications page
+- `17bed0f` — chore(pwa): remove push debug panel
 
