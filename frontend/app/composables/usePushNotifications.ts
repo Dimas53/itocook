@@ -62,10 +62,12 @@ export function usePushNotifications() {
       if (Array.isArray(existing) && existing.length > 0) {
         log('[push] already in Directus, skipping')
       } else {
+        const { user } = useAuth()
         await request('post', '/items/push_subscriptions', {
           endpoint: sub.endpoint,
           p256dh: sub.keys?.p256dh,
-          auth: sub.keys?.auth
+          auth: sub.keys?.auth,
+          user: user.value?.id
         })
         log('[push] saved to Directus')
       }
