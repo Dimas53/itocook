@@ -61,8 +61,6 @@
 Each screen is adapted to the real data structure from Directus.
 Agent reads `docs/design.md` before laying out each screen.
 
----
-
 ### Navigation (Bottom Tab Bar) ✅
 - [x] Tab 1 — Home: icon `ph:cooking-pot`
 - [x] Tab 2 — Kitchen: icon `ph:calendar-blank`
@@ -70,8 +68,6 @@ Agent reads `docs/design.md` before laying out each screen.
 - [x] Tab 4 — Duty: icon `ph:broom`
 - [x] Tab 5 — Common: icon `ph:users`
 - [x] Tab replacement logic when Admin/Accountant logs in
-
----
 
 ### Main Screens (Tabs)
 
@@ -102,15 +98,13 @@ Agent reads `docs/design.md` before laying out each screen.
 - [ ] Button "Share shopping list" → native share sheet
 - [ ] Portion recalculation: input field for quantity → new request to AI with recipe context
 - [ ] Ingredient substitution via AI → button "Replace in recipe"
-- [ ] Uses `AddIngredientPopover.vue` for ingredient selection (already built)
 
 #### Tab 4 — Duty (`pages/duty.vue`) 🟡
 - [x] "On duty today" block: name + department
 - [x] "Confirm duty" button — only for the assigned user
-- [x] Monthly calendar — viewable by everyone
+- [x] Monthly calendar — viewable by everyone, next/prev month days clickable
 - [x] Schedule editing — Admin only (inline edit or modal)
 - [ ] Auto-assignment by department — button for Admin
-- [ ] Notifications to assigned users (trigger from Directus Flow)
 
 #### Tab 5 — Common (`pages/common.vue`) ⬜
 - [ ] Company announcements feed (text + date, Admin creates)
@@ -118,10 +112,6 @@ Agent reads `docs/design.md` before laying out each screen.
 - [ ] "Participate" button + contribution amount input
 - [ ] Collection progress bar
 - [ ] History of closed pool collections
-- [ ] Create a pool collection — Admin or anyone (configurable)
-- [ ] Weekly vote: best dish / cook (optional, Phase 7)
-
----
 
 ### Inner Screens (No Tab)
 
@@ -131,7 +121,7 @@ Agent reads `docs/design.md` before laying out each screen.
 - [x] My Recipes (created by user, pastel colors)
 - [x] Log out
 - [x] Balance block: current balance + transaction history list
-- [ ] Notification settings: push / email / WhatsApp (toggle)
+- [ ] Notification settings: toggle per type
 - [ ] Statistics: how many times cooked, been on duty
 
 #### Cook Page (`pages/cook.vue`) 🟡
@@ -145,6 +135,7 @@ Agent reads `docs/design.md` before laying out each screen.
 - [x] Cancel Cooking button (Task C) — pre-ready states only
 - [x] Edit Recipe / Add Recipe in scheduled state
 - [x] Balance gate — blocked if balance < -30 €
+- [x] Swipe-to-dismiss bottom sheets
 - [ ] Upload receipt photo
 - [ ] Shopping list from recipe
 
@@ -152,122 +143,140 @@ Agent reads `docs/design.md` before laying out each screen.
 - [x] Search + category filter
 - [x] RecipeCard grid with like counts
 - [x] Loading skeleton + empty state
-- [x] "Cook This" button → date picker → `/cook` with prefilled dish
+- [x] "Cook This" button → date picker (full month) → `/cook` with prefilled dish
 
 #### Recipe Detail (`pages/recipe/[id].vue`) 🟡
-- [x] Dish photo (fullscreen hero, object-cover for uploads / object-contain for demos)
-- [x] Name, cook, status badge (scheduled / cooking / ready / cancelled)
+- [x] Dish photo (fullscreen hero)
+- [x] Name, cook, status badge
 - [x] Ingredients with emoji icons (collapsible, default open)
-- [x] Join button (scheduled/cooking only), "Lunch is ready!" (cooking owner only)
+- [x] Join button, "Lunch is ready!" (cooking owner only)
 - [x] Edit recipe (owner or entry cook)
 - [x] Like button
 - [x] Cooking steps display
-- [x] Share shopping list button (share ingredients via native share sheet)
+- [x] Share shopping list button
 - [ ] Ratings and reviews (anonymous)
 
 #### Recipe Create/Edit (`pages/recipe/create.vue`) ✅
 - [x] Photo upload (drag & drop / file picker / paste from clipboard)
-- [x] Client-side image resize (max 1200px, JPEG 0.85, max 5MB)
 - [x] Ingredient input with emoji preview + `AddIngredientPopover` quick-pick
-- [x] Ingredient unit selector (g/kg/ml/l/pcs/tbsp/tsp/bunch/to taste)
-- [x] Pasta packages field
-- [x] Category selector (Salad / Soup / Pasta / Meat / Fish / Vegan / Pizza)
-- [x] `returnTo` query param support (returns to cook page after save)
-- [x] Prefill from history by name (via `?name=` param)
-- [x] Deferred upload + orphaned file cleanup on save failure / edit
+- [x] Pasta packages field, category selector
+- [x] `returnTo` query param support
+- [x] Deferred upload + orphaned file cleanup
 
 #### Finance Page (`pages/finance.vue`) ✅ (Admin/Accountant only)
-- [x] All employee balances (color-coded: default / mild red / strong red)
-- [x] Manual balance top-up form (user + amount + note)
-- [x] Transaction history (last 50, slider pattern with up/down arrows + "Show all")
+- [x] All employee balances (color-coded)
+- [x] Manual balance top-up form
+- [x] Transaction history with slider pattern
 - [x] Pasta package price inline edit
-- [x] Low-balance restriction gate (< -30 €) via `useBalanceCheck`
+- [x] Low-balance restriction gate (< -30 €)
 
-#### Notifications (`pages/notifications.vue`) ⬜
-- [ ] Notification feed (date, type, text)
+#### Notifications (`pages/notifications.vue`) ✅
+- [x] Notification feed (date, type icon, text, timeAgo)
+- [x] Mark as read on tap + Mark all as read button
+- [x] Skeleton loading + empty state
 - [ ] Quick actions from notification: "I agree", "Confirm duty"
-- [ ] Mark all as read
-
----
 
 ### Reusable Components
-- [x] `RecipeCard.vue` — dish card (photo, name, cook, like count)
-- [x] `RecipeGridItem.vue` — grid variant with reactive image
-- [x] `HeroBlock.vue` — "who's cooking today" block (Home + Kitchen), 3 states
-- [x] `BalanceWidget.vue` — mini balance with tiered color coding
-- [x] `DutyWidget.vue` — upcoming duty widget
-- [x] `WeekCalendar.vue` — horizontal week pills, dot indicators, week navigation
-- [x] `RecipeImageUpload.vue` — file picker / drag & drop / paste, canvas resize
-- [x] `AddIngredientPopover.vue` — bottom-sheet with categorized ingredient grid + emoji icons
-- [ ] `CategoryPill.vue` — category / filter pill
-- [ ] `ParticipantCounter.vue` — lunch participant counter
-
----
+- [x] `RecipeCard.vue`, `RecipeGridItem.vue`, `HeroBlock.vue`
+- [x] `BalanceWidget.vue`, `DutyWidget.vue`, `WeekCalendar.vue`
+- [x] `RecipeImageUpload.vue`, `AddIngredientPopover.vue`
+- [x] `NotificationBell.vue` — bell icon with unread badge, installed on all pages
 
 ### Billing / Balance Tasks
-- [x] **Task A'** — "Lunch is ready" decoupled from cost entry; receipt form in 'ready' state; overdue badge after 14:00
-- [x] **Task C** — Cook cancels entire cook_queue entry; all orders deleted; no transactions touched
-- [x] **Task E** — Admin Finances page: balances overview, manual top-up, transaction history, pasta price setting
-- [x] **Task F** — Recipe pasta_packages field + app_settings singleton + useMealCost composable; pasta cost in deduction
-- [ ] **Task B'** — Reminder for overdue cost entry; auto-expire of stale cook_queue entries → **deferred to Phase 6 (Notifications)**
-- [ ] **Task D** — Ghost participants / leave-join logic with <10h/<1h thresholds; cook approval flow → **deferred to Phase 6 (Notifications)**
-- [ ] **Task G** — Recipe estimated_price field (optional, non-blocking) → **deferred, low priority**
+- [x] **Task A'** — "Lunch is ready" decoupled from cost entry
+- [x] **Task C** — Cook cancels entire cook_queue entry
+- [x] **Task E** — Admin Finances page
+- [x] **Task F** — Pasta cost in deduction
+- [ ] **Task B'** — Stale cook reminder + auto-cancel → deferred
+- [ ] **Task D** — Ghost participants / leave-join logic → deferred
+- [ ] **Task G** — Recipe estimated_price field → low priority
 
 ---
 
 ## Phase 5: Remaining Feature Screens 🟡
-**Goal:** Complete all tab screens, add shopping list export, finish Profile balance view.
+**Goal:** Complete all tab screens.
 
-- [x] **Share shopping list** — done via Recipe Detail bottom sheet (share icon → 3 actions: add to list, copy, share)
-- [x] **Profile balance + transaction history** — done: balance block + collapsible transaction history
-- [x] **Recipe Detail — cooking steps** — done: steps rendered below ingredients
-- [ ] **AI Recipe screen** — chat UI, JSON recipe render with emoji ingredients, "Add to recipes" / "Share list" buttons
-- [ ] **Duty screen** — auto-assignment + notifications (calendar + confirm + admin edit already done in Phase 4)
-- [ ] **Common screen** — announcements feed, pool collections with progress bars
+- [x] Share shopping list — done via Recipe Detail
+- [x] Profile balance + transaction history
+- [x] Recipe Detail — cooking steps
+- [ ] **AI Recipe screen** — chat UI, JSON recipe render
+- [ ] **Common screen** — announcements feed, pool collections
 
 ---
 
-## Phase 6: In-App Notifications 🟡
-**Goal:** business logic notifications work automatically; ghost-participant billing logic added.
+## Phase 6: In-App Notifications ✅ 2026-06-22
+**Goal:** business logic notifications work automatically.
 No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt UI.
 
-- [x] **Step 0–1:** `notifications` collection + 4 Directus Flows (Cook Assigned, Lunch Ready, Balance Low, Morning Reminder) + 1 Utility Flow
-  - ✅ All 4 business flows + Utility flow fixed and tested (2026-06-22)
-  - **Fixes applied:** `$trigger.key` → `$trigger.keys[0]`, `$trigger.body.*` → `$trigger.*` (child flow), `item-read` result format (`Array.isArray` guard), hardcoded user UUID → real user from fetch, Condition `fetch_queue.data._empty` → Run Script with `Array.isArray` guard, redundant operations removed, flow chains reconnected
-  - **Code changes:** `&filter[user][_eq]=$CURRENT_USER` added to `useNotifications.ts` API call; notification card icon size/semantic colors updated in `notifications.vue`
-- [x] **Step 2:** `useNotifications` composable (poll 20s) + `NotificationBell` component (badge, navigation) — installed on all pages
-- [x] **Step 3:** `/notifications` page (UI list, skeleton, empty state, card with icon per type, timeAgo, markAsRead, markAllAsRead)
-- [x] **Step 4:** Duty reminder Flow — CRON `0 8 * * 1-5`, нотификация `duty_reminder` для не подтвердивших дежурство
-- [x] **Step 4b:** Duty Assigned event flow — при создании cleaning_schedule → нотификация назначенному юзеру
-- [ ] **Step 5:** Fix cook_queue + orders status choices in Directus schema (add `completed` to cook_queue, add `left_late`/`pending_cook_approval` to orders)
-- [ ] **Step 6:** Ghost-participant logic: <10h leave → warning, <1h leave → penalty charge; cook approval for late joins; billable count includes ghost participants
-- [ ] **Step 7:** Notification preferences in profile (toggle per type, stored in `directus_users`, checked in Flows)
+- [x] `notifications` collection + permissions
+- [x] 4 Directus Flows: Cook Assigned, Lunch Ready, Balance Low, Morning Reminder
+- [x] Utility Flow `[Util] Create Notification`
+- [x] `useNotifications` composable (poll 20s) + `NotificationBell`
+- [x] `/notifications` page — list, icons, timeAgo, markAsRead, markAllAsRead
+- [x] Duty Reminder Flow (CRON `0 8 * * 1-5`)
+- [x] Duty Assigned Flow (event on cleaning_schedule create)
+- [ ] **Step 5:** Fix status choices in Directus (add `completed` to cook_queue, `left_late`/`pending_cook_approval` to orders)
+- [ ] **Step 6:** Ghost-participant logic
+- [ ] **Step 7:** Notification preferences in profile
 
 ---
 
-## Phase 6b: Deploy & PWA ✅ 2026-06-24
-**Goal:** production deployment on Hetzner VPS with PWA support (add to home screen, push notifications).
+## Phase 6b: Deploy & PWA 🟡 2026-06-26
+**Goal:** production on Hetzner VPS; PWA installable on iPhone; push notifications on mobile.
 
-- [x] **Step 0:** Clean server — remove OpenWebUI, docker prune, clean nginx
-- [x] **Step 1:** DuckDNS setup — itocook.duckdns.org + cron update
-- [x] **Step 2:** frontend/Dockerfile.prod — multi-stage build
-- [x] **Step 3:** api/Dockerfile — remove `--reload`
-- [x] **Step 4:** docker-compose.prod.yml — 4 services, no dev volumes, domain URLs
-- [x] **Step 5:** .github/workflows/deploy.yml — auto-deploy on push to main
-- [x] **Step 6:** PWA setup — `@vite-pwa/nuxt`, manifest, injectManifest strategy
-- [x] **Step 7:** PWA icons — 192x192 + 512x512 placeholders
-- [x] **Step 8:** Deployment docs — `docs/deployment.md`
-- [ ] **Step 9:** Server .env + git clone + docker compose up
-- [ ] **Step 10:** Nginx config + certbot HTTPS
-- [ ] **Step 11:** SSH deploy key → GitHub Secrets
-- [ ] **Step 12:** Verify: push to main → auto-deploy + iPhone add to home screen
+### Deploy ✅ DONE
+- [x] Hetzner CX23, IP 178.104.110.253
+- [x] DuckDNS — itocook.duckdns.org + cron every 5 min
+- [x] `frontend/Dockerfile.prod` — multi-stage, correct `.output` path
+- [x] `docker-compose.prod.yml` — 4 services, VAPID env vars
+- [x] `.github/workflows/deploy.yml` — auto-deploy with `--build` flag
+- [x] Server `.env` with all secrets including VAPID keys
+- [x] Nginx — correct config (see `docs/nginx-itocook.conf`)
+- [x] Let's Encrypt HTTPS via certbot
+- [x] SSH deploy key → GitHub Secrets
+- [x] Auto-deploy verified ✅
+- [x] **Nginx fix 26.06.2026** — `location ~* ^(?!/cms/).*\.(js|css...)` prevents Nuxt from intercepting Directus admin JS files (was causing MIME type errors in Directus admin)
+
+### PWA ✅ DONE
+- [x] `@vite-pwa/nuxt` installed, `generateSW` strategy
+- [x] Icons: `frontend/public/icons/icon-192.png` + `icon-512.png`
+- [x] PWA manifest — configured in `nuxt.config.ts`
+- [x] iPhone "Add to Home Screen" → standalone mode works ✅
+- [ ] `<link rel="manifest">` — currently missing after rollback to db5aa18; `@vite-pwa/nuxt` should inject it automatically but needs verification after next deploy
+
+### Push Notifications ⬜ IN PROGRESS
+- [x] VAPID keys in `.env`
+- [x] `push_subscriptions` collection in Directus
+- [x] FastAPI `/send-push` endpoint
+- [x] `push-handler.js` in `frontend/app/public/`
+- [x] `usePushNotifications.ts` composable
+- [x] All 6 Directus Flows call `/api/send-push`
+- [x] Firefox desktop ✅ works
+- [ ] **SW missing on server** — rolled back to db5aa18, need to restore SW setup without breaking Directus
+- [ ] **iPhone push** — not tested yet after PWA install
+- [ ] **Chrome push** — `push service error` (lower priority, FCM issue)
+
+> ⚠️ LESSONS LEARNED (26.06.2026):
+> - NEVER use `navigateFallback` in Workbox config — it intercepts ALL requests including Directus /cms and breaks the site
+> - NEVER switch SW strategy (injectManifest/generateSW) without clearing browser cache on all clients — old SW stays in cache and conflicts
+> - `location = /push-handler.js { root /var/www; }` in nginx is WRONG — file is in Nuxt app/public/, not /var/www/
+> - `location /admin/` and `location /assets/` blocks in nginx CONFLICT with `/cms/` — don't add them
+
+### What to do next session for push notifications:
+1. Restore SW: ensure `generateSW` config is correct in `nuxt.config.ts` with `workbox.importScripts: ['/push-handler.js']`
+2. Verify `<link rel="manifest">` is in HTML: `curl -s https://itocook.duckdns.org | grep -i manifest`
+3. Remove `location = /push-handler.js { root /var/www; }` from nginx if still present
+4. Deploy and test on iPhone — open PWA from home screen icon, login, check `push_subscriptions` in Directus
+5. Trigger test push via Directus Flow or FastAPI directly
+
+---
 
 ## Phase 7: Additional Features
-**Goal:** the app is convenient to use every day, with financial control.
+**Goal:** the app is convenient to use every day.
 
 - [ ] Anonymous ratings and reviews on dishes
-- [ ] Recalculate recipe for a new number of participants (AI)
-- [ ] Shopping list — from recipe / manually, export
+- [ ] AI Recipe screen (chat + recipe render)
+- [ ] Common screen (announcements + pool collections)
 - [ ] Receipt photo upload on Cook Page
 - [ ] Task G — Recipe estimated_price field
 - [ ] Weekly vote: best dish / best cook
@@ -288,8 +297,5 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 
 ## Optional (Post-MVP)
 - [ ] Receipt OCR — auto-read amount from photo
-- [ ] Add products from receipt to database
 - [ ] Integration with Recipe API
 - [ ] Scaling: business trips, corporate events, office purchases
-- [ ] PWA manifest + mobile browser safe areas
-- [ ] Staging deployment on Hetzner VPS

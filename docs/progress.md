@@ -297,6 +297,9 @@
 - [x] **FIX 5:** Removed auto markAllAsRead (`setTimeout` 3s) from notifications.vue — пользователь сам управляет прочитанным.
 - [x] **FIX 6:** Read cards opacity-70 → opacity-60. Polling interval 60000 → 20000 в useNotifications.ts.
 
+## Fixes — current session
+- [x] **Fix: add `<link rel=manifest>` to app.head in nuxt.config.ts so PWA manifest is discoverable by browser**
+
 ## Fixes — current session (Cook Assigned flow)
 - [x] **Fix: Condition filter syntax** — точечная нотация `$trigger.payload.status` → вложенные объекты `$trigger > payload > status`
 - [x] **Fix: Transform-дубликат удалён** — transform `build_payloads` (8e42b084) лежал на одной клетке с exec — удалён
