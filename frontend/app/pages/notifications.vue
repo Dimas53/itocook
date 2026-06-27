@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhBellSlash, PhBug, PhCheck, PhCookingPot, PhForkKnife, PhChefHat, PhWarning, PhBroom, PhClock, PhUserPlus } from '@phosphor-icons/vue'
+import { PhBellSlash, PhCheck, PhCookingPot, PhForkKnife, PhChefHat, PhWarning, PhBroom, PhClock, PhUserPlus } from '@phosphor-icons/vue'
 
 definePageMeta({ layout: 'app' })
 
@@ -34,25 +34,6 @@ function timeAgo(dateStr: string): string {
   const days = Math.floor(hours / 24)
   if (days === 1) return 'Yesterday'
   return days + 'd ago'
-}
-
-const debugLog = ref<string[]>([])
-const debugTesting = ref(false)
-const notificationPermission = computed(() => {
-  if (typeof window === 'undefined') return 'unknown'
-  return window.Notification?.permission ?? 'unknown'
-})
-
-function onDebugLog(msg: string) {
-  debugLog.value.push(msg)
-}
-
-async function testPushSubscribe() {
-  debugLog.value = []
-  debugTesting.value = true
-  const { subscribe } = usePushNotifications()
-  await subscribe(onDebugLog)
-  debugTesting.value = false
 }
 
 onMounted(() => {
@@ -128,27 +109,5 @@ onMounted(() => {
         </div>
       </div>
 
-    </div>
-
-    <!-- Debug panel -->
-    <div class="mx-5 mb-4 p-3 rounded-2xl bg-gray-100 border border-gray-200">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-[13px] font-semibold text-gray-500 flex items-center gap-1">
-          <PhBug class="w-4 h-4" /> Push Debug
-        </span>
-        <span class="text-[11px] px-2 py-0.5 rounded-full font-mono"         :class="notificationPermission === 'granted' ? 'bg-green-pastel text-green-700' : 'bg-red-50 text-red-500'">
-          {{ notificationPermission }}
-        </span>
-      </div>
-      <button
-        class="w-full h-9 rounded-xl bg-primary text-white text-[13px] font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
-        :disabled="debugTesting"
-        :class="{ 'opacity-50': debugTesting }"
-        @click="testPushSubscribe"
-      >
-        {{ debugTesting ? 'Testing...' : 'Test Push Subscribe' }}
-      </button>
-      <pre v-if="debugLog.length" class="mt-2 p-2 rounded-lg bg-black text-green-300 text-[10px] font-mono leading-relaxed max-h-[200px] overflow-y-auto whitespace-pre-wrap">{{ debugLog.join('\n') }}</pre>
-    </div>
   </div>
 </template>
