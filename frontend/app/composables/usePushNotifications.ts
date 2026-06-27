@@ -70,7 +70,7 @@ export function usePushNotifications() {
         log('[push] saved to Directus')
       }
     } catch (e) {
-      err('[push] save ERROR', e)
+      err('[push] save ERROR: ' + (e instanceof Error ? e.message : JSON.stringify(e)))
     }
   }
 
