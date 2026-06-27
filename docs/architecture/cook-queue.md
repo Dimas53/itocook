@@ -81,6 +81,21 @@ When a cook picks a recipe owned by another user:
 
 **Cook middleware bypasses for admin roles** — Users with a non-User role UUID are allowed through without checking for a `cook_queue` entry. The `?action=become` query param also bypasses the check.
 
+## Cook Cancelled Notification Flow
+
+When the cook cancels their cooking assignment:
+
+1. Cook taps "Cancel Cooking" in `cook.vue` → confirmation dialog
+2. `cancelCooking()` runs:
+   - PATCH `cook_queue.status = 'cancelled'`
+   - DELETE all `orders` linked to this queue entry (confirmed participants removed)
+   - `cleanupShoppingList()` deletes shopping list items for this recipe
+   - Navigate to `/kitchen`
+3. The status change to `cancelled` triggers the **"Cook Cancelled"** Directus Flow (event → `cook_queue.items.update`, filter on `status = cancelled`)
+4. The Flow notifies all active users via `notifications` collection (type `cook_cancelled`) AND sends a push notification via FastAPI `/send-push`
+
+**Why this exists:** Without notification, users would arrive at lunch time to find no meal prepared. The cancellation notification lets everyone plan accordingly (order food, cook their own, etc.).
+
 ## Edge Cases & Limitations
 
 - **Admin-injected changes** — If an admin edits the cook_queue status from the Directus panel, the cook sees the change on next visibility change (page re-fetch). No real-time push.

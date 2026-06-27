@@ -365,6 +365,11 @@
 - [x] **iPhone push** — tested and working on iPhone after PWA install
 - [x] **Feat: Cook Cancelled Flow** — notifies all users when cook cancels via Directus Flow; adds `cook_cancelled` type to notifications collection
 - [x] **Feat: Nightly Notification Cleanup Flow** — deletes notifications older than 7 days at 3am (calc_cutoff → fetch_old → extract_ids → delete_old); created on local + production
+- [x] **Docs: updated CONTEXT.md with PWA/push terms**
+- [x] **Docs: created docs/architecture/notifications.md — full notification system doc**
+- [x] **Docs: updated docs/architecture/cook-queue.md — Cook Cancelled notification flow section**
+- [x] **Docs: updated docs/ARCHITECTURE.md — Phase 6b PWA+Push section**
+- [x] **Docs: updated docs/server-pwa-deploy.md — push status, known issues, checklist**
 
 ## Git log
 - `db5aa18` — fix(ui): swipe-to-dismiss bottom sheets, full-month date picker, block future cook actions

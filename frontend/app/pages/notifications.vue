@@ -1,10 +1,25 @@
 <script setup lang="ts">
+/**
+ * Notifications page (/notifications)
+ *
+ * Displays a list of in-app notifications (from Directus `notifications` collection).
+ * Each notification shows an icon (based on type), message, timeAgo label,
+ * and a read/unread checkbox. "Dismiss all" button marks all as read.
+ *
+ * Data is fetched via useNotifications composable (polling every 20s).
+ * The page is NOT a real-time view — notifications may be up to 20s old.
+ */
 import { PhBellSlash, PhCheck, PhCookingPot, PhForkKnife, PhChefHat, PhWarning, PhBroom, PhClock, PhUserPlus } from '@phosphor-icons/vue'
 
 definePageMeta({ layout: 'app' })
 
 const { notifications, loading, fetchNotifications, markAsRead, markAllAsRead } = useNotifications()
 
+/**
+ * Maps notification type strings to icon component + background + color classes.
+ * Each type from Directus notifications.type gets a distinct visual pairing.
+ * Unrecognized types fall back to PhBellSlash with gray styling.
+ */
 const ICON_MAP: Record<string, { icon: object; bg: string; color: string }> = {
   cook_assigned:   { icon: PhCookingPot,   bg: 'bg-yellow-pastel',   color: 'text-yellow-700' },
   cook_cancelled:  { icon: PhWarning,      bg: 'bg-red-50',          color: 'text-red-500' },
@@ -16,6 +31,11 @@ const ICON_MAP: Record<string, { icon: object; bg: string; color: string }> = {
   join_pending:    { icon: PhUserPlus,     bg: 'bg-green-light',    color: 'text-green-700' },
 }
 
+/**
+ * Sorted view: unread first (ascending read status), then most recent first.
+ * Unread notifications appear at the top regardless of age,
+ * then remaining notifications sorted by date_created descending.
+ */
 const sortedNotifications = computed(() => {
   const list = [...notifications.value]
   list.sort((a, b) => {
