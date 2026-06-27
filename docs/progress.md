@@ -297,8 +297,15 @@
 - [x] **FIX 5:** Removed auto markAllAsRead (`setTimeout` 3s) from notifications.vue — пользователь сам управляет прочитанным.
 - [x] **FIX 6:** Read cards opacity-70 → opacity-60. Polling interval 60000 → 20000 в useNotifications.ts.
 
-## Fixes — current session
+## Fixes — current session (2026-06-27)
 - [x] **Fix: add `<link rel=manifest>` to app.head in nuxt.config.ts so PWA manifest is discoverable by browser**
+- [x] **Fix: add user field when saving push subscription to Directus** — `usePushNotifications.ts` now passes `user: user.value?.id` in POST to `push_subscriptions`
+- [x] **Fix: add Read permission for push_subscriptions in Directus User policy** — required for `GET /items/push_subscriptions` to check existing endpoint before re-subscribing
+- [x] **Fix: closing div tag in notifications.vue** — added missing `</div>` for `.px-5.pb-[100px]` wrapper
+- [x] **Fix: deploy.yml — use --build flag in up command** — replaced `build` + `up -d` with `up -d --build`
+- [x] **Feat: push notifications working on iPhone ✅** — tested and confirmed working on iPhone after PWA install
+- [x] **Feat: Flow "Cook Cancelled"** — notifies all users when cook cancels; `cook_cancelled` type added to `notifications` collection; created on local + production
+- [x] **Feat: Flow "Nightly Notification Cleanup"** — deletes notifications older than 7 days at 3am via schedule trigger; 4 ops chain (calc_cutoff → fetch_old → extract_ids → delete_old); created on local + production
 - [x] **Chore: remove push debug panel** — debug panel removed from notifications.vue; `subscribe()` reverted to clean signature without `onLog`; console.log/console.error restored
 
 ## Fixes — current session (Cook Assigned flow)
@@ -357,6 +364,7 @@
 - [x] **Chore: CORS origin 127.0.0.1** — добавлен `http://127.0.0.1:3000` в `CORS_ORIGIN` для Chrome Dev. Не решило проблему FCM — Chrome не может зарегистрировать пуш-подписку на localhost. Firefox работает стабильно.
 - [x] **iPhone push** — tested and working on iPhone after PWA install
 - [x] **Feat: Cook Cancelled Flow** — notifies all users when cook cancels via Directus Flow; adds `cook_cancelled` type to notifications collection
+- [x] **Feat: Nightly Notification Cleanup Flow** — deletes notifications older than 7 days at 3am (calc_cutoff → fetch_old → extract_ids → delete_old); created on local + production
 
 ## Git log
 - `db5aa18` — fix(ui): swipe-to-dismiss bottom sheets, full-month date picker, block future cook actions
@@ -379,5 +387,9 @@
 - `e01656a` — fix: cq param in HeroBlock, recipe_name on order create, sort cook_queue, cleanup onboarding comments
 - `92e2fa2` — fix(pwa): add manifest link tag to app head
 - `80920e0` — debug(pwa): add visible push debug panel on notifications page
+- `17985d7` — fix(pwa): pass user id when saving push subscription
 - `17bed0f` — chore(pwa): remove push debug panel
+- `1629b8f` — fix(notifications): add missing closing div tag
+- `7507871` — fix(deploy): use --build flag in up command to always rebuild on deploy
+- `6461fd2` — feat(pwa): add Cook Cancelled flow + ICON_MAP entry + mark iPhone push done
 

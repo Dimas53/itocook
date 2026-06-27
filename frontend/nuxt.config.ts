@@ -33,6 +33,7 @@ export default defineNuxtConfig({
           workbox: {
             importScripts: ['/push-handler.js'],
             runtimeCaching: [],
+            navigateFallback: null,
           },
         },
       }

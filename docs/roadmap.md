@@ -242,9 +242,10 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 - [x] Icons: `frontend/public/icons/icon-192.png` + `icon-512.png`
 - [x] PWA manifest — configured in `nuxt.config.ts`
 - [x] iPhone "Add to Home Screen" → standalone mode works ✅
-- [ ] `<link rel="manifest">` — currently missing after rollback to db5aa18; `@vite-pwa/nuxt` should inject it automatically but needs verification after next deploy
+- [x] `<link rel="manifest">` — added to `app.head` in `nuxt.config.ts`
+- [x] `docker compose up -d --build` — deploy.yml uses single `--build` flag instead of separate build+up commands
 
-### Push Notifications ⬜ IN PROGRESS
+### Push Notifications 🟡 MOSTLY DONE
 - [x] VAPID keys in `.env`
 - [x] `push_subscriptions` collection in Directus
 - [x] FastAPI `/send-push` endpoint
@@ -252,9 +253,11 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 - [x] `usePushNotifications.ts` composable
 - [x] All 6 Directus Flows call `/api/send-push`
 - [x] Firefox desktop ✅ works
-- [ ] **SW missing on server** — rolled back to db5aa18, need to restore SW setup without breaking Directus
 - [x] **iPhone push** — tested and working on iPhone after PWA install
-- [ ] **Chrome push** — `push service error` (lower priority, FCM issue)
+- [ ] **SW missing on server** — need to restore SW setup without breaking Directus
+- [ ] **Chrome push** — `push service error` (low priority, FCM issue)
+- [x] **Cook Cancelled Flow** — notifies all users when cook cancels
+- [x] **Nightly Notification Cleanup Flow** — deletes notifications older than 7 days at 3am
 
 > ⚠️ LESSONS LEARNED (26.06.2026):
 > - NEVER use `navigateFallback` in Workbox config — it intercepts ALL requests including Directus /cms and breaks the site
@@ -265,8 +268,7 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 ### What to do next session for push notifications:
 1. Restore SW: ensure `generateSW` config is correct in `nuxt.config.ts` with `workbox.importScripts: ['/push-handler.js']`
 2. Verify `<link rel="manifest">` is in HTML: `curl -s https://itocook.duckdns.org | grep -i manifest`
-3. Remove `location = /push-handler.js { root /var/www; }` from nginx if still present
-4. Deploy and test on iPhone — open PWA from home screen icon, login, check `push_subscriptions` in Directus
+3. **Chrome push**: investigate FCM `push service error` (lower priority)
 5. Trigger test push via Directus Flow or FastAPI directly
 
 ---
