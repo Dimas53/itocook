@@ -281,3 +281,88 @@ During documentation and refactoring sessions, communicate with the user in Russ
     - Design review feedback
 
 Code, comments inside source files, file names, git commit messages — always in English.
+
+
+---
+## Documentation — Update Triggers
+
+### Automatic prompt after completing a phase
+
+After completing any of the following, the agent MUST ask the user:
+> "Documentation update needed? I can update CONTEXT.md, architecture files, and JSDoc comments to reflect what was just built. Takes one focused session."
+
+Triggers (any of the following):
+- A Phase or major block is completed (Phase 6, Phase 6b, Block 1, etc.)
+- A new Directus collection was created
+- A new composable or server route was added
+- A new Directus Flow was created
+- Architecture changed (new pattern, new dependency, new external service)
+- More than 5 commits have passed since the last docs commit:
+  check with `git log --oneline -- docs/ | head -1` vs `git log --oneline | head -1`
+
+### How to check when docs were last updated
+
+```bash
+git log --oneline -- docs/ | head -3
+```
+
+If the last docs commit is more than 1 week old OR more than 5 commits behind HEAD — suggest a documentation update session.
+
+### What to update and in what order
+
+1. **CONTEXT.md** — new terms from recent features (composables, flows, patterns)
+2. **docs/architecture/** — new or updated architecture files
+3. **JSDoc** — only files created or significantly changed since last docs session
+4. **docs/progress.md** — add a line noting that docs were updated
+5. **Commit:** `docs: update CONTEXT, architecture, JSDoc after [phase name]`
+
+### What NOT to do during a docs update
+
+- Do NOT change any logic — only comments and .md files
+- Do NOT re-document files that haven't changed since last docs session
+- Do NOT mix a docs update and a feature in the same session — separate commits
+- Do NOT delete existing sections in CONTEXT.md or ARCHITECTURE.md — only append
+
+### Full prompt for a docs session
+
+For the full step-by-step documentation prompt, read `docs/docs-update-prompt.md`.
+It contains detailed instructions reflecting the current project state.
+Update that file after each major docs session to keep it current.
+
+
+## Autonomous Skill Selection
+
+Before every task (coding, debugging, planning, refactoring, documentation):
+1. Read `docs/skills-cheatsheet.md` — which skills apply to this task?
+2. If a skill fits — load it BEFORE starting work, without waiting to be asked
+3. If multiple skills apply — load all of them
+4. Never skip this step even for small tasks
+
+## Skill Discovery
+
+When a new skill is installed or discovered in `~/.config/opencode/skills/`:
+1. Read the skill's SKILL.md to understand what it does
+2. Add it to `docs/skills-cheatsheet.md` in the same format as existing entries
+3. Do this automatically — no need to ask the user
+
+---
+
+## SAFETY — Do not do without explicit confirmation
+
+Before any of these actions STOP — ask the user first:
+
+- Modifying `docker-compose.yml` or `docker-compose.prod.yml`
+- Modifying any `.env` files
+- Deleting Directus collections or migrations
+- Running `git push` or `git push --force`
+- Deleting files from `docs/` or `notes/`
+- Changing Directus permissions for any role
+
+## Safe to do autonomously
+
+- Creating and editing Vue/TS components and composables
+- Creating Nuxt server routes
+- Adding new files to `docs/`
+- Updating `docs/progress.md` and `docs/roadmap.md`
+- Reading any project files
+- Creating new Directus collections or fields (but not deleting)

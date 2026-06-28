@@ -1,6 +1,10 @@
 # ItoCook — Progress Log
 
 ## Current status
+- [x] **Harness: Superpowers Framework installed** — plugin `superpowers@git+https://github.com/obra/superpowers.git` added to `opencode.jsonc`; provides brainstorming, planning, TDD, code review, systematic debugging skills
+- [x] **Harness: session-start skill created** — `~/.config/opencode/skills/session-start/SKILL.md`; agent reads progress+roadmap and outputs session brief before coding
+- [x] **Harness: code-reviewer skill created** — `~/.config/opencode/skills/code-reviewer/SKILL.md`; agent runs checklist (TS, Vue, Directus, Design) before saying "done"
+- [x] **Harness: .planning/ structure created** — `milestones/v1.0-REQUIREMENTS.md`, `phases/05-08/PLAN.md` for remaining phases
 - [x] **Task E: Admin Finances page** — balances overview (all users, color-coded), manual top-up form (select user + amount + note, creates transaction + updates balance), transaction history (last 50, date desc), pasta package price inline edit (reuses existing app_settings from Task F). Created Nuxt server routes: `GET /api/users/list` (admin proxy), `PATCH /api/settings/pasta-price`. Gate already in BottomTabBar (non-User role → ChartBar tab → /finance).
 - [x] **Finance polish + low-balance restriction** — explicit minus sign for negative balances; tiered BalanceWidget coloring (bg-primary-pale/≥0, bg-red-50/-0.01 to -5, bg-red-100/< -5); `useBalanceCheck` composable (threshold -30); balance gate on Join (via `useParticipants.join`) and Become Cook (via `cook.vue.assignAsCook`); collapsible transaction history (show 5, expand to scrollable max-h-[400px] with toggle).
 - [x] **Finance polish round 2** — removed "(owed)" label from negative balances; reorder sections to Balances → Manual Top-up → Pasta Package Price → Transaction History; BalanceWidget thresholds adjusted (>=5 default, 0–<5 mild red-50, <0 strong red-100); transaction history replaced with recipe/create.vue slider pattern (VISIBLE_COUNT=5, up/down arrows, translateY transition, touch handlers) + separate "Show all" button expanding to full list.
@@ -397,4 +401,5 @@
 - `1629b8f` — fix(notifications): add missing closing div tag
 - `7507871` — fix(deploy): use --build flag in up command to always rebuild on deploy
 - `6461fd2` — feat(pwa): add Cook Cancelled flow + ICON_MAP entry + mark iPhone push done
+- `4c3c5ec` — docs: update CONTEXT, architecture/notifications, JSDoc for push/PWA, server-pwa-deploy
 
