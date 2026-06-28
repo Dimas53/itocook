@@ -136,8 +136,8 @@ Agent reads `docs/design.md` before laying out each screen.
 - [x] Edit Recipe / Add Recipe in scheduled state
 - [x] Balance gate — blocked if balance < -30 €
 - [x] Swipe-to-dismiss bottom sheets
-- [ ] Upload receipt photo
-- [ ] Shopping list from recipe
+- [x] Upload receipt photo
+- [x] Shopping list from recipe
 
 #### All Recipes (`pages/recipes.vue`) ✅
 - [x] Search + category filter
