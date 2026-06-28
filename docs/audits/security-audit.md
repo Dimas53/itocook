@@ -12,7 +12,7 @@ Audited 4 layers:
 
 ## 1. Directus Permissions — Findings
 
-### CRITICAL: User role can read ALL `directus_users` fields
+### CRITICAL: User role can read ALL `directus_users` fields ✅ Fixed 2026-06-28
 
 The User policy `e563cf6a` has:
 ```
@@ -22,6 +22,8 @@ read | directus_users | fields=['*'] | perm=None
 This exposes every field on every user — including `email`, `role`, `tfa_secret`, `token`, and `password` (hashed). A separate, more restrictive rule `read | directus_users | fields=['id','first_name','last_name','avatar','department']` exists but Directus merges permissions as UNION, so the broader rule wins.
 
 **Fix:** Remove the unrestricted read rule (`fields=['*'], perm=None`). Keep only the scoped rule. The Nuxt server proxies (`users/list.get.ts`, `users/count.get.ts`) use admin tokens and are unaffected.
+
+**Status:** ✅ Fixed — wildcard rule (`id: 2`) deleted from `directus_permissions`. Only scoped rule (`id: 66`, fields=`id,first_name,last_name,avatar,department`) remains. Verified Home and Kitchen screens show user names correctly.
 
 ### CRITICAL: `balances` — create/update unrestricted
 
@@ -44,7 +46,7 @@ Any authenticated user can create transactions for any other user.
 
 **Fix:** Remove `create` on `transactions` from the User policy. Route all writes through the admin-proxied `deduction/confirm.post.ts`.
 
-### HIGH: `cook_queue` — update unrestricted
+### HIGH: `cook_queue` — update unrestricted ✅ Fixed 2026-06-28
 
 ```
 update | cook_queue | fields=['*'] | perm={}
@@ -53,6 +55,8 @@ update | cook_queue | fields=['*'] | perm={}
 Any user can update any queue entry's status.
 
 **Fix:** Restrict with `{'user_created': {'_eq': '$CURRENT_USER'}}` or remove from User policy (writes go through admin-proxied server routes).
+
+**Status:** ✅ Fixed — permission `id: 39` updated: `permissions` changed from `{}` to `{'user_created': {'_eq': '$CURRENT_USER'}}`. Verified saveDish and startCooking work (200) as own-user. Browser console: no 403 errors.
 
 ### HIGH: `orders` — update/delete unrestricted
 
@@ -170,12 +174,12 @@ The Nuxt server routes accept POST/PATCH requests without CSRF tokens. Since the
 
 | Severity | Issue | File / Location |
 |---|---|---|
-| CRITICAL | `directus_users` has unrestricted read (all fields) | Directus User policy |
+| CRITICAL | `directus_users` has unrestricted read (all fields) | Directus User policy | ✅ Fixed
 | CRITICAL | `balances` create/update without restrictions | Directus User policy |
 | CRITICAL | `transactions` create without restrictions | Directus User policy |
-| HIGH | `cook_queue` update without restrictions | Directus User policy |
+| HIGH | `cook_queue` update without restrictions | Directus User policy | ✅ Fixed
 | HIGH | `orders` update/delete without restriction | Directus User policy |
-| MEDIUM | `update-me.patch.ts` accepts unrestricted body fields | `server/api/users/update-me.patch.ts` |
+| MEDIUM | `update-me.patch.ts` accepts unrestricted body fields | `server/api/users/update-me.patch.ts` | ✅ Fixed
 | MEDIUM | Missing CSP in nginx | `docs/nginx-itocook.conf` |
 | LOW | Missing security headers in nginx | `docs/nginx-itocook.conf` |
 | LOW | `pasta_packages` in recipe update field list | Directus User policy |
@@ -222,7 +226,7 @@ All other pages/composables only READ balances (`GET` via `BalanceWidget.vue`, `
 - **Risk if `create` removed RIGHT NOW:** 🟡 **Needs work first** — the manual top-up flow in `finance.vue` would break
 - **Recommended action:** Include transaction creation in the same admin-proxy route as the balance top-up (`PUT /api/finance/topup`), then remove `create` from the User policy for `transactions`.
 
-### HIGH: `cook_queue` update unrestricted
+### HIGH: `cook_queue` update unrestricted ✅ Fixed 2026-06-28
 
 **Frontend direct PATCH calls to `/items/cook_queue` via `useDirectus()`:**
 
@@ -241,6 +245,8 @@ All 7 PATCH calls operate on the current user's own `cook_queue` entry. No cross
 - **Risk if restricted to `user_created = $CURRENT_USER`:** 🟢 **Safe** — no direct writes would break
 - **Recommended action:** Add `{'user_created': {'_eq': '$CURRENT_USER'}}` filter on `update` action for `cook_queue`.
 
+**Status:** ✅ Fixed — permission `id: 39` updated. Verified saveDish and startCooking work (200) as own-user. No 403 errors in browser console.
+
 ### HIGH: `orders` update/delete unrestricted
 
 **Frontend direct write calls to `/items/orders` via `useDirectus()`:**
@@ -258,7 +264,7 @@ All 7 PATCH calls operate on the current user's own `cook_queue` entry. No cross
 - **Risk if restricted to `user_created = $CURRENT_USER`:** 🔴 **Will break** — cancel flow deletes other users' orders
 - **Recommended action:** Move the cancel DELETE logic to an admin-proxy server route (create `POST /api/orders/cancel` that takes a `cookQueueId` and deletes all related orders with the admin token), then restrict DELETE with `{'user_created': {'_eq': '$CURRENT_USER'}}`.
 
-### MEDIUM: `update-me.patch.ts` unrestricted body
+### MEDIUM: `update-me.patch.ts` unrestricted body ✅ Fixed 2026-06-28
 
 **Frontend fields sent to `/api/users/update-me`:**
 
@@ -281,6 +287,8 @@ Only two fields are sent: `avatar` and `department`. Both are safe. However, the
     Object.entries(body).filter(([k]) => allowed.includes(k))
   )
   ```
+
+**Status:** ✅ Fixed — field whitelist added to `update-me.patch.ts`. Verified department save works (PATCH 200). No errors in browser console.
 
 
 ---
