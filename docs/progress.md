@@ -1,6 +1,8 @@
 # ItoCook — Progress Log
 
 ## Current status
+- [x] **Roadmap updated** — Phase 6: ✅→🟡 (Steps 5–7 remain), Phase 6b: SW marked resolved, Chrome push marked wontfix, removed outdated "next session" block
+- [x] **Phase 7a: Testing added** — between Phase 7 and Phase 8 with 7 checklist items (Vitest, composable tests, component tests, API tests, E2E, CI integration)
 - [x] **UI Polish Audit** — `docs/audits/ui-polish-audit.md` created using `make-interfaces-feel-better` skill; 12 findings across typography, surfaces, animations, performance (3 High, 5 Medium, 4 Low priority)
 - [x] **Harness: Superpowers Framework installed** — plugin `superpowers@git+https://github.com/obra/superpowers.git` added to `opencode.jsonc`; provides brainstorming, planning, TDD, code review, systematic debugging skills
 - [x] **Harness: session-start skill created** — `~/.config/opencode/skills/session-start/SKILL.md`; agent reads progress+roadmap and outputs session brief before coding
@@ -393,6 +395,8 @@
 - [x] **Retrospective .planning/ created** — 6 retrospective PLAN.md files for completed phases (01-ui-skeleton, 02-first-live-flow, 03-directus-schema, 04-feature-screens, 06-notifications-pwa, 06c-refactoring-docs). Each documents goal, completed tasks, key decisions, file changes, and completion date. No invented content — only data from progress.md + roadmap + git log.
 
 ## Git log
+- (not yet committed — waiting for explicit instruction)
+- `95ec2d0` — fix(roadmap): mark receipt photo upload and shopping list from recipe as done
 - `e573808` — docs: fix design.md, roadmap.md, add retrospective planning files
 - `34f5aba` — docs(harness): update overview, diagram, cheatsheet with security audit and test plan
 - `db5aa18` — fix(ui): swipe-to-dismiss bottom sheets, full-month date picker, block future cook actions

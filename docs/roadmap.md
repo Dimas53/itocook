@@ -204,7 +204,7 @@ Agent reads `docs/design.md` before laying out each screen.
 
 ---
 
-## Phase 6: In-App Notifications ✅ 2026-06-22
+## Phase 6: In-App Notifications 🟡 2026-06-22
 **Goal:** business logic notifications work automatically.
 No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt UI.
 
@@ -257,8 +257,8 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 - [x] All 6 Directus Flows call `/api/send-push`
 - [x] Firefox desktop ✅ works
 - [x] **iPhone push** — tested and working on iPhone after PWA install
-- [ ] **SW missing on server** — need to restore SW setup without breaking Directus
-- [ ] **Chrome push** — `push service error` (low priority, FCM issue)
+- [x] **SW on server** — confirmed working (generateSW ships in Nuxt build; iPhone & Firefox push work)
+- [x] **Chrome push — wontfix** — `push service error` (FCM issue, low priority)
 - [x] **Cook Cancelled Flow** — notifies all users when cook cancels
 - [x] **Nightly Notification Cleanup Flow** — deletes notifications older than 7 days at 3am
 
@@ -267,12 +267,6 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 > - NEVER switch SW strategy (injectManifest/generateSW) without clearing browser cache on all clients — old SW stays in cache and conflicts
 > - `location = /push-handler.js { root /var/www; }` in nginx is WRONG — file is in Nuxt app/public/, not /var/www/
 > - `location /admin/` and `location /assets/` blocks in nginx CONFLICT with `/cms/` — don't add them
-
-### What to do next session for push notifications:
-1. Restore SW: ensure `generateSW` config is correct in `nuxt.config.ts` with `workbox.importScripts: ['/push-handler.js']`
-2. Verify `<link rel="manifest">` is in HTML: `curl -s https://itocook.duckdns.org | grep -i manifest`
-3. **Chrome push**: investigate FCM `push service error` (lower priority)
-5. Trigger test push via Directus Flow or FastAPI directly
 
 ---
 
@@ -332,6 +326,19 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 - [ ] Receipt photo upload on Cook Page
 - [ ] Task G — Recipe estimated_price field
 - [ ] Weekly vote: best dish / best cook
+
+---
+
+## Phase 7a: Testing
+**Goal:** Automated tests for critical flows before real-user test week.
+
+- [ ] Vitest + @nuxt/test-utils setup (unit + integration patterns)
+- [ ] Unit tests: composables (useAuth, useParticipants, useDeduction, useMealCost, useBalanceCheck)
+- [ ] Unit tests: utils (dates, dedupRecipes, ingredientIcons)
+- [ ] Component tests: key reusable components (HeroBlock, MonthCalendar, SliderList, NotificationBell)
+- [ ] API integration tests: all 9 Nuxt server routes (auth required, admin-proxy, edge cases)
+- [ ] E2E critical flow: auth → cook → join → deduction → balance update
+- [ ] CI integration: test runner in deploy pipeline (`npm run test` before build)
 
 ---
 
