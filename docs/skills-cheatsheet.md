@@ -62,6 +62,7 @@
 | `performance-optimization` | Найди узкие места, оптимизируй |
 | `caveman` | Режим экономии токенов — отвечай кратко |
 | `frontend-ui-engineering` | UI задача — применяй frontend паттерны |
+| `codebase-health-check` | Анализ здоровья кодбазы: карта системы, поиск дублей, приоритизация, пошаговый план рефакторинга |
 | `make-interfaces-feel-better` | Полировка UI — радиусы, тени, анимации, шрифты, optical alignment |
 
 ---
