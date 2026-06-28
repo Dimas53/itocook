@@ -1,6 +1,7 @@
 # ItoCook — Progress Log
 
 ## Current status
+- [x] **UI Polish Audit** — `docs/audits/ui-polish-audit.md` created using `make-interfaces-feel-better` skill; 12 findings across typography, surfaces, animations, performance (3 High, 5 Medium, 4 Low priority)
 - [x] **Harness: Superpowers Framework installed** — plugin `superpowers@git+https://github.com/obra/superpowers.git` added to `opencode.jsonc`; provides brainstorming, planning, TDD, code review, systematic debugging skills
 - [x] **Harness: session-start skill created** — `~/.config/opencode/skills/session-start/SKILL.md`; agent reads progress+roadmap and outputs session brief before coding
 - [x] **Harness: code-reviewer skill created** — `~/.config/opencode/skills/code-reviewer/SKILL.md`; agent runs checklist (TS, Vue, Directus, Design) before saying "done"
@@ -138,6 +139,15 @@
 - [x] **Security fix: admin token caching** — created `server/utils/adminToken.ts` (in-memory cache with 23h TTL); refactored all 8 server routes (signup, deduction confirm, duty confirm/upsert, pasta-price get/patch, users count/list) to use `getAdminToken(config)` instead of per-request `POST /auth/login`
 - [x] **Fix: TS errors from refactoring** — added null guard for `json.data.access_token` in `adminToken.ts`; restored `DirectusError` interface in `deduction/confirm.post.ts`
 
+## Security audit — 2026-06-28
+- [x] **Full security audit completed** — 4 layers audited (Nuxt routes, Directus policies, nginx, auth edge cases)
+- [x] **3 CRITICAL findings** — `directus_users` unrestricted read (all fields exposed), `balances` create/update unrestricted, `transactions` create unrestricted
+- [x] **2 HIGH findings** — `cook_queue` update unrestricted, `orders` update/delete unrestricted
+- [x] **2 MEDIUM findings** — `update-me.patch.ts` accepts unrestricted body, missing CSP in nginx
+- [x] **2 LOW findings** — missing security headers in nginx, `pasta_packages` in recipe update field list
+- [x] All 11 server routes verified: all protected routes call `requireAuth(event)`
+- [x] `docs/audits/security-audit.md` created with full findings and fix recommendations
+
 ## Current session — documentation
 - [x] **Block 4: CONTEXT.md** — created `docs/CONTEXT.md` — domain glossary with 30+ terms; each entry includes 1-2 sentence definition, file/collection locations, and related terms. Conducted interview on ambiguous terms (cook in 3 meanings, deduction vs cost entry, fork, ghost participant, etc.). Interview resolved term splits and established glossary scope.
 - [x] **Step 4.2: useDirectus.ts JSDoc** — added comprehensive JSDoc with business context, caller list, edge cases, and gotchas to `useDirectus.ts` (top-level composable, tokenCookie, request, uploadFile, deleteFile). Created `docs/ARCHITECTURE.md` with core-layer documentation and design rationale.
@@ -163,7 +173,7 @@
   - `duty.md` — duty flow, admin edit mode, MonthCalendar reuse, department snapshot, edge cases
 
 ## Refactoring session — Phase 1–2
-- [x] **Refactoring analysis** — analyzed 5 pages (3855 total lines) for extraction opportunities; identified 13 composable candidates, 4 cross-cutting patterns (slider, shopping list cleanup, participants fetch, date helpers); primary target: `confirmDeduction()` in `cook.vue` (64 lines, 5+ sequential API calls per participant). Findings saved to `docs/refactoring-plan.md`.
+- [x] **Refactoring analysis** — analyzed 5 pages (3855 total lines) for extraction opportunities; identified 13 composable candidates, 4 cross-cutting patterns (slider, shopping list cleanup, participants fetch, date helpers); primary target: `confirmDeduction()` in `cook.vue` (64 lines, 5+ sequential API calls per participant). Findings saved to `docs/audits/refactoring-plan.md`.
 - [x] **Fix: Consistent avatar URLs** — standardized all `pravatar.cc` `u` parameter to use `user.id` across `app.vue`, `index.vue`, `recipe/[id].vue`, `profile.vue`. Previously used `email` or `displayCookName`, causing different avatars per screen for the same user.
 - [x] **Fix: Avatars in finance Balances** — added user avatar (24px rounded-full) next to each name in both slider and expanded balance list on `finance.vue`.
 - [x] **Fix: Avatars not showing in Balances block** — `/api/users/list` was missing `avatar` from query fields and interface. `balanceEntries` iterates this list, so `entry.user.avatar` was `undefined` for everyone. Added `&fields[]=avatar` to the admin-proxy query and `avatar: string | null` to the interface.
@@ -402,4 +412,5 @@
 - `7507871` — fix(deploy): use --build flag in up command to always rebuild on deploy
 - `6461fd2` — feat(pwa): add Cook Cancelled flow + ICON_MAP entry + mark iPhone push done
 - `4c3c5ec` — docs: update CONTEXT, architecture/notifications, JSDoc for push/PWA, server-pwa-deploy
+- `00e21eb` — chore(docs): move skills-cheatsheet to docs/, add autonomous skill selection rules to AGENTS.md
 

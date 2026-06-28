@@ -430,9 +430,9 @@ erDiagram
 | `docs/roadmap.md` | High-level phases (Phase 1-3), milestones per phase |
 | `docs/progress.md` | Daily progress log, current status, known issues, git log |
 | `docs/plan-main.md` | Master implementation plan |
-| `docs/refactoring-plan.md` | Refactoring roadmap and patterns |
-| `docs/security-audit.md` | Security audit findings and fixes |
+| `docs/audits/refactoring-plan.md` | Refactoring roadmap and patterns |
 
+  | `docs/audits/security-audit.md` | Security audit findings and fixes |
 ---
 
 ## 8. Security Measures
