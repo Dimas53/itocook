@@ -179,3 +179,141 @@ The Nuxt server routes accept POST/PATCH requests without CSRF tokens. Since the
 | MEDIUM | Missing CSP in nginx | `docs/nginx-itocook.conf` |
 | LOW | Missing security headers in nginx | `docs/nginx-itocook.conf` |
 | LOW | `pasta_packages` in recipe update field list | Directus User policy |
+
+---
+
+## Risk Assessment — 2026-06-28
+
+### CRITICAL: `directus_users` unrestricted read
+
+**Frontend direct calls to `/users` or `/directus_users`:** 0
+
+All user-list reads go through Nuxt admin-proxy server routes (`/api/users/list`, `/api/users/count`). The frontend has zero direct calls to `/users` or `/directus_users` via `useDirectus()`. Only the two admin-proxy routes use the Directus `/users` endpoint, and they use the admin token (unaffected by User policy).
+
+- **Risk if permission removed RIGHT NOW:** 🟢 **Safe** — nothing breaks
+- **Recommended action:** Remove the wildcard rule (`fields=['*'], perm=None, action=read`) from the User policy. Keep only the scoped rule (`fields=['id','first_name','last_name','avatar','department'], perm={}`). The scoped rule already exists.
+
+### CRITICAL: `balances` create/update unrestricted
+
+**Frontend direct writes to `/items/balances` via `useDirectus()`:**
+
+| File | Line | Operation | Action |
+|---|---|---|---|
+| `finance.vue` | 179 | PATCH `/items/balances/${record.id}` | Update existing balance (top-up) |
+| `finance.vue` | 183 | POST `/items/balances` | Create new balance (top-up, first time) |
+
+**Admin-proxied writes (safe):** `deduction/confirm.post.ts` — uses admin token.
+
+All other pages/composables only READ balances (`GET` via `BalanceWidget.vue`, `useBalanceCheck.ts`, `profile.vue`).
+
+- **Risk if create/update removed RIGHT NOW:** 🟡 **Needs work first** — the manual top-up flow in `finance.vue` would break
+- **Recommended action:** Move manual top-up to an admin-proxy server route (create `PUT /api/finance/topup`), then remove `create` and `update` from the User policy for `balances`. The deduction path already goes through the admin proxy and is safe.
+
+### CRITICAL: `transactions` create unrestricted
+
+**Frontend direct writes to `/items/transactions` via `useDirectus()`:**
+
+| File | Line | Operation | Action |
+|---|---|---|---|
+| `finance.vue` | 164 | POST `/items/transactions` | Create credit/debit transaction (top-up) |
+
+**Admin-proxied writes (safe):** `deduction/confirm.post.ts` — creates debit transactions for all participants via admin token.
+
+- **Risk if `create` removed RIGHT NOW:** 🟡 **Needs work first** — the manual top-up flow in `finance.vue` would break
+- **Recommended action:** Include transaction creation in the same admin-proxy route as the balance top-up (`PUT /api/finance/topup`), then remove `create` from the User policy for `transactions`.
+
+### HIGH: `cook_queue` update unrestricted
+
+**Frontend direct PATCH calls to `/items/cook_queue` via `useDirectus()`:**
+
+| File | Line | Action | Own entry? |
+|---|---|---|---|
+| `cook.vue` | 848 | PATCH `saveDish()` — set dish_name + category + status | ✅ yes — user created it |
+| `cook.vue` | 878 | PATCH `markReady()` — set status=ready | ✅ yes — user created it |
+| `cook.vue` | 919 | PATCH `cancelCooking()` — set status=cancelled | ✅ yes — user created it |
+| `cook.vue` | 975 | PATCH `startCooking()` — set status=cooking | ✅ yes — user created it |
+| `cook.vue` | 1002 | PATCH status update | ✅ yes — user created it |
+| `recipe/[id].vue` | 819 | PATCH `startCooking()` — set status=cooking | ✅ yes — user created it |
+| `recipe/[id].vue` | 835 | PATCH `markReady()` — set status=ready | ✅ yes — user created it |
+
+All 7 PATCH calls operate on the current user's own `cook_queue` entry. No cross-user writes to `cook_queue` exist in the frontend.
+
+- **Risk if restricted to `user_created = $CURRENT_USER`:** 🟢 **Safe** — no direct writes would break
+- **Recommended action:** Add `{'user_created': {'_eq': '$CURRENT_USER'}}` filter on `update` action for `cook_queue`.
+
+### HIGH: `orders` update/delete unrestricted
+
+**Frontend direct write calls to `/items/orders` via `useDirectus()`:**
+
+| File | Line | Action | Own entry? |
+|---|---|---|---|
+| `cook.vue` | 782 | POST `assignAsCook()` — create order for self | ✅ own order |
+| `cook.vue` | 1007–1010 | GET + DELETE all orders for queue entry (cancel flow) | ❌ **deletes OTHER users' orders** |
+| `profile.vue` | 560 | DELETE `leaveMeal()` — delete own order | ✅ own order |
+| `profile.vue` | 571–574 | DELETE orders by queue ID + user ID | ✅ own order |
+| `useParticipants.ts` | 115 | POST `join()` — create order for self | ✅ own order |
+
+**The cancel flow (`cook.vue:1007-1010`) is the blocker.** When a cook cancels a meal, it lists ALL confirmed orders for that cook_queue entry and DELETES each one — regardless of which user owns the order. If DELETE is restricted to `$CURRENT_USER`, the cancel flow would get 403 Forbidden on every order that belongs to another participant.
+
+- **Risk if restricted to `user_created = $CURRENT_USER`:** 🔴 **Will break** — cancel flow deletes other users' orders
+- **Recommended action:** Move the cancel DELETE logic to an admin-proxy server route (create `POST /api/orders/cancel` that takes a `cookQueueId` and deletes all related orders with the admin token), then restrict DELETE with `{'user_created': {'_eq': '$CURRENT_USER'}}`.
+
+### MEDIUM: `update-me.patch.ts` unrestricted body
+
+**Frontend fields sent to `/api/users/update-me`:**
+
+| File | Line | Sent body |
+|---|---|---|
+| `profile.vue` | 353 | `{ avatar: uploaded.id }` |
+| `profile.vue` | 586 | `{ department: value || null }` |
+
+Only two fields are sent: `avatar` and `department`. Both are safe. However, the server route accepts the entire request body without whitelisting.
+
+**Exploitability:** The route proxies to Directus `/users/me` PATCH using the user's own token. Even if a malicious payload included `role`, `email`, or `password`, the Directus User policy restricts `update` on `directus_users` to `fields=['avatar']` with `perm={'id': {'_eq': '$CURRENT_USER'}}`. Directus itself would reject any field outside `avatar`.
+
+**Defense-in-depth issue:** If the Directus User policy were ever broadened (e.g., to allow users to update their own email), the Nuxt route would silently pass through any field without a whitelist.
+
+- **Risk if NOT fixed:** 🟢 **Low** — Directus permission layer blocks exploits; defense-in-depth gap only
+- **Recommended action:** Add a field whitelist to `update-me.patch.ts`:
+  ```ts
+  const allowed = ['first_name', 'last_name', 'avatar', 'department']
+  const sanitized = Object.fromEntries(
+    Object.entries(body).filter(([k]) => allowed.includes(k))
+  )
+  ```
+
+
+---
+Отличный анализ — агент сделал именно то что нужно. Теперь картина чёткая.
+Что я бы сделал прямо сейчас — только два зелёных:
+
+directus_users wildcard → удалить. 0 рисков, 0 сломанного, критическая уязвимость.
+cook_queue → добавить $CURRENT_USER фильтр. Все 7 вызовов свои, ничего не сломается.
+
+Это 10 минут работы и закрывает 2 критических + 1 high.
+
+---
+
+Что отложить — остальное требует сначала создать server routes:
+
+balances + transactions → нужен /api/finance/topup сначала
+orders cancel → нужен /api/orders/cancel сначала
+update-me whitelist → низкий риск, можно в любой момент
+
+Эти три лучше сделать отдельной сессией с полным фокусом — там реальный код писать надо, не просто permissions менять.
+Промпт для быстрого фикса прямо сейчас:
+Fix only the two SAFE items from docs/audits/security-audit.md
+risk assessment. Do NOT touch anything else.
+
+1. directus_users — remove the wildcard read rule (fields=['*'],
+   perm=None) from User policy via Directus MCP.
+   Keep only the scoped rule that already exists.
+
+2. cook_queue — add filter {'user_created': {'_eq': '$CURRENT_USER'}}
+   to the update action in User policy via Directus MCP.
+
+After each change — verify in Directus that the rule looks correct.
+Test: open the app in browser, do a cook flow, confirm nothing breaks.
+
+Update docs/audits/security-audit.md — mark these two as ✅ Fixed.
+Do NOT touch balances, transactions, orders, or update-me.patch.ts.

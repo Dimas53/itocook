@@ -395,6 +395,7 @@
 - `0e52a36` — feat(notifications): Phase 6 Steps 2-3 — NotificationBell, /notifications page, CORS proxy, server route fixes
 - `13d75fa` — feat(ui): onboarding gradient bg + dot pattern, finance header, bottom bar color
 - `558b193` — fix(layout): iphone screen bg-app-bg, status bar bg-app-bg, remove pb-[100px] from content
+- `8f59ada` — chore(docs): move audit files to docs/audits/
 - `7e602c6` — feat(mobile): responsive layout — hide iPhone frame on real devices, BottomTabBar fixed positioning, add safe-area padding
 - `0cf36c6` — docs: create project-state.md in docs/ with updated file structure, flows, composables, security measures
 - `939a2d1` — chore: snapshot current state before JSDoc pass

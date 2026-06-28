@@ -31,6 +31,7 @@ read (boolean, default false), date_created (auto)
 - `duty_reminder` — напоминание о дежурстве
 - `cook_reminder` — повар завис в scheduled, пора стартовать (Task B')
 - `join_pending` — кто-то хочет присоединиться после 11:00 (Task D)
+- `cook_cancelled` — повар отменил готовку ✅ добавлен 27.06.2026
 
 ---
 
@@ -229,13 +230,14 @@ Card design per notification:
 - Unread: left border-l-4 border-primary, bg-primary-pale/30
 - Read: no border, bg-white, opacity-70
 - Icon left (32px circle): color by type
-  - cook_assigned → bg-green-pastel, PhCookingPot
-  - lunch_ready → bg-yellow-pastel, PhForkKnife
-  - morning_reminder → bg-primary-light, PhSun
-  - balance_low → bg-red-50, PhWarning (text-red-500)
-  - duty_reminder → bg-primary-pale, PhBroom
-  - cook_reminder → bg-yellow-pastel, PhClock
-  - join_pending → bg-green-light, PhUserPlus
+    - cook_assigned → bg-green-pastel, PhCookingPot
+    - lunch_ready → bg-yellow-pastel, PhForkKnife
+    - morning_reminder → bg-primary-light, PhSun
+    - balance_low → bg-red-50, PhWarning (text-red-500)
+    - duty_reminder → bg-primary-pale, PhBroom
+    - cook_reminder → bg-yellow-pastel, PhClock
+    - join_pending → bg-green-light, PhUserPlus
+    - cook_cancelled → bg-red-50, PhXCircle (text-red-500)
 - Message text: text-[14px] text-app-black
 - Time: text-[12px] text-gray-400, relative ("2 min ago", "1h ago", "Yesterday") — implement simple timeAgo() utility
 - Tap card → markAsRead(id)
@@ -263,13 +265,13 @@ TASK: Create 1 Directus Flow via MCP.
 FLOW: "Duty Reminder"
 Trigger: Schedule — cron "0 9 * * 1-5" (09:00 Mon–Fri)
 Operation chain:
-  1. Read Data: fetch cleaning_schedule where date = today AND confirmed = false
-  2. For each result: Create Item in notifications:
-     {
-       "user": "{{item.user}}",
-       "type": "duty_reminder",
-       "message": "Reminder: you're on kitchen duty today. Don't forget to confirm! 🧹"
-     }
+1. Read Data: fetch cleaning_schedule where date = today AND confirmed = false
+2. For each result: Create Item in notifications:
+   {
+   "user": "{{item.user}}",
+   "type": "duty_reminder",
+   "message": "Reminder: you're on kitchen duty today. Don't forget to confirm! 🧹"
+   }
 
 After creating, verify Flow appears in Directus Flows list via MCP.
 Final step: update docs/progress.md.
@@ -282,13 +284,17 @@ Final step: update docs/progress.md.
 **Сессия:** отдельная
 **Скиллы:** `directus`, `vue`
 
+> ⚠️ Важно: `assign` и `dish` — это UI-состояния cook.vue, их нет в Directus.
+> В Directus все "idea stage" записи хранятся как `status = scheduled`.
+> Фильтровать нужно только по `status = scheduled` + `date = today`.
+
 
 Read AGENTS.md first. Use skills: directus, vue.
 
-CONTEXT: ItoCook. cook_queue statuses: assign → dish → scheduled → cooking → ready → completed / cancelled.
-"Idea stage" = assign, dish, scheduled (no money involved yet).
+CONTEXT: ItoCook. cook_queue statuses in Directus: scheduled, cooking, ready, completed, cancelled.
+"Idea stage" = scheduled (no money involved yet).
 "Cooking stage" = cooking, ready, completed (money counts).
-If an entry stays in scheduled for more than 2 hours past the assigned date without transitioning to cooking → send reminder to cook and eventually auto-cancel.
+If an entry stays in scheduled for today's date without transitioning to cooking → send reminder to cook and eventually auto-cancel.
 
 TASK: Two parts.
 
@@ -297,44 +303,42 @@ TASK: Two parts.
 PART A: Directus Flow "Cook Stale Reminder"
 Trigger: Schedule — cron "0 10 * * 1-5" (10:00 Mon–Fri)
 Operation chain:
-  1. Read Data: fetch cook_queue where:
-     - date = today
-     - status IN [assign, dish, scheduled]
-  2. Condition: if result not empty
-  3. For each item: Create notification:
-     {
-       "user": "{{item.cook}}",
-       "type": "cook_reminder",
-       "message": "You signed up to cook today but haven't started yet. Start cooking or cancel so others can plan 🍳"
-     }
+1. Read Data: fetch cook_queue where date = today AND status = scheduled
+2. Condition: if result not empty
+3. For each item: Create notification:
+   {
+   "user": "{{item.cook}}",
+   "type": "cook_reminder",
+   "message": "You signed up to cook today but haven't started yet. Start cooking or cancel so others can plan 🍳"
+   }
 
 ---
 
 PART B: Directus Flow "Cook Auto-Cancel"
 Trigger: Schedule — cron "0 12 * * 1-5" (12:00 Mon–Fri)
 Operation chain:
-  1. Read Data: fetch cook_queue where date = today AND status IN [assign, dish, scheduled]
-  2. For each item:
-     a. Update cook_queue item: { status: "cancelled" }
-     b. Create notification for cook:
-        {
-          "user": "{{item.cook}}",
-          "type": "cook_reminder",
-          "message": "Your cooking entry for today was automatically cancelled since cooking never started."
-        }
+1. Read Data: fetch cook_queue where date = today AND status = scheduled
+2. For each item:
+   a. Update cook_queue item: { status: "cancelled" }
+   b. Create notification for cook:
+   {
+   "user": "{{item.cook}}",
+   "type": "cook_reminder",
+   "message": "Your cooking entry for today was automatically cancelled since cooking never started."
+   }
 
-Note: auto-cancel only touches entries still in idea stage — no balance changes needed (money is only counted on confirmDeduction which requires cooking/ready status).
+Note: auto-cancel only touches entries still in scheduled — no balance changes needed.
 
 ---
 
 PART C: Nuxt — cook.vue: show pending join requests
 In cook.vue, in the "cooking" and "ready" states, fetch orders where:
-  status = "pending_cook_approval" AND cook_queue = current entry id
+status = "pending_cook_approval" AND cook_queue = current entry id
 
 If any exist, show a section "Pending join requests" with:
-  - User name
-  - "Approve" button → PATCH order { status: "confirmed" }
-  - "Decline" button → PATCH order { status: "cancelled" }
+- User name
+- "Approve" button → PATCH order { status: "confirmed" }
+- "Decline" button → PATCH order { status: "cancelled" }
 
 Keep it simple — no realtime, just fetch on page load and after each action.
 
@@ -350,14 +354,17 @@ Final step: update docs/progress.md.
 
 > Самый сложный шаг. Затрагивает orders, cook.vue, useParticipants, confirmDeduction.
 
+> ⚠️ Важно: текущие orders.status choices в Directus: pending, confirmed, cancelled, completed.
+> Добавлять left_late и pending_cook_approval нужно к существующим, не удаляя pending/completed.
+
 
 Read AGENTS.md first. Use skills: directus, vue, incremental-implementation.
 
 CONTEXT: ItoCook.
-orders collection fields: user, cook_queue, status (confirmed/cancelled).
+orders collection fields: user, cook_queue, status (pending/confirmed/cancelled/completed).
 confirmDeduction() in cook.vue splits total cost by participants.length (confirmed orders).
 useParticipants composable handles join/leave.
-Time logic: lunch is at 12:00. Cutoff for free leave = 11:00 (1h before). 
+Time logic: lunch is at 12:00. Cutoff for free leave = 11:00 (1h before).
 Cutoff for future days = 20:00 the day before.
 
 TASK: Implement ghost-participant logic. Do this incrementally, verify each step.
@@ -366,9 +373,12 @@ TASK: Implement ghost-participant logic. Do this incrementally, verify each step
 
 STEP 1: Directus schema changes (via MCP)
 Add to orders collection:
-  - status: add new allowed values: "left_late", "pending_cook_approval"
-    (existing: confirmed, cancelled — keep those)
-  - charged_pending: boolean, default false
+- status: add new allowed values: "left_late", "pending_cook_approval"
+  (keep existing: pending, confirmed, cancelled, completed)
+- charged_pending: boolean, default false
+
+Also add "completed" to cook_queue.status choices if not already there
+(it's used in confirmDeduction but may not be declared in Directus).
 
 ---
 
@@ -384,15 +394,12 @@ async function leave(cookQueueId: string) {
   const entryDate = /* get date of cook_queue entry */
 
   if (entryDate === today) {
-    // Today's lunch
     const cutoff = new Date()
     cutoff.setHours(11, 0, 0, 0)
     
     if (now < cutoff) {
-      // Free leave — cancel order
       await request('patch', `/items/orders/${orderId}`, { status: 'cancelled' })
     } else {
-      // Late leave — ghost marker
       await request('patch', `/items/orders/${orderId}`, { 
         status: 'left_late',
         charged_pending: true 
@@ -400,16 +407,13 @@ async function leave(cookQueueId: string) {
       // Show toast: "You left late — you will still be charged for today's lunch"
     }
   } else {
-    // Future day
     const cutoff = new Date(entryDate)
     cutoff.setDate(cutoff.getDate() - 1)
     cutoff.setHours(20, 0, 0, 0)
     
     if (now < cutoff) {
-      // Free leave
       await request('patch', `/items/orders/${orderId}`, { status: 'cancelled' })
     } else {
-      // After cutoff — needs cook approval
       await request('patch', `/items/orders/${orderId}`, { 
         status: 'pending_cook_approval',
         charged_pending: true
@@ -425,20 +429,16 @@ async function leave(cookQueueId: string) {
 STEP 3: Update useParticipants.ts — join() logic for late joins
 
 If cook_queue status is "cooking" or "ready" AND current time > 11:00:
-  - Instead of status: "confirmed", set status: "pending_cook_approval"
-  - Show toast: "Your join request has been sent to the cook for approval"
-  - Create notification for cook:
-    { type: "join_pending", message: "{{user.name}} wants to join lunch — approve on your cook page" }
+- Instead of status: "confirmed", set status: "pending_cook_approval"
+- Show toast: "Your join request has been sent to the cook for approval"
+- Create notification for cook:
+  { type: "join_pending", message: "{{user.name}} wants to join lunch — approve on your cook page" }
 
 ---
 
 STEP 4: Update confirmDeduction() in cook.vue
 
-Currently counts only confirmed orders. Update to also count left_late + charged_pending orders:
-
 ```ts
-// Before: participants = orders.filter(o => o.status === 'confirmed')
-// After:
 const billableOrders = orders.filter(o => 
   o.status === 'confirmed' || (o.status === 'left_late' && o.charged_pending)
 )
@@ -483,27 +483,27 @@ CONTEXT: ItoCook. profile.vue exists. Directus users table has custom fields are
 TASK: Add notification preferences to profile.vue.
 
 Step 1: Add fields to directus_users (via MCP — extend user record):
-  - notif_cook_assigned: boolean, default true
-  - notif_lunch_ready: boolean, default true  
-  - notif_morning_reminder: boolean, default true
-  - notif_balance_low: boolean, default true
-  - notif_duty_reminder: boolean, default true
+- notif_cook_assigned: boolean, default true
+- notif_lunch_ready: boolean, default true
+- notif_morning_reminder: boolean, default true
+- notif_balance_low: boolean, default true
+- notif_duty_reminder: boolean, default true
 
 Step 2: In profile.vue, add a "Notifications" section (below existing content):
-  - Section title: "Notifications" (text-[20px] font-semibold)
-  - Toggle list for each type with label and description:
+- Section title: "Notifications" (text-[20px] font-semibold)
+- Toggle list for each type with label and description:
     - "Cook assigned" — "When someone signs up to cook"
     - "Lunch ready" — "When the cook marks lunch as ready"
     - "Morning reminder" — "If no cook is assigned by 8am"
     - "Balance low" — "When your balance drops below -10€"
     - "Duty reminder" — "Reminder about your kitchen duty"
-  - Toggle: UNuxtUI UToggle component or simple styled checkbox
-  - Auto-save on change: PATCH /users/me with updated field
+- Toggle: simple styled checkbox or custom toggle
+- Auto-save on change: PATCH /users/me with updated field
 
 Step 3: Update Directus Flows (Flows 1-4 from Step 1) to check user preference before creating notification:
-  In each Flow, before Create Item: Read the target user's preference field.
-  If preference = false → skip notification for that user.
-  This can be done with a Condition operation in the Flow checking {{user.notif_TYPE}}.
+In each Flow, before Create Item: Read the target user's preference field.
+If preference = false → skip notification for that user.
+Simplest approach: read all users at once + filter by preference in exec operation.
 
 Final step: update docs/progress.md.
 
@@ -531,7 +531,7 @@ Final step: update docs/progress.md.
 ## Что НЕ входит в эту фазу
 
 - Email/SMTP — отдельная фича, после MVP
-- Push-уведомления (FCM) — после MVP
+- Push-уведомления (FCM) — реализованы сверх плана ✅
 - WhatsApp — после MVP
 - Realtime (WebSockets) — после MVP, Directus поддерживает через subscriptions но не нужно сейчас
 
@@ -547,6 +547,85 @@ Final step: update docs/progress.md.
 
 ---
 
+## Analysis Report — Проверка реализуемости и архитектуры
+
+> Проверено opencode agent 2026-06-19.
+> Контекст: проект на момент окончания security-сессии (admin proxy, admin token caching, вся JSDoc, Phase 1-2 рефакторинг).
+
+### 1. Могу ли я это сделать?
+
+**Да, полностью.** Все 8 шагов реализуемы. Ничего технически risky:
+
+- **Directus Flows** (шаги 1,4,5) — стандартный MCP, уже работали с collections/fields/relations
+- **Nuxt composable + колокольчик** (шаг 2) — паттерн `useDirectus()` + `onMounted` с poll, уже есть в `useParticipants`
+- **Страница /notifications** (шаг 3) — стандартная страница с skeleton/empty/list
+- **Ghost-логика** (шаг 6) — модификация `useParticipants.leave()`, `confirmDeduction()`, `recipe/[id].vue`
+- **Настройки уведомлений** (шаг 7) — поля в `directus_users`, toggle в `profile.vue`, проверка в Flows
+
+### 2. Архитектурные расхождения (исправлены в промптах выше)
+
+#### ~~🔴 Критическое: Шаг 5 — статусы cook_queue~~
+~~План проверяет `status IN [assign, dish, scheduled]`, но `assign` и `dish` не существуют в Directus`.~~
+**✅ Исправлено в промпте Шага 5:** теперь фильтрует только `status = scheduled`.
+
+#### ~~🟡 Важное: orders.status choices~~
+~~План говорит "existing: confirmed, cancelled", но `pending` и `completed` уже есть.~~
+**✅ Исправлено в промпте Шага 6:** явно указано сохранить все существующие choices.
+
+#### 🟡 Актуально: cook_queue.status choices
+Статус `completed` используется в `confirmDeduction` но не объявлен в Directus choices.
+Добавить `completed` в choices — указано в промпте Шага 6, Step 1.
+
+### 3. Что можно дополнить/улучшить (на потом)
+
+- **Уведомление для ghost-юзера**: "You left late — you'll still be charged €X.XX"
+- **Optimistic сброс badge**: При тапе на колокольчик сбрасывать count сразу
+- **Chrome push**: FCM issue, низкий приоритет
+
+---
+
+## Статус на 27.06.2026
+
+### ✅ Выполнено (шаги 0–4 + сверх плана)
+
+| Шаг | Что | Статус |
+|-----|-----|--------|
+| 0 | Schema: notifications collection + permissions | ✅ |
+| 1 | Flows: Cook Assigned, Lunch Ready, Balance Low, Morning Reminder | ✅ |
+| 2 | useNotifications composable + NotificationBell | ✅ |
+| 3 | Страница /notifications (список, иконки, timeAgo, markAsRead) | ✅ |
+| 4 | Duty Reminder + Duty Assigned Flows | ✅ |
+| — | Flow "Cook Cancelled" — уведомление при отмене готовки | ✅ сверх плана |
+| — | Flow "Nightly Notification Cleanup" — удаление старше 7 дней в 3:00 | ✅ сверх плана |
+| — | Push уведомления: iPhone ✅ Firefox ✅ Chrome ❌ (FCM, низкий приоритет) | ✅ сверх плана |
+| — | PWA: manifest link, SW, standalone mode на iPhone | ✅ сверх плана |
+
+---
+
+### ⬜ Осталось
+
+| Шаг | Что | Приоритет |
+|-----|-----|-----------|
+| 5 | Task B': Cook Stale Reminder + Auto-Cancel Flow | **высокий** |
+| 6 | Task D: Ghost-participant logic | **высокий** |
+| 7 | Notification preferences в профиле (toggle per type) | средний |
+| — | Chrome push (FCM issue) | низкий |
+
+### Решение
+Шаги 5, 6, 7 — делаем до запуска с реальными пользователями.
+Ядро приложения должно быть полным прежде чем добавлять новые фичи.
+**Порядок: 5 → 6 → 7 → тестовая неделя → AI Recipe, Common и остальное.**
+
+---
+
+
+
+
+
+
+
+
+--- 
 ## Analysis Report — Проверка реализуемости и архитектуры
 
 > Проверено opencode agent 2026-06-19.

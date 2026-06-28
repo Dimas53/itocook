@@ -56,10 +56,13 @@
 | `directus` | Работаем с Directus — схема, permissions, MCP |
 | `api-and-interface-design` | Проектируй API по правилам |
 | `git-workflow-and-versioning` | Применяй git workflow паттерны |
+| `security` | Проверь безопасность — auth, secrets, API, инфраструктура (Nuxt 4 + Directus 11) |
 | `security-and-hardening` | Проверь на безопасность |
+| `make-interfaces-feel-better` | Полируй UI — типографика, тени, скругления, микро-анимации |
 | `performance-optimization` | Найди узкие места, оптимизируй |
 | `caveman` | Режим экономии токенов — отвечай кратко |
 | `frontend-ui-engineering` | UI задача — применяй frontend паттерны |
+| `make-interfaces-feel-better` | Полировка UI — радиусы, тени, анимации, шрифты, optical alignment |
 
 ---
 
