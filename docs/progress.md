@@ -387,7 +387,13 @@
 - [x] **Docs: updated docs/ARCHITECTURE.md — Phase 6b PWA+Push section**
 - [x] **Docs: updated docs/server-pwa-deploy.md — push status, known issues, checklist**
 
+## Current session — docs cleanup (2026-06-28)
+- [x] **docs/design.md updated** — Screen Inventory replaced with actual screens (Kitchen, Cook, Finance, Notifications, Recipe Create/Edit); Bottom Tab Bar updated to match real tabs (Home/Kitchen/AI-Finance/Duty/Common); File Structure rewritten for Nuxt 4 `app/` directory; Safe area values synced with app.vue
+- [x] **docs/roadmap.md updated** — Phase 6c added (refactoring, JSDoc, security audit, harness); Phase 4 marked ✅; missing completed items added to Phase 6 (Cook Cancelled Flow, Nightly Cleanup, push integration)
+- [x] **Retrospective .planning/ created** — 6 retrospective PLAN.md files for completed phases (01-ui-skeleton, 02-first-live-flow, 03-directus-schema, 04-feature-screens, 06-notifications-pwa, 06c-refactoring-docs). Each documents goal, completed tasks, key decisions, file changes, and completion date. No invented content — only data from progress.md + roadmap + git log.
+
 ## Git log
+- `e573808` — docs: fix design.md, roadmap.md, add retrospective planning files
 - `34f5aba` — docs(harness): update overview, diagram, cheatsheet with security audit and test plan
 - `db5aa18` — fix(ui): swipe-to-dismiss bottom sheets, full-month date picker, block future cook actions
 - `3f4de82` — fix(nginx): fix JS MIME type for Directus admin assets

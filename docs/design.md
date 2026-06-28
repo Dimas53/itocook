@@ -14,8 +14,8 @@
 | Screen height | `844px` |
 | Outer frame border radius | `rounded-[50px]` |
 | Inner screen border radius | `rounded-[40px]` |
-| Safe area top (under Dynamic Island) | `pt-[60px]` |
-| Safe area bottom (under Home Indicator) | `pb-[34px]` |
+| Safe area top (under Dynamic Island) | `calc(48px + env(safe-area-inset-top, 44px))` |
+| Safe area bottom (under Home Indicator) | Desktop: `auto` (handled by BottomTabBar `bottom: 16px`); Mobile: `calc(70px + env(safe-area-inset-bottom, 0px))` |
 | Horizontal content padding | `px-5` (20px) |
 
 ---
@@ -130,13 +130,16 @@ Image:         absolutely positioned, overflows card edge
 ### Bottom Tab Bar
 
 ```
-Height:        h-[70px]
-Background:    bg-white
-Border top:    border-t border-gray-100
-Icon size:     size-6 (24px)
-Active:        text-primary or bg-app-black text-white (circle)
-Inactive:      text-gray-400
-Tabs:          Home, Meal Plan, AI Recipe, Journal, Learning
+Height:        h-[64px]
+Background:    rgba(99, 73, 182, 0.71) with backdrop-filter: blur(2px)
+Border radius: rounded-3xl
+Position:      absolute, left-4 right-4, bottom-16px
+Icon size:     size-5 (20px)
+Active:        bg-white rounded-full w-12 h-12, text-app-black
+Inactive:      text-white/80
+Tabs:          Home (PhCookingPot), Kitchen (PhCalendarBlank), AI Recipe or Finance (PhSparkle/PhChartBar), Duty (PhBroom), Common (PhUsers)
+Tab 3 swap:    Admin/Accountant role → shows Finance (PhChartBar) instead of AI Recipe (PhSparkle)
+Hide on:       /profile, /cook, /auth, /onboarding
 ```
 
 ### Avatar / Badge
@@ -170,16 +173,22 @@ import { House, CalendarBlank, Sparkle, Notebook, Books } from '@phosphor-icons/
 ## 6. Screen Inventory
 
 | Screen | Route | Description |
-|---|---|---|
-| Onboarding | `/onboarding` | Purple background, 3D chef illustration, "Quick & Easy Recipes!" |
-| Auth | `/auth` | Log In / Sign Up toggle, form fields, Apple sign-in |
-| Home | `/` | Greeting, search bar, category pills, recipe cards |
-| Recipe Detail | `/recipe/:id` | Hero image, macros, description, ingredient/instruction tabs |
-| Meal Plan | `/meal-plan` | Personalization banner, Lunch/Dinner recipe cards |
-| AI Recipe | `/ai-recipe` | Ingredient input tags, Generate button, history list |
-| Journal | `/journal` | Calorie tracker, macro rings, meal cards (Breakfast/Lunch/Dinner) |
-| Learning | `/learning` | Filter tabs (Nutrition/Sustainability/Fitness), article list |
-| Profile | `/profile` | Avatar, Edit button, Preferences, My Lists / My Recipes tabs |
+|---|---|---|---|
+| Onboarding | `/onboarding` | Purple gradient bg, chef illustration, logo, auto-redirect after 2.5s |
+| Auth | `/auth` | Log In / Sign Up toggle, form validation, password toggle, real Directus auth |
+| Home | `/` | Greeting + avatar, HeroBlock (who's cooking), balance/duty widgets, recipe cards with like counts |
+| Kitchen | `/kitchen` | Today's cook + HeroBlock, week calendar, dish history with search, "All Recipes" link |
+| Cook Panel | `/cook` | State machine (assign→dish→scheduled→cooking→ready→done), receipt entry, deduction confirm |
+| Recipe Detail | `/recipe/[id]` | Photo hero, servings scaling, ingredients with emoji, steps, status badges, Join/Start/Ready buttons, shopping list share |
+| Recipe Create/Edit | `/recipe/create` | Photo upload (file/drag/paste), ingredient quick-pick popover, pasta packages, return-to support |
+| All Recipes | `/recipes` | Search + category filter, RecipeCard grid with like counts, "Cook This" date picker |
+| AI Recipe | `/ai-recipe` | Chat with AI, JSON recipe render (stub — not yet implemented) |
+| Finance | `/finance` | Admin only. All balances (color-coded), manual top-up, transaction history slider, pasta price edit |
+| Duty | `/duty` | Today's duty card with confirm button, monthly calendar (Mon-Fri), admin edit mode |
+| Common | `/common` | Announcements, pool collections (stub — not yet implemented) |
+| Profile | `/profile` | Avatar upload, name/department/preferences, balance + transactions, My List, My Recipes tabs, logout |
+| Shopping List | `/shopping-list` | By Recipe / All Items tabs, check/uncheck, select-all, clear checked, auto-cleanup on deduction |
+| Notifications | `/notifications` | Notification feed with icons per type, mark as read, mark all read, skeleton loading, empty state |
 
 ---
 
@@ -221,26 +230,89 @@ import { House, CalendarBlank, Sparkle, Notebook, Books } from '@phosphor-icons/
 ## 9. File Structure (Frontend)
 
 ```
-frontend/
-├── assets/
-│   └── css/
-│       └── main.css       ← @import Jost + global styles
+frontend/app/                     ← Nuxt 4 app directory
+├── app.vue                       ← Phone frame + BottomTabBar + global participants modal
+├── assets/css/main.css           ← Jost font + global styles + mobile layout overrides
+├── components/
+│   ├── BottomTabBar.vue          ← 5-tab nav bar with role-based Finance swap
+│   ├── HeroBlock.vue             ← Today's cook card (3 states: loading/cook/empty)
+│   ├── RecipeCard.vue            ← Recipe grid card with like count
+│   ├── RecipeGridItem.vue        ← Smaller recipe item for /recipes grid
+│   ├── RecipeImageUpload.vue     ← Photo upload with drag/drop/paste + client resize
+│   ├── AddIngredientPopover.vue  ← Quick-pick ingredient bottom sheet
+│   ├── MonthCalendar.vue         ← Reusable month grid (Mon-Fri) for duty + date picker
+│   ├── WeekCalendar.vue          ← Horizontal week pills for kitchen page
+│   ├── BalanceWidget.vue         ← Mini balance display for home page
+│   ├── DutyWidget.vue            ← Upcoming duty card for home page
+│   ├── ShoppingListWidget.vue    ← Cart icon + unchecked count for kitchen page
+│   ├── NotificationBell.vue      ← Bell icon with unread badge
+│   ├── ReceiptSummary.vue        ← Cost breakdown lines for cook panel
+│   ├── SliderList.vue            ← Reusable translateY slider with touch support
+│   ├── BalanceRow.vue            ← Single balance line for finance page
+│   ├── TransactionRow.vue        ← Single transaction line for finance page
+│   ├── AvatarPlaceholder.vue     ← SVG fallback when no avatar photo
+│   └── ActionBlockedModal.vue    ← Blocked action explanation modal
+├── composables/
+│   ├── useDirectus.ts            ← Core HTTP client wrapping fetch
+│   ├── useAuth.ts                ← Login/signup/logout/fetchUser
+│   ├── useParticipants.ts        ← Meal participants state
+│   ├── useParticipantsModal.ts   ← Global participant list modal
+│   ├── useDeduction.ts           ← confirmDeduction + pasta cost + shopping cleanup
+│   ├── useBalanceCheck.ts        ← Balance gate threshold check
+│   ├── useMealCost.ts            ← Pasta package cost computation
+│   ├── useRecipeImage.ts         ← Recipe photo or category fallback PNG
+│   ├── useRecipeServings.ts      ← Serving scaling logic
+│   ├── useLikes.ts               ← Recipe like/unlike
+│   ├── useNotifications.ts       ← Poll + markAsRead + markAllAsRead
+│   ├── usePushNotifications.ts   ← SW register + subscribe + VAPID
+│   ├── useTotalUsers.ts          ← Total active user count
+│   └── useSwipeDismiss.ts        ← Touch swipe-to-dismiss
 ├── layouts/
-│   └── default.vue        ← iPhone frame + Dynamic Island + <slot>
+│   ├── app.vue                   ← Phone frame + Dynamic Island + tab bar + global modal
+│   └── default.vue               ← Minimal layout for auth/onboarding (transparent status bar)
+├── middleware/
+│   ├── auth.global.ts            ← Route guard + token check + push subscribe
+│   └── cook.ts                   ← Non-cancelled cook check, redirect to /cook if assigned
 ├── pages/
-│   ├── index.vue          ← Home
+│   ├── index.vue                 ← Home
 │   ├── auth.vue
 │   ├── onboarding.vue
-│   ├── meal-plan.vue
-│   ├── ai-recipe.vue
-│   ├── journal.vue
-│   ├── learning.vue
-│   ├── profile.vue
-│   └── recipe/
-│       └── [id].vue
-└── components/
-    ├── BottomTabBar.vue
-    ├── RecipeCard.vue
-    ├── CategoryPill.vue
-    └── MacroRing.vue
+│   ├── kitchen.vue               ← Kitchen calendar + dish history
+│   ├── cook.vue                  ← Cook panel state machine
+│   ├── recipes.vue               ← All recipes with search + filter
+│   ├── recipe/[id].vue           ← Recipe detail
+│   ├── recipe/create.vue         ← Recipe create/edit form
+│   ├── shopping-list.vue         ← Shopping list management
+│   ├── notifications.vue         ← Notification feed
+│   ├── duty.vue                  ← Duty calendar + admin edit
+│   ├── finance.vue               ← Admin finance page
+│   ├── ai-recipe.vue             ← AI chat (stub)
+│   ├── common.vue                ← Announcements + polls (stub)
+│   └── profile.vue               ← User profile + balance + lists
+├── public/
+│   ├── images/                   ← Static images (onboarding, categories, icons)
+│   ├── icons/                    ← PWA icons (192x192, 512x512)
+│   └── push-handler.js          ← Service Worker push event handler
+└── utils/
+    ├── dates.ts                  ← Shared date formatting functions
+    ├── dedupRecipes.ts           ← Recipe deduplication by dish_name
+    ├── format.ts                 ← User name formatting
+    ├── ingredientIcons.ts        ← Emoji dictionary (130+ entries) + fuzzy matcher
+    └── popularIngredients.ts     ← 35 popular ingredients with default units + categories
+
+frontend/server/                   ← Nuxt server routes (admin proxy)
+├── api/
+│   ├── auth/signup.post.ts       ← Admin-proxy registration with rate limiting
+│   ├── deduction/confirm.post.ts ← Admin-proxy deduction with transaction + balance
+│   ├── duty/confirm.post.ts      ← Admin-proxy duty confirm
+│   ├── duty/upsert.post.ts       ← Admin-proxy duty create/update
+│   ├── notifications/read.patch.ts ← Admin-proxy batch mark-as-read
+│   ├── push/vapid-key.get.ts     ← Public VAPID key
+│   ├── settings/pasta-price.get.ts   ← Pasta package price
+│   ├── settings/pasta-price.patch.ts ← Update pasta package price
+│   ├── users/count.get.ts       ← Active user count
+│   └── users/list.get.ts        ← All users list with departments
+└── utils/
+    ├── adminToken.ts             ← Cached admin token (23h TTL)
+    └── auth.ts                   ← requireAuth helper
 ```

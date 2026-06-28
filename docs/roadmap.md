@@ -56,7 +56,7 @@
 
 ---
 
-## Phase 4: Feature Screens 🟡 (in progress)
+## Phase 4: Feature Screens ✅ 2026-06-20
 **Goal:** Final layout of all app screens according to the current screen map.
 Each screen is adapted to the real data structure from Directus.
 Agent reads `docs/design.md` before laying out each screen.
@@ -215,6 +215,9 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 - [x] `/notifications` page — list, icons, timeAgo, markAsRead, markAllAsRead
 - [x] Duty Reminder Flow (CRON `0 8 * * 1-5`)
 - [x] Duty Assigned Flow (event on cleaning_schedule create)
+- [x] Cook Cancelled Flow — notifies all users when cook cancels
+- [x] Nightly Notification Cleanup Flow — deletes notifications older than 7 days at 3am
+- [x] All 6 flows call FastAPI `/send-push` for push delivery
 - [ ] **Step 5:** Fix status choices in Directus (add `completed` to cook_queue, `left_late`/`pending_cook_approval` to orders)
 - [ ] **Step 6:** Ghost-participant logic
 - [ ] **Step 7:** Notification preferences in profile
@@ -270,6 +273,53 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 2. Verify `<link rel="manifest">` is in HTML: `curl -s https://itocook.duckdns.org | grep -i manifest`
 3. **Chrome push**: investigate FCM `push service error` (lower priority)
 5. Trigger test push via Directus Flow or FastAPI directly
+
+---
+
+## Phase 6c: Refactoring & Documentation ✅ 2026-06-28
+**Goal:** Improve code quality through composable extraction, shared patterns, full JSDoc coverage, and security hardening.
+
+### Refactoring pass
+- [x] Extract `SliderList.vue` — reusable translateY slider replacing manual scroll/touch/arrow code (~140 lines removed)
+- [x] Extract `useDeduction.ts` — confirmDeduction + loadPastaCost + cleanupShoppingList from cook.vue (~90 lines)
+- [x] Extract `useRecipeServings.ts` — servings scaling from recipe/[id].vue (~85 lines)
+- [x] Extract `ReceiptSummary.vue` — shared receipt info rows
+- [x] Extract `BalanceRow.vue` + `TransactionRow.vue` — shared finance rows
+- [x] Extract `utils/dates.ts` — 7 shared date functions (eliminated duplication across 8+ files)
+- [x] Extend `useParticipants.participantsList` — migrated cook.vue + recipe/[id].vue off local fetchParticipants
+- [x] Fix: pasta-price PATCH 500 (singleton direct PATCH fix)
+- [x] Fix: cook→recipe navigation with ?cq param
+
+### JSDoc pass
+- [x] Full JSDoc on all 9 server API routes + 2 server utils
+- [x] Full JSDoc on all composables (useDirectus, useAuth, useDeduction, useParticipants, useBalanceCheck, useMealCost, etc.)
+- [x] Full JSDoc on all components (17 files) and pages (14 files)
+- [x] Full JSDoc on all utilities, middleware, layouts
+- [x] TS check — no new errors introduced
+
+### VitePress docs site
+- [x] `docs-site/` created with landing page, architecture (with Mermaid ERD), features (6 pages), screens, design system, roadmap
+- [x] Build verified: `npm run docs:build` passes cleanly
+
+### Architecture documentation
+- [x] `docs/CONTEXT.md` — domain glossary with 30+ terms
+- [x] `docs/ARCHITECTURE.md` — core-layer documentation, design rationale
+- [x] `docs/ARCHITECTURE_Documentation.md` — high-level overview with ASCII diagram
+- [x] `docs/architecture/` — 7 files: auth-flow, cook-queue, finance, recipe-system, shopping-list, duty, notifications
+- [x] `docs/project-state.md` — file structure, flows, composables, security measures
+
+### Security audit (2026-06-28)
+- [x] 4 layers audited (Nuxt routes, Directus policies, nginx, auth edge cases)
+- [x] 3 CRITICAL, 2 HIGH, 2 MEDIUM, 2 LOW findings documented in `docs/audits/security-audit.md`
+- [x] All 11 server routes verified: protected routes call `requireAuth(event)`
+
+### Harness / Agent infrastructure
+- [x] `session-start` skill — agent reads progress+roadmap, outputs session brief
+- [x] `code-reviewer` skill — agent runs checklist before saying "done"
+- [x] `.planning/` structure — milestones + phases for remaining work
+- [x] Self-diagnostic report — `notes/Harness/harness-overview.md` (41+ skills cataloged, 9-layer harness)
+- [x] `docs/skills-cheatsheet.md` — skill reference organized by use case
+- [x] Autonomous skill selection rules in AGENTS.md
 
 ---
 
