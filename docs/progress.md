@@ -388,6 +388,7 @@
 - [x] **Docs: updated docs/server-pwa-deploy.md — push status, known issues, checklist**
 
 ## Git log
+- `34f5aba` — docs(harness): update overview, diagram, cheatsheet with security audit and test plan
 - `db5aa18` — fix(ui): swipe-to-dismiss bottom sheets, full-month date picker, block future cook actions
 - `3f4de82` — fix(nginx): fix JS MIME type for Directus admin assets
 - `a1264f7` — fix(duty): allow clicking days in next/prev month in calendar
