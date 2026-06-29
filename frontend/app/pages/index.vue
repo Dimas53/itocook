@@ -32,10 +32,11 @@
           :loading="heroLoading"
           :cook="todayCook"
           :joined="hasJoined"
-          :participant-count="participantCount"
+          :participant-count="heroParticipantCount"
           :total-count="totalCount"
           :recipe-id="todayRecipeId"
           :has-existing-queue="hasTodayQueue"
+          :queue-status="todayStatus"
           @join="onJoin"
         @become-cook="onBecomeCook"
         @go-to-cook="router.push('/cook')"
@@ -116,11 +117,17 @@ const heroLoading = ref(true)
 const todayCook = ref<CookInfo | null>(null)
 const todayRecipeId = ref<string | undefined>(undefined)
 const hasTodayQueue = ref(false)
+const todayStatus = ref<string | null>(null)
+const displayParticipantCount = ref(0)
 
 // Participant counter from backend
 const todayEntryId = ref<string | null>(null)
 const { confirmed: participantCount, hasJoined, joinBlockedReason, join: onJoin, fetch: fetchParticipants } = useParticipants(todayEntryId)
 const { count: totalCount } = useTotalUsers()
+
+const heroParticipantCount = computed(() =>
+  todayEntryId.value ? participantCount.value : displayParticipantCount.value
+)
 
 // Recipes
 const recipesLoading = ref(true)
@@ -146,21 +153,44 @@ async function fetchTodayHero() {
 
     hasTodayQueue.value = items.length > 0
 
-    const todayEntry = items.find((i) => i.status === 'cooking')
+    // Display: shows cook + dish + badge in HeroBlock (includes ready)
+    const displayEntry = items.find((i) => i.status === 'cooking')
       || items.find((i) => i.status === 'ready')
-      || items[0]
+      || items.find((i) => i.status === 'scheduled')
+      || null
 
-    if (todayEntry) {
-      todayEntryId.value = todayEntry.id
+    // Join: only allow scheduled/cooking for participant gating
+    const joinEntry = items.find((i) => i.status === 'cooking')
+      || items.find((i) => i.status === 'scheduled')
+      || null
+
+    todayStatus.value = displayEntry?.status ?? null
+
+    if (joinEntry) {
+      todayEntryId.value = joinEntry.id
       await fetchParticipants()
-      const cookName = formatUserName(todayEntry.cook)
+    } else if (displayEntry) {
+      // ready status — fetch participants directly for display
+      todayEntryId.value = null
+      try {
+        const orders = await request<any[]>('get',
+          `/items/orders?filter[cook_queue][_eq]=${displayEntry.id}&filter[status][_eq]=confirmed&fields=id`
+        )
+        displayParticipantCount.value = orders.length
+      } catch {
+        displayParticipantCount.value = 0
+      }
+    }
+
+    if (displayEntry) {
+      const cookName = formatUserName(displayEntry.cook)
 
       let heroCategory: string | null = null
       let heroPhoto: string | null = null
-      if (todayEntry.dish_name) {
+      if (displayEntry.dish_name) {
         try {
           const recipeMatch = await request<{ id: string; photo: string | null; category: string }[]>('get',
-            `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(todayEntry.dish_name)}&sort=-date_created&limit=1&fields=id,photo,category,forked_from`
+            `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(displayEntry.dish_name)}&sort=-date_created&limit=1&fields=id,photo,category,forked_from`
           )
           const match = recipeMatch[0]
           if (match) {
@@ -175,13 +205,13 @@ async function fetchTodayHero() {
 
       todayCook.value = {
         name: cookName,
-        dish: todayEntry.dish_name || '',
+        dish: displayEntry.dish_name || '',
         photo: heroPhoto,
         category: heroCategory,
-        queueId: todayEntry.id,
+        queueId: displayEntry.id,
       }
 
-      if (user.value && todayEntry.cook?.id === user.value.id) {
+      if (user.value && displayEntry.cook?.id === user.value.id) {
         hasJoined.value = true
       }
     }

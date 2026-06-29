@@ -681,12 +681,6 @@ const statusConfig = computed(() => {
       textClass: 'text-gray-400',
       text: 'Cancelled',
     }
-    case 'completed': return {
-      bg: 'bg-gray-100',
-      color: 'text-gray-400',
-      textClass: 'text-gray-400',
-      text: 'Completed',
-    }
     default: return null
   }
 })

@@ -35,10 +35,34 @@
 
     <!-- Normal content: cook assigned -->
     <div v-else class="space-y-4">
-      <!-- Title -->
-      <p class="text-[12px] text-app-black/60 font-semibold uppercase tracking-wide">
-        Today's Kitchen
-      </p>
+      <!-- Title row -->
+      <div class="flex items-center justify-between">
+        <p class="text-[12px] text-app-black/60 font-semibold uppercase tracking-wide">
+          Today's Kitchen
+        </p>
+
+        <!-- Status badge -->
+        <div v-if="queueStatus" class="flex items-center gap-2">
+          <span
+            v-if="queueStatus === 'ready'"
+            class="inline-block bg-green-pastel text-green-700 px-3 py-0.5 rounded-full text-[12px] font-semibold"
+          >
+            Lunch is ready! 🎉
+          </span>
+          <span
+            v-else-if="queueStatus === 'cooking'"
+            class="inline-block bg-yellow-pastel text-green-700 px-3 py-0.5 rounded-full text-[12px] font-semibold"
+          >
+            Cooking now 🍳
+          </span>
+          <span
+            v-else-if="queueStatus === 'scheduled'"
+            class="inline-block bg-purple-100 text-purple-600 px-3 py-0.5 rounded-full text-[12px] font-semibold"
+          >
+            Preparing...
+          </span>
+        </div>
+      </div>
 
       <!-- Buttons row -->
       <div class="flex gap-3">
@@ -62,6 +86,7 @@
         </button>
 
         <button
+            v-if="queueStatus !== 'ready' && queueStatus !== 'cancelled'"
             class="flex-1 h-10 rounded-full flex items-center justify-center gap-2 px-4 transition-all active:scale-[0.97] backdrop-blur-md bg-white/30 border border-white/50 shadow-sm z-10"
             :class="joined ? 'opacity-60' : ''"
             @click="$emit('join')"
@@ -84,6 +109,7 @@
           <span v-if="cook.category" class="text-[12px] text-app-black/60 uppercase mb-5 tracking-wide font-medium">
             {{ cook.category }}
           </span>
+
           <p class="text-[15px] font-medium text-app-black/80">by {{ cook.name }}</p>
           <div
             class="flex items-center gap-1.5 mt-0.5 min-h-[44px] cursor-pointer relative z-10 active:opacity-70 transition-opacity"
@@ -162,6 +188,8 @@ const props = defineProps<{
   recipeId?: string
   /** There is already an active queue for today (disables "become cook"). */
   hasExistingQueue?: boolean
+  /** Current cook_queue status for badge display ('scheduled' | 'cooking' | 'ready'). */
+  queueStatus?: string | null
 }>()
 
 const emit = defineEmits<{

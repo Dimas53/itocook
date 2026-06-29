@@ -1,5 +1,11 @@
 # ItoCook — Progress Log
 
+## Current session — Join button fix + status badge (2026-06-29)
+- [x] **Fix: Join blocked when queue status is `ready` or `cancelled`** — Join only allowed for `scheduled` or `cooking`. Removed all references to non-existent `completed` status. `activeEntryId`/`fetchTodayHero` now only picks `cooking` or `scheduled` entries (was `ready` fallback or `items[0]`). `weekSlots` and `isCurrentUserCookForSelected` keep `ready` for display. `recipe/[id].vue` `statusConfig` had stray `completed` case removed. `canJoin` was already correct.
+- [x] **Feat: HeroBlock status badge** — added `queueStatus` prop; pill badge between title and buttons (`scheduled` → "Preparing..." bg-purple-100, `cooking` → "Cooking now 🍳" bg-green-pastel, `ready` → "Lunch is ready! 🎉" bg-green-pastel). Matches `recipe/[id].vue` `statusConfig` colors.
+- [x] **Fix: HeroBlock Join button hidden for ready** — `v-if="queueStatus !== 'ready' && queueStatus !== 'cancelled'"` on Join button. Cook/Cook→ buttons unchanged.
+- [x] **Fix: participant count for `ready` entries** — `index.vue` `fetchTodayHero()` split into `displayEntry` (cooking > ready > scheduled > null) and `joinEntry` (cooking > scheduled > null). `todayEntryId` set from `joinEntry` (null for ready), participants fetched manually for display when ready. `kitchen.vue` added `displayEntryId` computed + separate `displayParticipantCount` ref + combined watch on `[activeEntryId, displayEntryId]` to fetch participants for ready status. `heroParticipantCount` computed selects the right source.
+
 ## Current status
 - [x] **Roadmap updated** — Phase 6: ✅→🟡 (Steps 5–7 remain), Phase 6b: SW marked resolved, Chrome push marked wontfix, removed outdated "next session" block
 - [x] **Phase 7a: Testing added** — between Phase 7 and Phase 8 with 7 checklist items (Vitest, composable tests, component tests, API tests, E2E, CI integration)
@@ -394,8 +400,13 @@
 - [x] **docs/roadmap.md updated** — Phase 6c added (refactoring, JSDoc, security audit, harness); Phase 4 marked ✅; missing completed items added to Phase 6 (Cook Cancelled Flow, Nightly Cleanup, push integration)
 - [x] **Retrospective .planning/ created** — 6 retrospective PLAN.md files for completed phases (01-ui-skeleton, 02-first-live-flow, 03-directus-schema, 04-feature-screens, 06-notifications-pwa, 06c-refactoring-docs). Each documents goal, completed tasks, key decisions, file changes, and completion date. No invented content — only data from progress.md + roadmap + git log.
 
+## Current session — test collection (2026-06-29)
+- [x] **Created `test_items` collection in Directus** — fields: `id` (UUID PK), `name` (string, required), `description` (text), `category` (dropdown: appetizer/main/dessert)
+- [x] **Added 6 test items** — 2 per category: Bruschetta + Garlic Bread (appetizer), Pasta Carbonara + Chicken Parmigiana (main), Tiramisu + Panna Cotta (dessert)
+- [x] **Updated `common.vue` page** — fetches from `/items/test_items` via `useDirectus()`, groups by category with icons (PhForkKnife/PhBowlFood/PhCake), loading skeleton + error + empty states, scrollbar-hide
+
 ## Git log
-- (not yet committed — waiting for explicit instruction)
+- `b0744ff` — docs(roadmap): add Phase 7a Testing, fix Phase 6/6b remaining statuses
 - `95ec2d0` — fix(roadmap): mark receipt photo upload and shopping list from recipe as done
 - `e573808` — docs: fix design.md, roadmap.md, add retrospective planning files
 - `34f5aba` — docs(harness): update overview, diagram, cheatsheet with security audit and test plan

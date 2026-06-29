@@ -67,10 +67,11 @@
         :loading="todayLoading"
         :cook="heroCook"
         :joined="hasJoined"
-        :participant-count="participantCount"
+        :participant-count="heroParticipantCount"
         :total-count="totalCount"
         :recipe-id="heroRecipeId"
         :has-existing-queue="hasSelectedQueue"
+        :queue-status="heroQueueStatus"
         @join="onJoin"
         @become-cook="onBecomeCook"
         @go-to-cook="router.push('/cook?date=' + selectedDate)"
@@ -207,12 +208,30 @@ const activeEntryId = computed(() => {
     (i) => i.date === selectedDate.value && i.status !== 'cancelled'
   )
   const item = dayItems.find((i) => i.status === 'cooking')
-    || dayItems.find((i) => i.status === 'ready')
-    || dayItems[0]
+    || dayItems.find((i) => i.status === 'scheduled')
+    || null
   return item?.id ?? null
 })
+
+const displayEntry = computed(() => {
+  if (!selectedDate.value) return null
+  const dayItems = allItems.value.filter(
+    (i) => i.date === selectedDate.value && i.status !== 'cancelled'
+  )
+  return dayItems.find((i) => i.status === 'cooking')
+    || dayItems.find((i) => i.status === 'ready')
+    || dayItems.find((i) => i.status === 'scheduled')
+    || null
+})
+const heroQueueStatus = computed(() => displayEntry.value?.status ?? null)
+const displayEntryId = computed(() => displayEntry.value?.id ?? null)
+
 const { confirmed: participantCount, hasJoined, joinBlockedReason, join: onJoin, fetch: fetchParticipants } = useParticipants(activeEntryId)
 const { count: totalCount } = useTotalUsers()
+const displayParticipantCount = ref(0)
+const heroParticipantCount = computed(() =>
+  activeEntryId.value ? participantCount.value : displayParticipantCount.value
+)
 
 const pm = useParticipantsModal()
 
@@ -265,7 +284,8 @@ const weekSlots = computed<WeekSlot[]>(() => {
     )
     const item = dayItems.find((ci) => ci.status === 'cooking')
       || dayItems.find((ci) => ci.status === 'ready')
-      || dayItems[0]
+      || dayItems.find((ci) => ci.status === 'scheduled')
+      || null
 
     slots.push({
       date: iso,
@@ -324,7 +344,8 @@ const isCurrentUserCookForSelected = computed(() => {
   )
   const item = dayItems.find((i) => i.status === 'cooking')
     || dayItems.find((i) => i.status === 'ready')
-    || dayItems[0]
+    || dayItems.find((i) => i.status === 'scheduled')
+    || null
   if (!item || typeof item.cook !== 'object' || !item.cook) return false
   return item.cook.id === user.value.id
 })
@@ -368,9 +389,19 @@ watch(selectedSlot, async (slot) => {
   } catch { /* ignore */ }
 })
 
-watch(activeEntryId, async (id) => {
-  if (id) {
+watch([activeEntryId, displayEntryId], async () => {
+  if (activeEntryId.value) {
     await fetchParticipants()
+  } else if (displayEntryId.value) {
+    // Fetch participants for display-only entries (ready status)
+    try {
+      const orders = await request<any[]>('get',
+        `/items/orders?filter[cook_queue][_eq]=${displayEntryId.value}&filter[status][_eq]=confirmed&fields=id`
+      )
+      displayParticipantCount.value = orders.length
+    } catch {
+      displayParticipantCount.value = 0
+    }
   }
   if (isCurrentUserCookForSelected.value) {
     hasJoined.value = true
