@@ -46,6 +46,20 @@
         />
       </div>
 
+      <!-- Base Servings -->
+      <div>
+        <label class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide mb-2 block">Base Servings</label>
+        <input
+          v-model.number="form.servings"
+          type="number"
+          min="1"
+          max="100"
+          placeholder="4"
+          class="w-full h-12 rounded-xl bg-white border border-gray-200 px-4 text-[14px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary"
+        />
+        <p class="text-[11px] text-gray-400 mt-1">Enter the number of people this recipe is designed for. Ingredients will be scaled from this amount.</p>
+      </div>
+
       <!-- Photo upload -->
       <RecipeImageUpload
         :photo="form.photo"
@@ -202,6 +216,7 @@ interface RecipeItem {
   description: string | null
   photo: string | null
   pasta_packages: number | null
+  servings: number | null
   ingredients: { name: string; amount: string; unit: string }[] | string | null
   steps: { step: number; description: string }[] | string | null
   cook: string | { id: string }
@@ -216,6 +231,7 @@ const form = reactive({
   description: '',
   photo: '',
   pasta_packages: null as number | null,
+  servings: 4,
   ingredients: [] as Ingredient[],
   steps: [] as Step[],
 })
@@ -249,7 +265,7 @@ async function loadRecipe() {
   loadingRecipe.value = true
   try {
     const item = await request<RecipeItem>('get',
-      `/items/recipes/${editingId.value}?fields=id,dish_name,category,description,photo,pasta_packages,ingredients,steps,cook.id`
+      `/items/recipes/${editingId.value}?fields=id,dish_name,category,description,photo,pasta_packages,servings,ingredients,steps,cook.id`
     )
     form.dish_name = item.dish_name
     form.category = item.category || ''
@@ -257,6 +273,7 @@ async function loadRecipe() {
     form.photo = item.photo || ''
     originalPhoto.value = item.photo || null
     form.pasta_packages = item.pasta_packages ?? null
+    form.servings = item.servings ?? 4
     if (item.ingredients) {
       const ings = parseJsonField(item.ingredients)
       form.ingredients = Array.isArray(ings) ? ings.map((i: { name?: string; amount?: string; unit?: string }) => ({
@@ -284,13 +301,14 @@ async function loadRecipeFromHistory() {
   loadingRecipe.value = true
   try {
     const items = await request<RecipeItem[]>('get',
-      `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(name)}&limit=1&fields=id,dish_name,category,description,photo,pasta_packages,ingredients,steps`
+      `/items/recipes?filter[dish_name][_eq]=${encodeURIComponent(name)}&limit=1&fields=id,dish_name,category,description,photo,pasta_packages,servings,ingredients,steps`
     )
     if (items.length > 0) {
       const item = items[0]!
       form.description = item.description || ''
       form.photo = item.photo || ''
       originalPhoto.value = item.photo || null
+      form.servings = item.servings ?? 4
       form.pasta_packages = item.pasta_packages ?? null
       if (item.ingredients) {
         const ings = parseJsonField(item.ingredients)
@@ -382,6 +400,7 @@ async function submitRecipe() {
       description: form.description || null,
       photo: form.photo || null,
       pasta_packages: form.pasta_packages ?? null,
+      servings: form.servings,
       ingredients: form.ingredients.length > 0 ? form.ingredients : null,
       steps: form.steps.length > 0 ? form.steps : null,
     }

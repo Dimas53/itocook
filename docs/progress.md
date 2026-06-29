@@ -1,5 +1,10 @@
 # ItoCook — Progress Log
 
+## Current session — Base servings + dynamic portion presets (2026-06-29)
+- [x] **Directus: servings field updated** — `is_nullable: false`, `required: true`, `default_value: 4` (field already existed in schema)
+- [x] **Feat: Base Servings input in create/edit form** — number input between Description and Photo (`min=1, max=100`, default 4, helper text). `servings: form.servings` included in POST/PATCH body. Loaded from recipe in both `loadRecipe()` and `loadRecipeFromHistory()`. Added to `RecipeItem` interface.
+- [x] **Feat: Dynamic portion presets** — `useRecipeServings.ts` `servingsPresets` changed from hardcoded `[10,15,20]` to `[base, base*2, base*3]` (capped at 100). `[id].vue` already uses `sr.servingsPresets` in template — no template changes needed. `selectedPortions` initializes to `baseServings` (via `activeServings` fallback).
+
 ## Current session — Join button fix + status badge (2026-06-29)
 - [x] **Fix: Join blocked when queue status is `ready` or `cancelled`** — Join only allowed for `scheduled` or `cooking`. Removed all references to non-existent `completed` status. `activeEntryId`/`fetchTodayHero` now only picks `cooking` or `scheduled` entries (was `ready` fallback or `items[0]`). `weekSlots` and `isCurrentUserCookForSelected` keep `ready` for display. `recipe/[id].vue` `statusConfig` had stray `completed` case removed. `canJoin` was already correct.
 - [x] **Feat: HeroBlock status badge** — added `queueStatus` prop; pill badge between title and buttons (`scheduled` → "Preparing..." bg-purple-100, `cooking` → "Cooking now 🍳" bg-green-pastel, `ready` → "Lunch is ready! 🎉" bg-green-pastel). Matches `recipe/[id].vue` `statusConfig` colors.
@@ -406,7 +411,9 @@
 - [x] **Updated `common.vue` page** — fetches from `/items/test_items` via `useDirectus()`, groups by category with icons (PhForkKnife/PhBowlFood/PhCake), loading skeleton + error + empty states, scrollbar-hide
 
 ## Git log
+- `a260c88` — fix(auth): block Join for ready/cancelled, add status badge to HeroBlock
 - `b0744ff` — docs(roadmap): add Phase 7a Testing, fix Phase 6/6b remaining statuses
+- `CURRENT` — feat(recipe): add base servings field and dynamic portion presets
 - `95ec2d0` — fix(roadmap): mark receipt photo upload and shopping list from recipe as done
 - `e573808` — docs: fix design.md, roadmap.md, add retrospective planning files
 - `34f5aba` — docs(harness): update overview, diagram, cheatsheet with security audit and test plan

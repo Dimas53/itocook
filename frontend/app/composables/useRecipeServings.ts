@@ -23,11 +23,7 @@ export function useRecipeServings(recipe: Ref<RecipeServingsData | null>) {
 
   const servingsPresets = computed(() => {
     const base = baseServings.value
-    const presets = [10, 15, 20]
-    if (!presets.includes(base)) {
-      return [...presets.slice(0, -1), base]
-    }
-    return presets
+    return [base, base * 2, base * 3].filter(n => n <= 100)
   })
 
   const spiceUnits = ['tsp', 'tbsp', 'teaspoon', 'teaspoons', 'tablespoon', 'tablespoons', 'tsp.', 'tbsp.', 'pinch']
