@@ -104,3 +104,14 @@ cd /opt/itocook/app && git pull && docker build -f Dockerfile.prod -t app-fronte
 Directus админка
 https://itocook.duckdns.org/cms/admin
 admin@itocook.com / admin
+
+
+пеернос директуса на сервер!
+
+# 1. скачай snapshot с локального localhost:8055 через UI
+# 2. закинь файл на VPS (например через scp)
+scp snapshot.json user@your-vps:/home/user/
+
+# 3. на VPS — скопируй в контейнер и примени
+docker cp snapshot.json directus:/tmp/snapshot.json
+docker exec directus npx directus schema apply /tmp/snapshot.json

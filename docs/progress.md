@@ -413,7 +413,7 @@
 ## Git log
 - `a260c88` — fix(auth): block Join for ready/cancelled, add status badge to HeroBlock
 - `b0744ff` — docs(roadmap): add Phase 7a Testing, fix Phase 6/6b remaining statuses
-- `CURRENT` — feat(recipe): add base servings field and dynamic portion presets
+- `b3aae1d` — feat(recipe): add base servings field and dynamic portion presets
 - `95ec2d0` — fix(roadmap): mark receipt photo upload and shopping list from recipe as done
 - `e573808` — docs: fix design.md, roadmap.md, add retrospective planning files
 - `34f5aba` — docs(harness): update overview, diagram, cheatsheet with security audit and test plan

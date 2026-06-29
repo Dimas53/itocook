@@ -173,7 +173,7 @@ import { House, CalendarBlank, Sparkle, Notebook, Books } from '@phosphor-icons/
 ## 6. Screen Inventory
 
 | Screen | Route | Description |
-|---|---|---|---|
+|---|---|---|
 | Onboarding | `/onboarding` | Purple gradient bg, chef illustration, logo, auto-redirect after 2.5s |
 | Auth | `/auth` | Log In / Sign Up toggle, form validation, password toggle, real Directus auth |
 | Home | `/` | Greeting + avatar, HeroBlock (who's cooking), balance/duty widgets, recipe cards with like counts |
