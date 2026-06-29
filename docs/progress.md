@@ -1,9 +1,24 @@
 # ItoCook — Progress Log
 
-## Current session — Base servings + dynamic portion presets (2026-06-29)
-- [x] **Directus: servings field updated** — `is_nullable: false`, `required: true`, `default_value: 4` (field already existed in schema)
-- [x] **Feat: Base Servings input in create/edit form** — number input between Description and Photo (`min=1, max=100`, default 4, helper text). `servings: form.servings` included in POST/PATCH body. Loaded from recipe in both `loadRecipe()` and `loadRecipeFromHistory()`. Added to `RecipeItem` interface.
-- [x] **Feat: Dynamic portion presets** — `useRecipeServings.ts` `servingsPresets` changed from hardcoded `[10,15,20]` to `[base, base*2, base*3]` (capped at 100). `[id].vue` already uses `sr.servingsPresets` in template — no template changes needed. `selectedPortions` initializes to `baseServings` (via `activeServings` fallback).
+## Current session — HeroBlock completed status + Company Account card styling (2026-06-29)
+- [x] **Feat: HeroBlock completed status** — `completed` added to `displayEntry` lookup chain (`index.vue`, `kitchen.vue`: cooking > ready > scheduled > completed > null). New badge in `HeroBlock.vue` ("All done! ✓" bg-green-100). Join button hidden for completed entries. `joinEntry`/`activeEntryId` unchanged (cooking/scheduled only).
+- [x] **Fix: Company Account card styling** — merged balance display + Add Funds form + transaction history into single `bg-white rounded-2xl p-4 border border-gray-100` card (matches Manual Top-up style). Company transactions now collapsed by default with toggle link ("Show/Hide transactions (N)"). Manual Top-up select label clarified to "Select user to top up".
+
+## Current session — Company account + guests + Company Pays All (2026-06-29)
+- [x] **Directus: company_account collection** — singleton with `balance` (decimal, default 0), `updated_at`. Seeded with balance 0.
+- [x] **Directus: company_transactions collection** — UUID PK, `amount`, `description`, `date_created`, `cook_queue` (M2O, nullable). User Policy read-only, Admin Policy full access.
+- [x] **Directus: guests field on orders** — JSON (nullable) on `orders` collection.
+- [x] **Directus: balance field scale fix** — `company_account.balance` numeric_scale changed from 5→2.
+- [x] **Feat: Guest UI in cook.vue ready state** — Add Guest / remove buttons, name input per guest, company balance display, company pays label.
+- [x] **Feat: Guest deduction server logic** — `confirm.post.ts` creates `company_transactions` per guest, updates company account balance dynamically (no hardcoded `/1`).
+- [x] **Feat: Company Pays All toggle** — custom switch in cook.vue ready state (below deduction preview, above Guests). When enabled: server skips all user transactions/balances, creates single `company_transaction` for full amount, updates company balance. `deductedCompanyPaysAll` tracked for done state display.
+- [x] **Fix: company_account singleton usage** — `finance.vue` `fetchCompanyAccount`/`submitCompanyTopup` and `confirm.post.ts` `updateCompanyBalance` now use singleton endpoints directly (`GET /items/company_account` returns `{ data: { balance } }`, `PATCH /items/company_account` without ID suffix). Removed all dynamic-ID-lookup, get-or-create, and `?limit=1` workarounds.
+- [x] **Fix: Deduction guards** — `useDeduction.confirmDeduction` early return changed from `participants.length === 0` to `participants.length === 0 && !companyPaysAll`.
+- [x] **Security: Server-side share recalculation** — share = `totalAmount / totalParticipants` (guests included), ignoring client-sent `p.share` values.
+- [x] **Fix: company_account PATCH 404 on first use** — (now moot) `company_account` is a singleton, so PATCH always works. Removed all POST-to-create and dynamic-ID lookup logic from `finance.vue` and `confirm.post.ts`.
+- [x] **Fix: companyPaysAll early return** — `confirm.post.ts` companyPaysAll branch now marks `cook_queue` as completed inside the `if` block then `return { success: true }` — no else branch DB writes (user balances/transactions) executed.
+- [x] **Fix: Deduction preview hides individual rows when companyPaysAll** — `cook.vue` ready state: when toggle ON, deduction preview shows single line "Full amount → Company account" instead of per-user rows. Guests section hidden via `v-if="!companyPaysAll"`.
+- [x] **Fix: company_transactions.amount scale** — Directus field `numeric_precision=10, numeric_scale=2` (was scale=5). `company_account.balance` already had correct scale=2.
 
 ## Current session — Join button fix + status badge (2026-06-29)
 - [x] **Fix: Join blocked when queue status is `ready` or `cancelled`** — Join only allowed for `scheduled` or `cooking`. Removed all references to non-existent `completed` status. `activeEntryId`/`fetchTodayHero` now only picks `cooking` or `scheduled` entries (was `ready` fallback or `items[0]`). `weekSlots` and `isCurrentUserCookForSelected` keep `ready` for display. `recipe/[id].vue` `statusConfig` had stray `completed` case removed. `canJoin` was already correct.
@@ -409,6 +424,15 @@
 - [x] **Created `test_items` collection in Directus** — fields: `id` (UUID PK), `name` (string, required), `description` (text), `category` (dropdown: appetizer/main/dessert)
 - [x] **Added 6 test items** — 2 per category: Bruschetta + Garlic Bread (appetizer), Pasta Carbonara + Chicken Parmigiana (main), Tiramisu + Panna Cotta (dessert)
 - [x] **Updated `common.vue` page** — fetches from `/items/test_items` via `useDirectus()`, groups by category with icons (PhForkKnife/PhBowlFood/PhCake), loading skeleton + error + empty states, scrollbar-hide
+
+## Current session — Company account + guests feature (2026-06-29)
+- [x] **Directus: company_account collection** — singleton with `balance` (decimal, default 0) and `updated_at` (timestamp). Seeded with balance 0.
+- [x] **Directus: company_transactions collection** — UUID PK, `amount` (decimal), `description` (string), `date_created` (auto timestamp), `cook_queue` (M2O→cook_queue, nullable). Permissions: User policy read-only, Admin policy full access (via admin_access).
+- [x] **Directus: guests field on orders** — JSON field (nullable) for storing guest names paid by company account.
+- [x] **Feat: Guest UI in cook.vue ready state** — "Add Guest" button appends to local guests ref, each guest row has name input + "Company pays" label + remove button. Company balance displayed as `PhBuildings Company: €X.XX`. Guests included in totalParticipants for share calculation. Deduction preview shows guest lines with "(Company)" tag.
+- [x] **Feat: server/api/deduction/confirm.post.ts updated** — accepts `guests` array from request body, calculates `totalParticipants = participants.length + guests.length`, recalculates share server-side from `totalAmount / totalParticipants`. For each guest: creates `company_transactions` record (amount = -share, description = "Guest: {name}", cook_queue_id). Updates company_account balance by subtracting `share * guests.length`. No orders created for guests. Empty guests array → behavior identical to previous flow.
+- [x] **Feat: useDeduction.ts updated** — added `guests` to DeductionParams interface, passes filtered guest names array to server route.
+- [x] **Feat: Finance page Company Account section** — balance card (color-coded like BalanceWidget: green for >=5, mild red for >=0, strong red for <0). Manual top-up form (amount + description → INSERT company_transactions + PATCH company_account). Transaction history (last 20, sorted by date_created desc, green/red amounts with +/- prefix). All between Balances Overview and Manual Top-up sections.
 
 ## Git log
 - `a260c88` — fix(auth): block Join for ready/cancelled, add status badge to HeroBlock

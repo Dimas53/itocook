@@ -221,6 +221,7 @@ const displayEntry = computed(() => {
   return dayItems.find((i) => i.status === 'cooking')
     || dayItems.find((i) => i.status === 'ready')
     || dayItems.find((i) => i.status === 'scheduled')
+    || dayItems.find((i) => i.status === 'completed')
     || null
 })
 const heroQueueStatus = computed(() => displayEntry.value?.status ?? null)
@@ -285,6 +286,7 @@ const weekSlots = computed<WeekSlot[]>(() => {
     const item = dayItems.find((ci) => ci.status === 'cooking')
       || dayItems.find((ci) => ci.status === 'ready')
       || dayItems.find((ci) => ci.status === 'scheduled')
+      || dayItems.find((ci) => ci.status === 'completed')
       || null
 
     slots.push({
@@ -345,6 +347,7 @@ const isCurrentUserCookForSelected = computed(() => {
   const item = dayItems.find((i) => i.status === 'cooking')
     || dayItems.find((i) => i.status === 'ready')
     || dayItems.find((i) => i.status === 'scheduled')
+    || dayItems.find((i) => i.status === 'completed')
     || null
   if (!item || typeof item.cook !== 'object' || !item.cook) return false
   return item.cook.id === user.value.id

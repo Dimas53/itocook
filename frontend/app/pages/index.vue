@@ -157,6 +157,7 @@ async function fetchTodayHero() {
     const displayEntry = items.find((i) => i.status === 'cooking')
       || items.find((i) => i.status === 'ready')
       || items.find((i) => i.status === 'scheduled')
+      || items.find((i) => i.status === 'completed')
       || null
 
     // Join: only allow scheduled/cooking for participant gating

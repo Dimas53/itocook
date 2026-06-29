@@ -372,10 +372,72 @@
 
             <div class="rounded-xl bg-yellow-pastel p-4">
               <p class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide">Deduction preview</p>
-              <div v-for="p in pm.participantsList" :key="p.id" class="flex justify-between text-[14px] mt-2">
-                <span class="text-app-black">{{ p.name }}</span>
-                <span class="font-medium text-app-black">−€{{ sharePerPerson }}</span>
+              <template v-if="companyPaysAll">
+                <div class="flex justify-between text-[14px] mt-2">
+                  <span class="text-app-black">Full amount → Company account</span>
+                  <span class="font-medium text-app-black">−€{{ grandTotalDisplay }}</span>
+                </div>
+              </template>
+              <template v-else>
+                <div v-for="p in pm.participantsList" :key="p.id" class="flex justify-between text-[14px] mt-2">
+                  <span class="text-app-black">{{ p.name }}</span>
+                  <span class="font-medium text-app-black">−€{{ sharePerPerson }}</span>
+                </div>
+                <div v-for="(g, i) in guests" :key="'guest-' + i" class="flex justify-between text-[14px] mt-2">
+                  <span class="text-app-black/70 italic">{{ g.trim() || 'Guest ' + (i + 1) }}</span>
+                  <span class="font-medium text-app-black/70">−€{{ sharePerPerson }} (Company)</span>
+                </div>
+              </template>
+            </div>
+
+            <!-- Company pays all toggle -->
+            <label class="flex items-center justify-between rounded-xl bg-white p-4 border border-gray-100 active:scale-[0.98] transition-transform cursor-pointer">
+              <div>
+                <p class="text-[13px] font-semibold text-app-black">Company pays all</p>
+                <p class="text-[11px] text-gray-400">Charge the full amount to the company account</p>
               </div>
+              <div
+                class="w-11 h-6 rounded-full transition-colors relative shrink-0 ml-3"
+                :class="companyPaysAll ? 'bg-primary' : 'bg-gray-200'"
+                @click="companyPaysAll = !companyPaysAll"
+              >
+                <div
+                  class="w-5 h-5 rounded-full bg-white shadow-sm absolute top-0.5 transition-transform"
+                  :class="companyPaysAll ? 'translate-x-[22px]' : 'translate-x-0.5'"
+                />
+              </div>
+            </label>
+
+            <!-- Guests section (hidden when company pays all) -->
+            <div v-if="!companyPaysAll" class="rounded-xl bg-white p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <p class="text-[12px] font-semibold text-app-black/60 uppercase tracking-wide">Guests</p>
+                <div class="flex items-center gap-2">
+                  <span class="text-[12px] text-gray-500">
+                    <PhBuildings class="w-3.5 h-3.5 inline mr-0.5" />
+                    Company: €{{ companyBalance.toFixed(2) }}
+                  </span>
+                </div>
+              </div>
+              <div v-for="(g, i) in guests" :key="i" class="flex items-center gap-2">
+                <input
+                  v-model="guests[i]"
+                  type="text"
+                  placeholder="Guest name"
+                  class="flex-1 h-10 rounded-lg bg-gray-50 border border-gray-200 px-3 text-[13px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary"
+                />
+                <span class="text-[11px] text-gray-400 font-medium whitespace-nowrap shrink-0">Company pays</span>
+                <button class="w-8 h-8 flex items-center justify-center shrink-0" @click="removeGuest(i)">
+                  <PhTrash class="w-4 h-4 text-red-400" />
+                </button>
+              </div>
+              <button
+                class="w-full h-10 rounded-xl border border-dashed border-gray-300 text-[13px] text-gray-500 font-medium flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
+                @click="addGuest"
+              >
+                <PhUserPlus class="w-4 h-4" />
+                Add Guest
+              </button>
             </div>
 
             <button
@@ -407,7 +469,8 @@
           <div class="rounded-xl bg-white/70 p-4">
             <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Receipt total</p>
             <p class="text-[24px] font-bold text-app-black mt-1">€{{ deductedTotal.toFixed(2) }}</p>
-            <p class="text-[13px] text-gray-500">{{ pm.participantsList.length }} participants · €{{ (deductedTotal / pm.participantsList.length).toFixed(2) }} each</p>
+            <p v-if="deductedCompanyPaysAll" class="text-[13px] text-green-700">Company paid the full amount</p>
+            <p v-else class="text-[13px] text-gray-500">{{ pm.participantsList.length }} participants · €{{ (deductedTotal / pm.participantsList.length).toFixed(2) }} each</p>
           </div>
           <button
             class="w-full h-14 rounded-full bg-primary text-white font-semibold text-[16px] active:scale-[0.98] transition-transform"
@@ -510,6 +573,9 @@ import {
   PhClock,
   PhWarning,
   PhXCircle,
+  PhUserPlus,
+  PhTrash,
+  PhBuildings,
 } from '@phosphor-icons/vue'
 
 definePageMeta({
@@ -587,6 +653,10 @@ const receiptAmount = ref<string>('')
 const pastDishes = ref<HistoryDish[]>([])
 const deductionResult = ref(false)
 const deductedTotal = ref(0)
+const deductedCompanyPaysAll = ref(false)
+const guests = ref<string[]>([])
+const companyBalance = ref<number>(0)
+const companyPaysAll = ref(false)
 const cookQueueId = computed(() => cookEntry.value?.id ?? null)
 const deduction = reactive(useDeduction())
 const pm = reactive(useParticipants(cookQueueId))
@@ -667,12 +737,13 @@ const formattedReceipt = computed(() => {
   return isNaN(val) ? '0.00' : val.toFixed(2)
 })
 
-/** Per-person share: (receipt + pasta cost) / participant count. */
+/** Per-person share: (receipt + pasta cost) / total participants (including guests). */
 const sharePerPerson = computed(() => {
   const base = parseFloat(receiptAmount.value)
-  if (isNaN(base) || pm.participantsList.length === 0) return '0.00'
+  const totalPeople = pm.participantsList.length + guests.value.length
+  if (isNaN(base) || totalPeople === 0) return '0.00'
   const total = base + deduction.pastaCost
-  return (total / pm.participantsList.length).toFixed(2)
+  return (total / totalPeople).toFixed(2)
 })
 
 /** Grand total = receipt + optional pasta cost. */
@@ -691,9 +762,33 @@ const grandTotalDisplay = computed(() => {
 const receiptOverdue = computed(() => {
   if (!isToday) return false
   const now = new Date()
-  const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0, 0)
+  const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 0, 0)
   return now > cutoff
 })
+
+/**
+ * Fetch the company account balance from Directus.
+ * Used in the ready state to show current company funds for guest payments.
+ */
+async function fetchCompanyBalance() {
+  try {
+    const data = await request<{ balance: string }>('GET', '/items/company_account')
+    const record = Array.isArray(data) ? data[0] : data
+    companyBalance.value = record ? parseFloat(record.balance) : 0
+  } catch {
+    companyBalance.value = 0
+  }
+}
+
+/** Add an empty guest row to the guests list. */
+function addGuest() {
+  guests.value.push('')
+}
+
+/** Remove a guest at the given index. */
+function removeGuest(index: number) {
+  guests.value.splice(index, 1)
+}
 
 /**
  * Fetch the cook_queue entry for the current user and the displayed date.
@@ -1049,8 +1144,11 @@ async function handleConfirmDeduction() {
       pastaCost: deduction.pastaCost,
       dateStr: pageDateStr.value,
       userId: user.value?.id,
+      guests: guests.value.filter(g => g.trim().length > 0),
+      companyPaysAll: companyPaysAll.value,
     })
     deductedTotal.value = parseFloat(receiptAmount.value) + deduction.pastaCost
+    deductedCompanyPaysAll.value = companyPaysAll.value
     deduction.pastaBreakdown = null
     deduction.pastaCost = 0
     cookEntry.value.status = 'completed'
@@ -1078,6 +1176,16 @@ async function refreshCookData() {
     await searchExistingRecipe(cookEntry.value.dish_name)
   }
 }
+
+/** Watch for the 'ready' state to fetch company balance and reset guests. */
+watch(state, (s) => {
+  if (s === 'ready') {
+    fetchCompanyBalance()
+  }
+  if (s === 'ready' || s === 'done') {
+    companyPaysAll.value = false
+  }
+})
 
 /**
  * visibilitychange handler — re-fetches cook data when the tab becomes visible.

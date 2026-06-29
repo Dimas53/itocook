@@ -16,6 +16,8 @@ export interface DeductionParams {
   pastaCost: number
   dateStr: string
   userId: string | undefined
+  guests?: string[]
+  companyPaysAll?: boolean
 }
 
 /**
@@ -167,13 +169,14 @@ export function useDeduction() {
    * @throws {Error} If the admin-proxy returns a non-2xx response
    */
   async function confirmDeduction(params: DeductionParams) {
-    const { cookEntry, participants, receiptAmount: rawAmount, pastaCost: pasta, dateStr, userId } = params
-    if (participants.length === 0) return
+    const { cookEntry, participants, receiptAmount: rawAmount, pastaCost: pasta, dateStr, userId, guests, companyPaysAll } = params
+    if (participants.length === 0 && !companyPaysAll) return
     deducting.value = true
 
     const baseTotal = parseFloat(rawAmount)
     const grandTotal = baseTotal + pasta
-    const share = grandTotal / participants.length
+    const guestNames = guests ?? []
+    const totalParticipants = participants.length + guestNames.length
 
     try {
       const res = await fetch('/api/deduction/confirm', {
@@ -181,10 +184,12 @@ export function useDeduction() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           cookQueueId: cookEntry.id,
-          participants: participants.map(p => ({ id: p.id, share })),
+          participants: participants.map(p => ({ id: p.id, share: 0 })),
           totalAmount: grandTotal,
           cookId: userId,
           description: `Lunch ${dateStr}: ${cookEntry.dish_name || 'Office lunch'}`,
+          guests: guestNames,
+          companyPaysAll: companyPaysAll ?? false,
         }),
       })
 

@@ -61,6 +61,12 @@
           >
             Preparing...
           </span>
+          <span
+            v-else-if="queueStatus === 'completed'"
+            class="inline-block bg-green-100 text-green-700 px-3 py-0.5 rounded-full text-[12px] font-semibold"
+          >
+            All done! ✓
+          </span>
         </div>
       </div>
 
@@ -86,7 +92,7 @@
         </button>
 
         <button
-            v-if="queueStatus !== 'ready' && queueStatus !== 'cancelled'"
+            v-if="queueStatus !== 'ready' && queueStatus !== 'cancelled' && queueStatus !== 'completed'"
             class="flex-1 h-10 rounded-full flex items-center justify-center gap-2 px-4 transition-all active:scale-[0.97] backdrop-blur-md bg-white/30 border border-white/50 shadow-sm z-10"
             :class="joined ? 'opacity-60' : ''"
             @click="$emit('join')"

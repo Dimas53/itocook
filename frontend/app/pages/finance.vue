@@ -3,7 +3,7 @@
  * Finance admin page — balances, transactions, top-up, pasta price editor.
  * Touches: `balances`, `transactions`, `app_settings`, `directus_users`.
  */
-import { PhArrowUp, PhCheck, PhFloppyDisk } from '@phosphor-icons/vue'
+import { PhArrowUp, PhCheck, PhFloppyDisk, PhBuildings, PhCoin, PhArrowDown } from '@phosphor-icons/vue'
 
 definePageMeta({ layout: 'app' })
 
@@ -37,6 +37,13 @@ interface BalanceEntry {
   user: DirectusUser
   amount: number
   balanceId: string | null
+}
+
+interface CompanyTransactionRecord {
+  id: string
+  amount: string
+  description: string | null
+  date_created: string
 }
 
 // ── Users ──────────────────────────────────────────────────────────────────
@@ -199,13 +206,82 @@ async function submitTopup() {
   topupSubmitting.value = false
 }
 
+// ── Company Account ──────────────────────────────────────────────────────
+const companyBalance = ref<number>(0)
+const companyBalanceLoading = ref(true)
+const companyTopupAmount = ref(0)
+const companyTopupDescription = ref('')
+const companyTopupSubmitting = ref(false)
+const companyTopupSuccess = ref(false)
+const companyTopupError = ref('')
+const companyTransactions = ref<CompanyTransactionRecord[]>([])
+const companyTransactionsLoading = ref(true)
+
+async function fetchCompanyAccount() {
+  companyBalanceLoading.value = true
+  try {
+    const data = await request<{ balance: string }>('GET', '/items/company_account')
+    companyBalance.value = data ? parseFloat(data.balance) : 0
+  } catch {
+    companyBalance.value = 0
+  }
+  companyBalanceLoading.value = false
+}
+
+async function fetchCompanyTransactions() {
+  companyTransactionsLoading.value = true
+  try {
+    const items = await request<CompanyTransactionRecord[]>(
+      'get',
+      '/items/company_transactions?sort[]=-date_created&limit=20'
+    )
+    companyTransactions.value = items ?? []
+  } catch {
+    companyTransactions.value = []
+  }
+  companyTransactionsLoading.value = false
+}
+
+async function submitCompanyTopup() {
+  if (companyTopupAmount.value === 0) return
+  companyTopupSubmitting.value = true
+  companyTopupSuccess.value = false
+  companyTopupError.value = ''
+  const amount = companyTopupAmount.value
+  const description = companyTopupDescription.value.trim() || 'Manual company top-up'
+
+  try {
+    await request('post', '/items/company_transactions', {
+      amount,
+      description,
+    })
+
+    const data = await request<{ balance: string }>('GET', '/items/company_account')
+    const currentBalance = data ? parseFloat(data.balance) : 0
+    await request('PATCH', '/items/company_account', {
+      balance: currentBalance + amount,
+    })
+
+    companyTopupSuccess.value = true
+    companyTopupAmount.value = 0
+    companyTopupDescription.value = ''
+    setTimeout(() => { companyTopupSuccess.value = false }, 3000)
+    await Promise.all([fetchCompanyAccount(), fetchCompanyTransactions()])
+  } catch (e) {
+    companyTopupError.value = 'Failed to process company top-up.'
+    console.error('Company top-up error:', e)
+  }
+  companyTopupSubmitting.value = false
+}
+
 // ── Expand state for slider/expanded toggle ───────────────────────────────
 const transactionsExpanded = ref(false)
 const balancesExpanded = ref(false)
+const companyTransactionsExpanded = ref(false)
 
 // ── Init ───────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  await Promise.all([fetchUsers(), fetchBalances(), fetchTransactions(), fetchPastaPrice()])
+  await Promise.all([fetchUsers(), fetchBalances(), fetchTransactions(), fetchPastaPrice(), fetchCompanyAccount(), fetchCompanyTransactions()])
 })
 </script>
 
@@ -272,15 +348,113 @@ onMounted(async () => {
         </div>
       </div>
 
+      <!-- ── Company Account ───────────────────────────────────────────── -->
+      <div class="bg-white rounded-2xl p-4 border border-gray-100">
+        <h2 class="text-[20px] font-semibold text-app-black mb-4">Company Account</h2>
+
+        <!-- Company balance -->
+        <div class="flex items-center gap-4 mb-4">
+          <div
+            class="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+            :class="companyBalance >= 0 ? 'bg-primary-pale' : 'bg-red-50'"
+          >
+            <PhBuildings class="w-6 h-6" :class="companyBalance >= 0 ? 'text-primary' : 'text-red-500'" />
+          </div>
+          <div>
+            <p class="text-[12px] text-gray-500 uppercase tracking-wide font-semibold">Balance</p>
+            <p
+              class="text-[22px] font-bold"
+              :class="companyBalance >= 5 ? 'text-app-black' : companyBalance >= 0 ? 'text-red-500' : 'text-red-600'"
+            >
+              €{{ companyBalance.toFixed(2) }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Add Funds form -->
+        <div class="space-y-3">
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[14px] text-gray-400 font-semibold">€</span>
+            <input
+              v-model.number="companyTopupAmount"
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="0.00"
+              class="w-full h-12 rounded-xl bg-white border border-gray-200 pl-8 pr-4 text-[14px] text-app-black placeholder:text-gray-300 focus:outline-none focus:border-primary"
+            />
+          </div>
+          <input
+            v-model="companyTopupDescription"
+            type="text"
+            placeholder="Description (optional)"
+            class="w-full h-12 rounded-xl bg-white border border-gray-200 px-4 text-[14px] text-app-black placeholder:text-gray-400 focus:outline-none focus:border-primary"
+          />
+          <button
+            @click="submitCompanyTopup"
+            :disabled="companyTopupSubmitting || companyTopupAmount === 0"
+            class="w-full h-12 rounded-full bg-primary text-white font-semibold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+          >
+            <PhCoin :size="18" weight="bold" />
+            {{ companyTopupSubmitting ? 'Processing...' : 'Add Funds' }}
+          </button>
+          <p v-if="companyTopupSuccess" class="text-[13px] text-green-600 flex items-center gap-1">
+            <PhCheck :size="16" weight="bold" />
+            Funds added successfully
+          </p>
+          <p v-if="companyTopupError" class="text-[13px] text-red-500">{{ companyTopupError }}</p>
+        </div>
+
+        <!-- Company transaction history (collapsed) -->
+        <div class="mt-4 pt-4 border-t border-gray-100">
+          <button
+            class="w-full flex items-center justify-center gap-1 text-[13px] text-gray-400 font-medium active:text-app-black transition-colors active:scale-[0.98]"
+            @click="companyTransactionsExpanded = !companyTransactionsExpanded"
+          >
+            {{ companyTransactionsExpanded ? 'Hide' : 'Show' }} transactions ({{ companyTransactions.length }})
+          </button>
+          <div v-if="companyTransactionsExpanded" class="mt-3">
+            <div v-if="companyTransactionsLoading" class="space-y-2">
+              <div v-for="i in 3" :key="i" class="h-14 bg-white rounded-2xl border border-gray-100 p-4">
+                <div class="h-3 w-32 bg-gray-100 rounded-full animate-pulse mb-2" />
+                <div class="h-3 w-20 bg-gray-100 rounded-full animate-pulse" />
+              </div>
+            </div>
+            <div v-else-if="companyTransactions.length === 0" class="text-center text-[14px] text-gray-400 py-4">
+              No company transactions yet
+            </div>
+            <div v-else class="space-y-1">
+              <div
+                v-for="tx in companyTransactions"
+                :key="tx.id"
+                class="rounded-xl bg-white px-4 py-3 flex items-center justify-between border border-gray-100"
+              >
+                <div class="flex-1 min-w-0 mr-3">
+                  <p class="text-[13px] font-medium text-app-black truncate leading-tight">{{ tx.description || 'Company transaction' }}</p>
+                  <p class="text-[11px] text-gray-400 mt-0.5">{{ formatDateRelative(new Date(tx.date_created)) }}</p>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <PhArrowDown v-if="parseFloat(tx.amount) > 0" class="w-3.5 h-3.5 text-green-600" />
+                  <PhArrowUp v-else class="w-3.5 h-3.5 text-red-500" />
+                  <span class="text-[14px] font-semibold" :class="parseFloat(tx.amount) > 0 ? 'text-green-600' : 'text-red-500'">
+                    {{ parseFloat(tx.amount) > 0 ? '+' : '' }}€{{ parseFloat(tx.amount).toFixed(2) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ── Manual Top-up ──────────────────────────────────────────────── -->
       <div class="bg-white rounded-2xl p-4 border border-gray-100">
-        <h2 class="text-[20px] font-semibold text-app-black mb-4">Manual Top-up</h2>
+        <h2 class="text-[20px] font-semibold text-app-black mb-4">User Balance Top-up</h2>
         <div class="space-y-3">
           <select
             v-model="selectedUserId"
             class="w-full h-12 rounded-xl bg-white border border-gray-200 px-4 text-[14px] text-app-black focus:outline-none focus:border-primary appearance-none"
           >
-            <option value="" disabled>Select user</option>
+            <option value="" disabled>Select user to top up</option>
             <option v-for="u in users" :key="u.id" :value="u.id">
               {{ u.first_name }} {{ u.last_name }}
             </option>
