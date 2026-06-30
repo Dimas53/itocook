@@ -45,6 +45,7 @@ services:
       CORS_HEADERS: "Content-Type,Authorization"
       CORS_MAX_AGE: "600"
       ACCESS_TOKEN_TTL: "24h"
+      TZ: "Europe/Berlin"
 
   frontend:
     build:

@@ -46,22 +46,23 @@ services:
       # TODO: replace with proper refresh token flow in useAuth.ts
       # 7 days matches the cookie lifetime
       ACCESS_TOKEN_TTL: "24h"
+      TZ: "Europe/Berlin"
 
-frontend:
-  build:
-    context: ./frontend
-    dockerfile: Dockerfile.prod
-  container_name: itocook-frontend
-  ports:
-    - "3000:3000"
-  environment:
-    NUXT_PUBLIC_DIRECTUS_URL: ${NUXT_PUBLIC_DIRECTUS_URL}
-    NUXT_PUBLIC_VAPID_PUBLIC_KEY: ${NUXT_PUBLIC_VAPID_PUBLIC_KEY}
-    NUXT_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
-    NUXT_DIRECTUS_ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
-    NUXT_DIRECTUS_ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
-  depends_on:
-    - directus
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: itocook-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NUXT_PUBLIC_DIRECTUS_URL: ${NUXT_PUBLIC_DIRECTUS_URL}
+      NUXT_PUBLIC_VAPID_PUBLIC_KEY: ${NUXT_PUBLIC_VAPID_PUBLIC_KEY}
+      NUXT_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      NUXT_DIRECTUS_ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
+      NUXT_DIRECTUS_ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
+    depends_on:
+      - directus
 
   api:
     build:

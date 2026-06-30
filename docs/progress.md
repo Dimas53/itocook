@@ -1,8 +1,18 @@
 # ItoCook — Progress Log
 
-## Current session — HeroBlock completed status + Company Account card styling (2026-06-29)
-- [x] **Feat: HeroBlock completed status** — `completed` added to `displayEntry` lookup chain (`index.vue`, `kitchen.vue`: cooking > ready > scheduled > completed > null). New badge in `HeroBlock.vue` ("All done! ✓" bg-green-100). Join button hidden for completed entries. `joinEntry`/`activeEntryId` unchanged (cooking/scheduled only).
-- [x] **Fix: Company Account card styling** — merged balance display + Add Funds form + transaction history into single `bg-white rounded-2xl p-4 border border-gray-100` card (matches Manual Top-up style). Company transactions now collapsed by default with toggle link ("Show/Hide transactions (N)"). Manual Top-up select label clarified to "Select user to top up".
+## Current session — Push notifications + TZ fix + CRON Berlin local time (2026-06-30)
+- [x] **Part A: Modified Morning Reminder flow** — CRON `0 */30 7-8 * * 1-5` (UTC, =9-10 CEST); added `check_time` exec + `time_ok` Condition to skip 8:30 UTC (10:30 CEST); replaced throw-based guard with Condition-based graceful skip
+- [x] **Part B: Created Cook Stale Reminder flow** (ID `9611f64f`) — CRON `0 */30 7-8 * * 1-5`; chain: check_time → get_today → fetch_queue → check_stale → has_stale → build_payloads → notify_cooks
+- [x] **Diagnosis: Schedule trigger caching** — Directus v11 uses node-cron; schedule jobs registered at process start. UI cron changes require container restart. Confirmed: change-then-restart works (test cron `0 7 13 * * 1-5` fired at 13:07 UTC after restart)
+- [x] **TimeZone discovery** — Directus container runs UTC, not CEST. CRON adjusted to UTC hours (`7-8` = 9-10 CEST). `check_time` blocks `h===8 && m>=30` (10:30 CEST)
+- [x] **docker-compose.yml indentation fix** — frontend service moved from indent 0 to indent 2 under services
+- [x] **PART 1: Add push notifications to Cook Stale Reminder** — copied `push_ids` exec + `send_push` request from Morning Reminder exactly; linked chain: `notify_users` → `push_ids` → `send_push`. E2E test passed: flow triggered returns `{"sent":1,"failed":0}` on test cook `c9c1f137`
+- [x] **PART 2: Fix container TZ to Europe/Berlin** — added `TZ: "Europe/Berlin"` to directus service in `docker-compose.yml`; recreated container (`docker compose up -d --force-recreate directus`). Node.js inside container correctly reports CEST hours (`new Date().getHours()` = 16, offset -120)
+- [x] **PART 2: Restore CRON/exec to Berlin local time** — all 3 schedule flows updated:
+  - Morning Reminder: CRON `0 */30 9-10 * * 1-5`, `check_time` blocks `h===10 && m>=30`
+  - Cook Stale Reminder: CRON `0 */30 9-10 * * 1-5`, `check_time` blocks `h===10 && m>=30`
+  - Duty Reminder: CRON `30 10 * * 1-5` (was `30 8`, now 10:30 Berlin local)
+- [x] **E2E verification** — container restarted; flow triggered manually via webhook → returns `{"sent":1,"failed":0}`; schedule trigger restored
 
 ## Current session — Company account + guests + Company Pays All (2026-06-29)
 - [x] **Directus: company_account collection** — singleton with `balance` (decimal, default 0), `updated_at`. Seeded with balance 0.
@@ -82,6 +92,7 @@
 - **Phase 4 screens** — AI Recipe, Duty, Common, Recipe Detail, Finance, Notifications all stubs or unfinished
 - **Cook Page balance deduction** — uses user token directly, may need Directus permissions or server proxy for /items/balances and /items/transactions on behalf of other users
 - **RecipeImageUpload paste on edit** — paste listener is not blocked when editing an existing recipe with a photo; paste triggers `processFile` which replaces the preview. Workaround: OK — the deferred pattern means nothing is uploaded until save, and old photo is cleaned up on save if replaced.
+- **Schedule trigger changes require container restart** — Directus v11 uses node-cron; cron config read at process start. Any UI/MCP cron edit needs `docker compose restart directus` to take effect.
 - **SSH deploy key not set up** — manual `git pull` required on server for deploys
 - **PWA push notifications** — `generateSW` strategy used (custom sw.js not compiled); push notification handling needs workbox config or switching back to `injectManifest`
 - **PWA build** — stuck on `injectManifest` where `swSrc` and `swDest` resolve to same file in Nuxt 4 `app/public/`; worked around with `generateSW`
@@ -434,7 +445,19 @@
 - [x] **Feat: useDeduction.ts updated** — added `guests` to DeductionParams interface, passes filtered guest names array to server route.
 - [x] **Feat: Finance page Company Account section** — balance card (color-coded like BalanceWidget: green for >=5, mild red for >=0, strong red for <0). Manual top-up form (amount + description → INSERT company_transactions + PATCH company_account). Transaction history (last 20, sorted by date_created desc, green/red amounts with +/- prefix). All between Balances Overview and Manual Top-up sections.
 
+## Fixes — browser errors (2026-06-30)
+- [x] **Fix: Chrome push AbortError noise** — changed `console.error` to `console.debug` in `usePushNotifications.ts:75` so the known Chrome FCM AbortError doesn't pollute browser console
+- [x] **Fix: Manifest syntax error** — created `app/public/manifest.webmanifest` with valid JSON manifest (name, icons, theme_color, display) so the browser doesn't get a 404/HTML parse error on `/manifest.webmanifest` in dev mode; PWA module only generates it in production
+
+## Current session — Directus flows reminder — UTC fix + restart diagnosis (2026-06-30)
+- [x] **PART A: Morning Reminder flow modified** — CRON `30 8 * * 1-5` → `0 */30 7-8 * * 1-5` (UTC, =9-10 CEST). Added `check_time` exec + `time_ok` Condition at start to skip 8:30 UTC (10:30 CEST). Replaced throw-based `check_no_cook` exec with Condition-based approach: exec returns `{ exists: queue.length > 0 }`, new `has_no_cook` Condition branches gracefully.
+- [x] **PART B: New "Cook Stale Reminder" flow created** (ID `9611f64f`) — Schedule CRON `0 */30 7-8 * * 1-5`. Chain: `check_time` → `time_ok` → `get_today` → `fetch_queue` (cook_queue date=today, status=scheduled, fields: id,cook) → `check_stale` (exec) → `has_stale` (Condition) → `build_payloads` (type: `cook_reminder`) → `notify_users` (trigger → [Util] Create Notification, iterationMode=parallel). Only reminds the cook personally.
+- [x] **Timezone discovery** — `docker compose exec directus date` returns UTC. CRON `0 */30 9-10 * * 1-5` was firing at 11:00-12:30 CEST (wrong). Fixed to `0 */30 7-8 * * 1-5` for 9:00-10:30 CEST window. `check_time` exec adjusted: blocks `h===8 && m>=30` (8:30 UTC = 10:30 CEST).
+- [x] **Schedule trigger restart diagnosis** — Directus v11 uses node-cron; schedule jobs registered at process start. UI cron changes require container restart. Confirmed via E2E test: set test cron `0 7 13 * * 1-5`, restarted container, verified flow fired at 13:07 UTC via `/activity` endpoint: `run directus_flows 9611f64f` + `run directus_flows 718c090b` (Util flow) + `create notifications` (E2E pass ✅).
+- [x] **docker-compose.yml indentation fix** — frontend service was at indent 0 (broken yaml); fixed to indent 2 under services. Allows `docker compose restart directus` without yaml parse errors.
+
 ## Git log
+- `eaab3b5` — feat(hero-block): add completed status badge and display
 - `a260c88` — fix(auth): block Join for ready/cancelled, add status badge to HeroBlock
 - `b0744ff` — docs(roadmap): add Phase 7a Testing, fix Phase 6/6b remaining statuses
 - `b3aae1d` — feat(recipe): add base servings field and dynamic portion presets

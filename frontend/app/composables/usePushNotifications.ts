@@ -72,7 +72,7 @@ export function usePushNotifications() {
         })
         console.log('[push] subscription created:', subscription.endpoint?.slice(0, 60))
       } catch (e) {
-        console.error('[push] subscription ERROR', e)
+        console.debug('[push] subscription ERROR', e)
         return
       }
     }
