@@ -22,14 +22,13 @@ frontend/
       finance.vue          — Admin: all balances, top-up, transactions, pasta price
       duty.vue             — Duty roster: today card, MonthCalendar, admin edit mode
       shopping-list.vue    — By Recipe / All Items tabs, select-all, delete-checked
-      ai-recipe.vue        — Placeholder (Phase 3)
-      common.vue           — Placeholder (Phase 3)
-    components/            — 18 reusable components (HeroBlock, RecipeCard, etc.)
-    composables/           — 12 composables (useDirectus, useAuth, useDeduction, etc.)
+      notifications.vue    — Notification list with icons, timeAgo, markAllAsRead
+    components/            — 20 reusable components (HeroBlock, RecipeCard, NotificationBell, etc.)
+    composables/           — 14 composables
     middleware/            — auth.global.ts, cook.ts
     utils/                 — dates.ts, dedupRecipes.ts, ingredientIcons.ts, etc.
   server/
-    api/                   — 9 admin-proxy server routes
+    api/                   — 11 admin-proxy server routes
     utils/                 — adminToken.ts, auth.ts
 ```
 
@@ -48,15 +47,16 @@ frontend/
 | Recipe Create/Edit | `/recipe/create` | Photo upload, ingredient editor, prefill from history |
 | All Recipes | `/recipes` | Search + category filter, grid with likes |
 | Profile | `/profile` | Avatar upload, My List, My Recipes, Preferences, balance |
-| Finance | `/finance` | Admin only — balances, top-up, transactions, pasta price |
+| Finance | `/finance` | Admin only — balances, top-up, transactions, pasta price, company account |
 | Duty | `/duty` | Today's duty card, MonthCalendar, admin edit mode |
 | Shopping List | `/shopping-list` | By Recipe / All Items tabs, select-all, delete checked |
+| Notifications | `/notifications` | Full list, timeAgo, markAllAsRead, type icons |
 
 ### Partial / Needs Polish
 
 | Page | Missing |
 |---|---|
-| Profile | Statistics, notification settings |
+| Profile | Statistics, notification preferences |
 | Kitchen | Weekly menu, anonymous ratings |
 
 ### Not Started
@@ -81,3 +81,19 @@ frontend/
 | `useRecipeServings` | Ingredient scaling by servings |
 | `useLikes` | Recipe like/unlike |
 | `useTotalUsers` | Total user count |
+| `useNotifications` | Notification polling, markAsRead, markAllAsRead |
+| `usePushNotifications` | Service Worker registration, VAPID subscribe |
+
+## Directus Flows (9 total)
+
+| Flow | Trigger | Push |
+|---|---|---|
+| Cook Assigned | cook_queue.dish_name updated | ✅ |
+| Lunch Ready | cook_queue.status → ready | ✅ |
+| Balance Low | balances.amount → below -5 | ✅ |
+| Morning Reminder | CRON 8:30 Mon-Fri | ✅ |
+| Duty Reminder | CRON 8:00 Mon-Fri | ✅ |
+| Duty Assigned | cleaning_schedule created | ✅ |
+| Cook Cancelled | cook_queue.status → cancelled | ✅ |
+| Cook Stale Reminder | CRON 9:00-10:00 Mon-Fri | ✅ |
+| Nightly Cleanup | CRON 3:00 daily | ❌ (internal) |

@@ -24,4 +24,6 @@ features:
     details: Build shopping lists from recipe ingredients. Auto-cleanup when a meal is confirmed or cancelled.
   - title: Balance Gate
     details: Users with balance below -30 EUR are blocked from joining or cooking until topped up by admin.
+  - title: Notifications & Push
+    details: In-app notification system with Web Push delivery. 9 Directus Flows handle cooking, balance, duty, and system reminders.
 ---

@@ -3,37 +3,46 @@
 ## Architecture at a Glance
 
 ```
- Browser (localhost:3000)
-       │
-       ├── Nuxt Client (Vue SPA)
-       │     └── composables/ → useDirectus (HTTP client)
-       │           └── Authorization: Bearer <token>
-       │
-       ├── Nuxt Server (SSR + API routes)
-       │     └── server/api/* — admin-proxy routes
-       │           └── getAdminToken() → admin Directus session
-       │
-       └── Directus (localhost:8055)
-             └── PostgreSQL (localhost:5432)
+ Browser (itocook.duckdns.org)
+        │
+        ├── Nuxt Client (Vue SPA)
+        │     └── composables/ → useDirectus (HTTP client)
+        │           └── Authorization: Bearer <token>
+        │
+        ├── Nuxt Server (SSR + API routes)
+        │     └── server/api/* — admin-proxy routes
+        │           └── getAdminToken() → admin Directus session
+        │
+        ├── Directus (port 8055)
+        │     └── PostgreSQL (port 5432)
+        │
+        └── FastAPI (port 8000)
+              └── /api/send-push → pywebpush → Browser Push Service
 ```
 
 ## Docker Network Diagram
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   Docker Network                         │
-│                                                         │
-│  ┌──────────────┐     ┌──────────────┐                  │
-│  │   postgres   │◄────│   directus   │◄── browser       │
-│  │   port 5432  │     │   port 8055  │    localhost:8055│
-│  └──────────────┘     └──────────────┘                  │
-│                              ▲                          │
-│                              │ http://directus:8055      │
-│                       ┌──────────────┐                  │
-│                       │   frontend   │◄── browser       │
-│                       │   port 3000  │    localhost:3000 │
-│                       └──────────────┘                  │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                        Docker Network                                │
+│                                                                      │
+│  ┌──────────────┐     ┌──────────────┐     ┌──────────────────────┐ │
+│  │   postgres   │◄────│   directus   │◄───│    nginx (host)       │ │
+│  │   port 5432  │     │   port 8055  │    │ itocook.duckdns.org   │ │
+│  └──────────────┘     └──────────────┘    │                        │ │
+│                            ▲               │  /cms/* → directus    │ │
+│                            │               │  /api/* → nuxt        │ │
+│                     ┌──────────────┐       │  /api/send-push → api │ │
+│                     │   frontend   │       │  /* → nuxt             │ │
+│                     │   port 3000  │       └──────────────────────┘ │
+│                     └──────────────┘                                 │
+│                            ▲                                         │
+│                     ┌──────────────┐                                 │
+│                     │     api      │                                 │
+│                     │   port 8000  │                                 │
+│                     │  (FastAPI)   │                                 │
+│                     └──────────────┘                                 │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Key Architectural Decisions
@@ -52,6 +61,12 @@
 
 7. **In-memory caching for admin token** — 23-hour TTL, reset on server restart.
 
+8. **FastAPI microservice for push** — dedicated Python service for push notification delivery, separate from the main Nuxt/Directus stack.
+
+9. **generateSW over injectManifest** — `@vite-pwa/nuxt` with `generateSW` strategy to avoid build conflicts in Nuxt 4's `app/public/` directory.
+
+10. **Polling over WebSocket for notifications** — `useNotifications` polls every 20s. WebSocket adds complexity not justified by current scale.
+
 ## Collections Overview
 
 | Collection | Purpose | Key Relations |
@@ -65,14 +80,20 @@
 | `shopping_list_items` | User shopping lists | M2O → users, M2O → recipes |
 | `cleaning_schedule` | Duty roster | M2O → users |
 | `app_settings` | Global constants (singleton) | — |
+| `notifications` | In-app notifications | M2O → users |
+| `push_subscriptions` | Browser push subscriptions | M2O → users |
+| `company_account` | Company meal budget (singleton) | — |
+| `company_transactions` | Company-paid deductions | M2O → cook_queue |
 
 ## Feature Docs
 
 | Feature | Document |
 |---|---|
-| Auth | [architecture/auth-flow.md](/features/auth-flow) |
-| Cook Queue | [architecture/cook-queue.md](/features/cook-queue) |
-| Finance | [architecture/finance.md](/features/finance) |
-| Recipe System | [architecture/recipe-system.md](/features/recipe-system) |
-| Shopping List | [architecture/shopping-list.md](/features/shopping-list) |
-| Duty | [architecture/duty.md](/features/duty) |
+| Auth | [Auth & Security](/features/auth-flow) |
+| Cook Queue | [Cook Queue](/features/cook-queue) |
+| Finance | [Finance & Balance](/features/finance) |
+| Recipe System | [Recipe System](/features/recipe-system) |
+| Shopping List | [Shopping List](/features/shopping-list) |
+| Duty | [Duty Schedule](/features/duty) |
+| Notifications & Push | [Notifications & Push](/features/notifications) |
+| Deployment | [Deployment](/overview/deployment) |

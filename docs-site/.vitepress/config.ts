@@ -9,8 +9,10 @@ export default defineConfig({
       { text: 'Overview', link: '/overview/what-is-itocook' },
       { text: 'Architecture', link: '/architecture/system-overview' },
       { text: 'Features', link: '/features/cook-queue' },
+      { text: 'Notifications', link: '/features/notifications' },
       { text: 'Screens', link: '/screens/home' },
       { text: 'Design System', link: '/design/colors' },
+      { text: 'Deployment', link: '/overview/deployment' },
       { text: 'Roadmap', link: '/roadmap' },
     ],
     sidebar: {
@@ -44,6 +46,7 @@ export default defineConfig({
             { text: 'Duty Schedule', link: '/features/duty' },
             { text: 'Shopping List', link: '/features/shopping-list' },
             { text: 'Auth & Security', link: '/features/auth-flow' },
+            { text: 'Notifications & Push', link: '/features/notifications' },
           ],
         },
       ],

@@ -23,16 +23,18 @@
 2. Server obtains admin token via `getAdminToken()`
 3. Fetch participants via `GET /items/orders?filter[cook_queue][_eq]`
 4. Fetch pasta cost from `app_settings`
-5. `POST /items/transactions` — one per participant with `amount`=-share
-6. `PATCH /items/balances` — deduct each participant's share
-7. `PATCH /items/cook_queue/{id}` → status=completed
-8. `DELETE /items/shopping_list_items` — cleanup linked items
+5. Create `transactions` — one per participant with amount=-share
+6. Create `company_transactions` — if guests present, deduct from company account
+7. `PATCH /items/balances` — deduct each participant's share
+8. `PATCH /items/cook_queue/{id}` → status=completed
+9. `DELETE /items/shopping_list_items` — cleanup linked items
 
 ## "Cancel Cooking" Flow
 
 1. `PATCH /items/cook_queue/{id}` → status=cancelled
-2. `GET /items/orders` → `DELETE /items/orders/{id}` each
-3. `DELETE /items/shopping_list_items` — cleanup linked items
+2. Directus Flow triggers: Cook Cancelled notification to all users
+3. `GET /items/orders` → `DELETE /items/orders/{id}` each
+4. `DELETE /items/shopping_list_items` — cleanup linked items
 
 ## Signup Flow (admin-proxy)
 
@@ -55,3 +57,79 @@
 1. From recipe detail: `POST /items/shopping_list_items` — one per scaled ingredient
 2. Auto-deleted on `confirmDeduction` or `cancelCooking`
 3. `is_checked` toggled via `PATCH` in shopping list UI
+
+## Notification Flow
+
+```
+Directus event trigger (items.create / items.update)
+        │
+        ├── Condition: check if notification should fire
+        │     └── e.g., dish_name._nnull, status == ready
+        │
+        ├── Fetch related data (users, entry details)
+        │
+        ├── Build payload (exec JS)
+        │
+        ├── Trigger → Utility Flow: [Util] Create Notification
+        │     └── POST /items/notifications { user, type, title, message, icon, link }
+        │
+        └── Request → FastAPI /api/send-push
+              ├── POST { user_ids, title, message, url }
+              ├── FastAPI fetches push_subscriptions by user_ids
+              └── pywebpush sends to each endpoint
+```
+
+## Push Notification Subscription Flow
+
+```
+1. User logs in → useAuth.fetchUser() success
+2. usePushNotifications.subscribe() called (non-blocking)
+3. Check: Notification.permission === "granted"?
+     ├── No → prompt user → if denied, stop
+     └── Yes → continue
+4. Check: existing subscription in Directus?
+     ├── GET /items/push_subscriptions?filter[endpoint][_eq]=...
+     ├── If exists → skip (prevent duplicates)
+     └── If not → POST /items/push_subscriptions { endpoint, p256dh, auth, user }
+5. On page reload: middleware/auth.global.ts → fetchUser() → subscribePush()
+
+Push delivery:
+1. Directus Flow → HTTP Request → FastAPI POST /api/send-push
+2. FastAPI logs in as Directus admin
+3. Fetches subscriptions by user_ids array
+4. For each subscription: pywebpush.send(subscription, payload)
+5. Browser Service Worker receives push event
+6. push-handler.js shows system notification
+7. User clicks → notificationclick event
+     ├── Focus existing tab if open
+     └── Open new tab → navigate to notification URL
+```
+
+## Schedule Flow Pattern
+
+```
+CRON trigger (Berlin local time)
+        │
+        ├── exec: get today's date
+        ├── item-read: fetch relevant data
+        ├── condition: check if action is needed
+        ├── exec: build notification payloads
+        ├── Trigger → [Util] Create Notification
+        └── Request → FastAPI /api/send-push
+
+If no action needed (e.g., no cook today):
+        └── exec: throw Error → flow stops (intentional)
+```
+
+## Company Deduction Flow (Guest Feature)
+
+```
+1. Cook enters receipt in 'ready' state
+2. Cook adds guest names in guest input
+3. Cook confirms deduction
+4. Nuxt server route /api/deduction/confirm:
+     ├── Calculate per-person share
+     ├── Create transactions for each participant (their share)
+     ├── Create company_transactions for guest portion
+     └── Update company_account.balance -= guest_portion
+```
