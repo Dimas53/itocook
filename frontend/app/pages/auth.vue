@@ -9,14 +9,14 @@
       <div class="rounded-t-[32px] bg-auth-bg w-full flex-1 flex flex-col px-6 py-8">
         <div class="bg-white rounded-full p-1 flex mb-6">
           <button
-            @click="isSignUp = false; errorMsg = ''"
+            @click="isSignUp = false; clearForm()"
             class="flex-1 h-10 rounded-full text-[14px] font-semibold transition-all duration-200"
             :class="!isSignUp ? 'bg-app-black text-white' : 'text-gray-500 bg-transparent'"
           >
             Log In
           </button>
           <button
-            @click="isSignUp = true; errorMsg = ''"
+            @click="isSignUp = true; clearForm()"
             class="flex-1 h-10 rounded-full text-[14px] font-semibold transition-all duration-200"
             :class="isSignUp ? 'bg-app-black text-white' : 'text-gray-500 bg-transparent'"
           >
@@ -41,48 +41,60 @@
           <form v-if="isSignUp" @submit.prevent="handleSubmit" class="flex flex-col">
             <div class="space-y-3">
               <div class="flex gap-3">
-                <input
-                  v-model="firstName"
-                  type="text"
-                  name="firstName"
-                  autocomplete="given-name"
-                  placeholder="First Name"
-                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-                />
-                <input
-                  v-model="lastName"
-                  type="text"
-                  name="lastName"
-                  autocomplete="family-name"
-                  placeholder="Last Name"
-                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-                />
+                <div class="w-full">
+                  <input
+                    v-model="firstName"
+                    type="text"
+                    name="firstName"
+                    autocomplete="given-name"
+                    placeholder="First Name"
+                    class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  />
+                  <p v-if="firstNameError" class="text-red-500 text-[12px] mt-1">{{ firstNameError }}</p>
+                </div>
+                <div class="w-full">
+                  <input
+                    v-model="lastName"
+                    type="text"
+                    name="lastName"
+                    autocomplete="family-name"
+                    placeholder="Last Name"
+                    class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  />
+                  <p v-if="lastNameError" class="text-red-500 text-[12px] mt-1">{{ lastNameError }}</p>
+                </div>
               </div>
-              <input
-                v-model="email"
-                type="text"
-                name="email"
-                autocomplete="email"
-                placeholder="Email or Phone Number"
-                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-              />
-              <div class="relative">
+              <div>
                 <input
-                  v-model="password"
-                  :type="showPassword ? 'text' : 'password'"
-                  name="password"
-                  autocomplete="new-password"
-                  placeholder="Password"
-                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 pr-11 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  v-model="email"
+                  type="text"
+                  name="email"
+                  autocomplete="email"
+                  placeholder="Email or Phone Number"
+                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
                 />
-                <button
-                  type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-400"
-                  @click="showPassword = !showPassword"
-                  tabindex="-1"
-                >
-                  <component :is="showPassword ? PhEye : PhEyeClosed" class="w-5 h-5" />
-                </button>
+                <p v-if="emailError" class="text-red-500 text-[12px] mt-1">{{ emailError }}</p>
+              </div>
+              <div>
+                <div class="relative">
+                  <input
+                    v-model="password"
+                    :type="showPassword ? 'text' : 'password'"
+                    name="password"
+                    autocomplete="new-password"
+                    placeholder="Password"
+                    class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 pr-11 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-400"
+                    @click="showPassword = !showPassword"
+                    tabindex="-1"
+                  >
+                    <component :is="showPassword ? PhEye : PhEyeClosed" class="w-5 h-5" />
+                  </button>
+                </div>
+                <p v-if="passwordError" class="text-red-500 text-[12px] mt-1">{{ passwordError }}</p>
               </div>
             </div>
 
@@ -105,14 +117,17 @@
           <!-- Log In form -->
           <form v-else @submit.prevent="handleSubmit" class="flex flex-col">
             <div class="space-y-3">
-              <input
-                v-model="email"
-                type="text"
-                name="email"
-                autocomplete="email"
-                placeholder="Email or Phone Number"
-                class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
-              />
+              <div>
+                <input
+                  v-model="email"
+                  type="text"
+                  name="email"
+                  autocomplete="email"
+                  placeholder="Email or Phone Number"
+                  class="w-full h-12 bg-white/40 border border-primary/20 rounded-xl px-4 text-base placeholder-gray-500 outline-none focus:bg-white focus:border-primary transition-colors"
+                />
+                <p v-if="emailError" class="text-red-500 text-[12px] mt-1">{{ emailError }}</p>
+              </div>
               <div>
                 <div class="relative">
                   <input
@@ -132,6 +147,7 @@
                     <component :is="showPassword ? PhEye : PhEyeClosed" class="w-5 h-5" />
                   </button>
                 </div>
+                <p v-if="passwordError" class="text-red-500 text-[12px] mt-1">{{ passwordError }}</p>
                 <div class="flex justify-end mt-2">
                   <a href="#" class="text-xs text-gray-500 font-medium">Forgot Password?</a>
                 </div>
@@ -205,40 +221,76 @@ async function redirectAfterLogin() {
   router.push('/')
 }
 
-const isSignUp = ref(true)
+const isSignUp = ref(false)
 const firstName = ref('')
 const lastName = ref('')
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const errorMsg = ref('')
+const firstNameError = ref('')
+const lastNameError = ref('')
+const emailError = ref('')
+const passwordError = ref('')
 const validating = ref(false)
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+function clearForm() {
+  firstName.value = ''
+  lastName.value = ''
+  email.value = ''
+  password.value = ''
+  firstNameError.value = ''
+  lastNameError.value = ''
+  emailError.value = ''
+  passwordError.value = ''
+  errorMsg.value = ''
+}
+
 function validate(): boolean {
+  firstNameError.value = ''
+  lastNameError.value = ''
+  emailError.value = ''
+  passwordError.value = ''
   errorMsg.value = ''
 
   if (isSignUp.value) {
-    if (!firstName.value || !lastName.value || !email.value || !password.value) {
-      errorMsg.value = 'Please fill in all fields.'
+    if (!firstName.value) {
+      firstNameError.value = 'Please enter your first name'
+      return false
+    }
+    if (!lastName.value) {
+      lastNameError.value = 'Please enter your last name'
+      return false
+    }
+    if (!email.value) {
+      emailError.value = 'Please enter your email address'
       return false
     }
     if (!emailRegex.test(email.value)) {
-      errorMsg.value = 'Please enter a valid email address.'
+      emailError.value = 'Email must be in format: name@company.com'
+      return false
+    }
+    if (!password.value) {
+      passwordError.value = 'Please enter a password'
       return false
     }
     if (password.value.length < 6) {
-      errorMsg.value = 'Password must be at least 6 characters.'
+      passwordError.value = 'Password must be at least 6 characters'
       return false
     }
   } else {
-    if (!email.value || !password.value) {
-      errorMsg.value = 'Please enter email and password.'
+    if (!email.value) {
+      emailError.value = 'Please enter your email address'
       return false
     }
     if (!emailRegex.test(email.value)) {
-      errorMsg.value = 'Please enter a valid email address.'
+      emailError.value = 'Email must be in format: name@company.com'
+      return false
+    }
+    if (!password.value) {
+      passwordError.value = 'Please enter your password'
       return false
     }
   }

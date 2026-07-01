@@ -98,6 +98,9 @@
 - [x] **Docs: CONTEXT.md updated** — added cook_reminder, Cook Stale Reminder, company_account, company_transactions, guests, TZ cron convention, Directus Flows not version-controlled
 - [x] **Docs: AGENTS.md updated** — added CRON restart rule and Flows-not-version-controlled rule
 
+## Fixes — current session (2026-07-01)
+- [x] **Prompt 1: Layout bounce + auth fixes** — added `overscroll-behavior: none` + `position: fixed` to html/body in main.css; added `font-size: 16px !important` on inputs globally to prevent iOS auto-zoom; changed auth.vue default tab from Sign Up to Log In; tab switch now clears all form fields via `clearForm()`; replaced single `errorMsg` with per-field validation (`firstNameError`, `lastNameError`, `emailError`, `passwordError`) displayed directly below each input
+
 ## Known issues
 - **Phase 4 screens** — AI Recipe and Common screens still stubs/unfinished
 - **Cook Page balance deduction** — uses user token directly, may need Directus permissions or server proxy for /items/balances and /items/transactions on behalf of other users
@@ -473,6 +476,7 @@
 - [x] **docker-compose.yml indentation fix** — frontend service was at indent 0 (broken yaml); fixed to indent 2 under services. Allows `docker compose restart directus` without yaml parse errors.
 
 ## Git log
+- `98e6aab` — docs: add Step 6 cheatsheet verify to session start, fill missing skills
 - `4aa3bc2` — docs: add retroactive specs, update harness, rewrite AGENTS.md
 - `fceb844` — chore: remove outdated docs/deployment.md (superseded by docs-site/overview/deployment.md)
 - `4ae6e14` — docs(docs-site): add notifications + deployment pages, update roadmap, status, schema, data-flows, system-overview, tech-stack, nav, index

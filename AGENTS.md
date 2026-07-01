@@ -42,50 +42,14 @@ After loading `using-agent-skills`, immediately load these stack skills:
 | Roadmap | `docs/roadmap.md` |
 | Architecture overview | `docs/ARCHITECTURE.md` |
 | Domain glossary | `docs/CONTEXT.md` |
-| Design system | `docs/design.md` |
 | Skills reference | `docs/skills-cheatsheet.md` |
 | Global skills | `~/.config/opencode/skills/` |
 
 ---
 
-## Session Start — MANDATORY SEQUENCE
+## Task Context (used in Session Start Step 7)
 
-Execute these steps in order at the start of EVERY session. Do not skip any step.
-
-**Step 1 — Load global skill**
-```
-Read ~/.config/opencode/skills/using-agent-skills/SKILL.md
-```
-
-**Step 2 — Load stack skills**
-Load all 7 stack skills listed in the "Stack Skills" section above.
-
-**Step 3 — Read git log**
-```bash
-git log --oneline -5
-```
-Understand what was actually done last.
-
-**Step 4 — Read progress.md**
-```
-Read docs/progress.md
-```
-Understand current state, known issues, and next steps.
-
-**Step 5 — Sync check**
-Compare git log with progress.md. If they are out of sync — update progress.md FIRST before doing anything else.
-
-**Step 6 — Verify skills-cheatsheet is complete**
-Read `docs/skills-cheatsheet.md`. Compare listed skills against all available skills in system prompt's `available_skills`. If any skill is missing from the cheatsheet — add it before proceeding.
-
-**Step 7 — Read roadmap** (renumbered from old Step 6)
-```
-Read docs/roadmap.md
-```
-Understand which Phase is currently active.
-
-**Step 8 — Load task-specific context**
-Based on what you are about to work on:
+When starting a task, load the relevant doc based on what you are working on:
 
 | Task area | Read before starting |
 |-----------|---------------------|
@@ -100,20 +64,6 @@ Based on what you are about to work on:
 | Deployment, PWA, Docker | `docs/architecture/deployment-pwa.md` |
 | Overall architecture or new feature | `docs/ARCHITECTURE.md` |
 | Backend / Directus schema | Run Directus MCP `schema` tool before creating anything |
-
-**Step 9 — Load task-specific skills**
-Check `docs/skills-cheatsheet.md` and load relevant skills per global AGENTS.md triggers.
-
-**Step 10 — Report session start**
-Before writing any code, output:
-```
-✓ Session initialized.
-Current phase: [phase name from roadmap]
-Last commit: [hash — message]
-Progress status: [one line from progress.md current status]
-Working on: [what user asked for]
-Skills loaded: [list]
-```
 
 ---
 
@@ -172,7 +122,7 @@ Then use: `list_console_messages`, `list_network_requests`, `take_snapshot`
 - Always check Access Policies/Permissions before new API calls
 - For sensitive collections (e.g. `directus_users`) — restrict field-level access
 - Flows are NOT version controlled — after modifying locally, note that production sync is needed
-- CRON schedule changes require `docker compose restart directus` to take effect
+- CRON schedule changes require: `docker compose restart directus`
 
 ---
 
@@ -182,13 +132,13 @@ Whenever creating/modifying a collection, field, or new API call:
 1. Check Access Policies for the role used by frontend (Public or authenticated role)
 2. If required permission is missing — add it as part of the task
 3. For `directus_users` — restrict fields to minimum needed (no email, password hashes)
-4. Note in progress.md which permissions were added or changed
+4. Note in `progress.md` which permissions were added or changed
 
 ---
 
 ## Vue 3 / Nuxt Gotchas
 
-1. **useDirectus() must be called at composable init time, not inside async handlers.**
+1. **`useDirectus()` must be called at composable init time, not inside async handlers.**
    `useRuntimeConfig`, `useCookie` require synchronous Nuxt context.
    Calling inside `setTimeout`, async functions, or event handlers loses context.
    Always initialize at the top level of the composable.
@@ -237,18 +187,17 @@ docker compose restart directus
 - Contains: purpose, inputs/outputs, edge cases, related collections/composables
 - Use skill: `~/.config/opencode/skills/spec-driven-development/SKILL.md`
 
-
 ---
 
-## Docs Update Matrix — who updates what and when
+## Docs Update Matrix
 
 | File | Updated by | Trigger |
 |------|-----------|---------|
-| docs/progress.md | Agent — automatic | Every commit + push |
-| docs/roadmap.md | Agent — automatic | Phase completed |
-| docs/architecture/*.md | Agent — automatic | Architecture changed |
-| docs/CONTEXT.md | Agent — on request | Documentation Session |
-| docs/specs/*.md | Agent — on request | Before new feature |
-| docs/design.md | Developer manually | Design decision changed |
-| docs/audits/*.md | Agent — on request | Audit session |
-| docs/skills-cheatsheet.md | Agent — automatic | New skill installed |
+| `docs/progress.md` | Agent — automatic | Every commit + push |
+| `docs/roadmap.md` | Agent — automatic | Phase completed |
+| `docs/architecture/*.md` | Agent — automatic | Architecture changed |
+| `docs/CONTEXT.md` | Agent — on request | Documentation Session |
+| `docs/specs/*.md` | Agent — on request | Before new feature |
+| `docs/design.md` | Developer manually | Design decision changed |
+| `docs/audits/*.md` | Agent — on request | Audit session |
+| `docs/skills-cheatsheet.md` | Agent — automatic | New skill installed |
