@@ -32,21 +32,12 @@
           {{ likeCount }}
         </span>
 
-        <img
-          v-if="!cardImage.isUploaded"
-          :src="cardImage.src"
-          :alt="recipe.title"
-          class="w-full h-24 rounded-xl object-cover"
-        />
-
-        <div v-else class="flex justify-center items-center">
-          <div class="w-24 h-24 rounded-full border-[3px] border-white shadow-md overflow-hidden">
-            <img
-              :src="cardImage.src"
-              :alt="recipe.title"
-              class="w-full h-full object-cover"
-            />
-          </div>
+        <div class="w-full rounded-b-2xl overflow-hidden bg-primary-light/30">
+          <img
+            :src="cardImage.src"
+            :alt="recipe.title"
+            class="w-full h-[140px] object-contain"
+          />
         </div>
       </div>
     </template>

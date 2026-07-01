@@ -27,6 +27,22 @@
   border-top: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.bottom-tab-bar {
+  background: rgba(99, 73, 182, 0.7);
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+  border: none;
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bottom-tab-bar-wrapper {
+  position: absolute;
+  bottom: 18px;
+}
+
 html, body {
   overscroll-behavior: none;
   overflow: hidden;
@@ -65,9 +81,9 @@ input, textarea, select {
     display: none !important;
   }
 
-  .bottom-tab-bar {
-    position: fixed !important;
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  .bottom-tab-bar-wrapper {
+    position: fixed;
+    bottom: max(16px, calc(16px + env(safe-area-inset-bottom, 0px)));
   }
 
   .app-content {

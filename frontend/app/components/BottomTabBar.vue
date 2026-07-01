@@ -1,8 +1,6 @@
 <template>
   <div
-    class="bottom-tab-bar absolute left-4 right-4 z-50 rounded-3xl h-[64px] flex items-center justify-between px-4"
-    style="background: rgba(99, 73, 182, 0.71); backdrop-filter: blur(2px);"
-    :style="{ bottom: '16px' }"
+    class="bottom-tab-bar-wrapper bottom-tab-bar left-4 right-4 z-50 h-[64px] flex items-center justify-between px-4"
   >
     <button
       v-for="tab in tabs"

@@ -100,6 +100,10 @@
 
 ## Fixes — current session (2026-07-01)
 - [x] **Prompt 1: Layout bounce + auth fixes** — added `overscroll-behavior: none` + `position: fixed` to html/body in main.css; added `font-size: 16px !important` on inputs globally to prevent iOS auto-zoom; changed auth.vue default tab from Sign Up to Log In; tab switch now clears all form fields via `clearForm()`; replaced single `errorMsg` with per-field validation (`firstNameError`, `lastNameError`, `emailError`, `passwordError`) displayed directly below each input
+- [x] **Prompt 2 Fix 1: BottomTabBar — responsive pos + clean glass** — extracted positioning to `.bottom-tab-bar-wrapper` class: `position: absolute; bottom: 18px` (desktop), `position: fixed; bottom: max(16px, ...)` (mobile/PWA); `.bottom-tab-bar` cleaned to pure glass: `rgba(99,73,182,0.7) + saturate(180%) blur(8px)`, `border: none`, `box-shadow: 0 0 0 0.5px rgba(255,255,255,0.2)`, `border-radius: 24px`, `overflow: hidden`; no inline styles on wrapper; removed pseudo-elements and duplicate definitions
+- [x] **Prompt 2 Fix 2: RecipeCard image cropping** — replaced dual-variant (non-uploaded rectangular + uploaded circular thumbnail) with single unified wrapper: `w-full rounded-b-2xl overflow-hidden bg-primary-light/30` + `img w-full h-[140px] object-contain`; removed `v-if/else` distinction between uploaded/not-uploaded photos (both use same layout)
+- [x] **Prompt 2 Fix 3: Recipe limit 5→6** — changed `kitchen.vue` `dedupRecipes(recipeData).slice(0, 5)` → `slice(0, 6)`; `index.vue` already had 6
+- [x] **Prompt 2 Fix 4: Modal swipe dismiss** — added `e.stopPropagation()` to all 3 touch handlers in `useSwipeDismiss.ts`; added `touch-action: pan-y` via inline style to modal panel and drag handle; added `transition-transform duration-250` class to modal panel
 
 ## Known issues
 - **Phase 4 screens** — AI Recipe and Common screens still stubs/unfinished
@@ -476,6 +480,8 @@
 - [x] **docker-compose.yml indentation fix** — frontend service was at indent 0 (broken yaml); fixed to indent 2 under services. Allows `docker compose restart directus` without yaml parse errors.
 
 ## Git log
+- `549e08d` — fix(pwa-prompt2): BottomTabBar glass + safe-area, RecipeCard images, swipe dismiss, recipe limit
+- `1879d6c` — fix(pwa): disable overscroll bounce, fix auth default tab, per-field validation
 - `98e6aab` — docs: add Step 6 cheatsheet verify to session start, fill missing skills
 - `4aa3bc2` — docs: add retroactive specs, update harness, rewrite AGENTS.md
 - `fceb844` — chore: remove outdated docs/deployment.md (superseded by docs-site/overview/deployment.md)

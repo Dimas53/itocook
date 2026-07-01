@@ -440,7 +440,7 @@ onMounted(async () => {
     const recipeData = await request<any[]>('get',
       '/items/recipes?sort=-date_created&limit=50&fields=id,dish_name,category,cook.id,cook.first_name,cook.last_name,date_created,forked_from'
     )
-    const deduped = dedupRecipes(recipeData).slice(0, 5)
+    const deduped = dedupRecipes(recipeData).slice(0, 6)
     const mapped = deduped.map((r) => ({
       id: r.id,
       dish_name: r.dish_name,

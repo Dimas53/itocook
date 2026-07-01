@@ -4,17 +4,20 @@ export function useSwipeDismiss(onClose: () => void) {
   const swiping = ref(false)
 
   function onTouchStart(e: TouchEvent) {
+    e.stopPropagation()
     touchStartY.value = e.touches[0]!.clientY
     swiping.value = true
   }
 
   function onTouchMove(e: TouchEvent) {
     if (!swiping.value) return
+    e.stopPropagation()
     touchDeltaY.value = e.touches[0]!.clientY - touchStartY.value
   }
 
-  function onTouchEnd() {
+  function onTouchEnd(e: TouchEvent) {
     if (!swiping.value) return
+    e.stopPropagation()
     if (touchDeltaY.value > 80) {
       onClose()
     }

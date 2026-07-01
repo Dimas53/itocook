@@ -34,12 +34,13 @@
       >
         <div class="absolute inset-0 bg-black/40" @click="pm.close()" />
         <div
-          class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[60%] flex flex-col"
+          class="relative bg-white rounded-t-2xl pb-8 px-5 pt-5 max-h-[60%] flex flex-col transition-transform duration-250"
+          style="touch-action: pan-y"
           @touchstart="onTouchStart"
           @touchmove="onTouchMove"
           @touchend="onTouchEnd"
         >
-          <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-3 shrink-0" />
+          <div class="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-3 shrink-0" style="touch-action: pan-y" />
           <div class="flex items-center gap-3 mb-4 shrink-0">
             <h3 class="text-[16px] font-semibold text-app-black">Participants</h3>
             <span class="bg-primary-pale text-primary rounded-full px-2 text-[13px] font-semibold">{{ pm.participants.length }}</span>
