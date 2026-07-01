@@ -62,11 +62,12 @@
       </div>
       <div v-else class="grid grid-cols-2 gap-3">
         <RecipeCard
-          v-for="recipe in recipes"
+          v-for="(recipe, i) in recipes"
           :key="recipe.id"
           :loading="false"
           :recipe="recipe"
           :like-count="recipe.likeCount"
+          :index="i"
           @view="router.push(`/recipe/${recipe.id}`)"
         />
       </div>

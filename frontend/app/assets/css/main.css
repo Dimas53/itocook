@@ -40,7 +40,7 @@
 
 .bottom-tab-bar-wrapper {
   position: absolute;
-  bottom: 18px;
+  bottom: 15px;
 }
 
 html, body {
@@ -83,7 +83,7 @@ input, textarea, select {
 
   .bottom-tab-bar-wrapper {
     position: fixed;
-    bottom: max(16px, calc(16px + env(safe-area-inset-bottom, 0px)));
+    bottom: max(15px, calc(15px + env(safe-area-inset-bottom, 0px)));
   }
 
   .app-content {

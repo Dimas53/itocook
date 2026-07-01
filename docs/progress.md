@@ -1,18 +1,13 @@
 # ItoCook — Progress Log
 
-## Current session — Push notifications + TZ fix + CRON Berlin local time (2026-06-30)
-- [x] **Part A: Modified Morning Reminder flow** — CRON `0 */30 7-8 * * 1-5` (UTC, =9-10 CEST); added `check_time` exec + `time_ok` Condition to skip 8:30 UTC (10:30 CEST); replaced throw-based guard with Condition-based graceful skip
-- [x] **Part B: Created Cook Stale Reminder flow** (ID `9611f64f`) — CRON `0 */30 7-8 * * 1-5`; chain: check_time → get_today → fetch_queue → check_stale → has_stale → build_payloads → notify_cooks
-- [x] **Diagnosis: Schedule trigger caching** — Directus v11 uses node-cron; schedule jobs registered at process start. UI cron changes require container restart. Confirmed: change-then-restart works (test cron `0 7 13 * * 1-5` fired at 13:07 UTC after restart)
-- [x] **TimeZone discovery** — Directus container runs UTC, not CEST. CRON adjusted to UTC hours (`7-8` = 9-10 CEST). `check_time` blocks `h===8 && m>=30` (10:30 CEST)
-- [x] **docker-compose.yml indentation fix** — frontend service moved from indent 0 to indent 2 under services
-- [x] **PART 1: Add push notifications to Cook Stale Reminder** — copied `push_ids` exec + `send_push` request from Morning Reminder exactly; linked chain: `notify_users` → `push_ids` → `send_push`. E2E test passed: flow triggered returns `{"sent":1,"failed":0}` on test cook `c9c1f137`
-- [x] **PART 2: Fix container TZ to Europe/Berlin** — added `TZ: "Europe/Berlin"` to directus service in `docker-compose.yml`; recreated container (`docker compose up -d --force-recreate directus`). Node.js inside container correctly reports CEST hours (`new Date().getHours()` = 16, offset -120)
-- [x] **PART 2: Restore CRON/exec to Berlin local time** — all 3 schedule flows updated:
-  - Morning Reminder: CRON `0 */30 9-10 * * 1-5`, `check_time` blocks `h===10 && m>=30`
-  - Cook Stale Reminder: CRON `0 */30 9-10 * * 1-5`, `check_time` blocks `h===10 && m>=30`
-  - Duty Reminder: CRON `30 10 * * 1-5` (was `30 8`, now 10:30 Berlin local)
-- [x] **E2E verification** — container restarted; flow triggered manually via webhook → returns `{"sent":1,"failed":0}`; schedule trigger restored
+## Current session — RecipeCard pastel colors + star + image bottom-left (2026-07-01)
+- [x] **Pastel card colors** — `colors` array (`#D2C5FF`, `#FFF9B2`, `#E1FFB0`, `#FFD9B0`) applied via `:style` cycling by `index` prop; removed `bg-primary-light`
+- [x] **Star decoration** — `absolute -right-1 -bottom-6 w-44 h-44 z-0 opacity-40`, custom `starColors` via `:fill` matching each card color
+- [x] **Image bottom-left** — `absolute bottom-[-25px] left-[-12px] w-[160px] h-[140px] object-contain z-10`, wrapper replaced
+- [x] **Layout** — `p-3 pb-[120px]`, title/chef + heart in `flex justify-between`, heart inline right
+- [x] **`index` prop** — added for color cycling in `v-for` on `index.vue`
+
+## Previous sessions
 
 ## Current session — Company account + guests + Company Pays All (2026-06-29)
 - [x] **Directus: company_account collection** — singleton with `balance` (decimal, default 0), `updated_at`. Seeded with balance 0.
@@ -100,7 +95,8 @@
 
 ## Fixes — current session (2026-07-01)
 - [x] **Prompt 1: Layout bounce + auth fixes** — added `overscroll-behavior: none` + `position: fixed` to html/body in main.css; added `font-size: 16px !important` on inputs globally to prevent iOS auto-zoom; changed auth.vue default tab from Sign Up to Log In; tab switch now clears all form fields via `clearForm()`; replaced single `errorMsg` with per-field validation (`firstNameError`, `lastNameError`, `emailError`, `passwordError`) displayed directly below each input
-- [x] **Prompt 2 Fix 1: BottomTabBar — responsive pos + clean glass** — extracted positioning to `.bottom-tab-bar-wrapper` class: `position: absolute; bottom: 18px` (desktop), `position: fixed; bottom: max(16px, ...)` (mobile/PWA); `.bottom-tab-bar` cleaned to pure glass: `rgba(99,73,182,0.7) + saturate(180%) blur(8px)`, `border: none`, `box-shadow: 0 0 0 0.5px rgba(255,255,255,0.2)`, `border-radius: 24px`, `overflow: hidden`; no inline styles on wrapper; removed pseudo-elements and duplicate definitions
+- [x] **Prompt 2 Fix 1: BottomTabBar — responsive pos + clean glass** — extracted positioning to `.bottom-tab-bar-wrapper` class: `position: absolute; bottom: 15px` (desktop), `position: fixed; bottom: max(15px, ...)` (mobile/PWA); `.bottom-tab-bar` cleaned to pure glass: `rgba(99,73,182,0.7) + saturate(180%) blur(8px)`, `border: none`, `box-shadow: 0 0 0 0.5px rgba(255,255,255,0.2)`, `border-radius: 24px`, `overflow: hidden`; no inline styles on wrapper; removed pseudo-elements and duplicate definitions
+- [x] **Prompt 3: RecipeCard ordered colors + star decoration + image alignment** — added `index` prop; ordered pastel colors `['#D2C5FF','#FFF9B2','#E1FFB0','#FFD9B0']` via `:style` cycling by index; copied star SVG decoration from HeroBlock.vue (`opacity-15`, `-right-1 -bottom-8`); card wrapper `position: relative overflow-hidden`; image changed to `h-[120px] object-contain object-right-bottom`; removed `bg-primary-light/30` from image wrapper; index.vue passes `:index="i"` in v-for
 - [x] **Prompt 2 Fix 2: RecipeCard image cropping** — replaced dual-variant (non-uploaded rectangular + uploaded circular thumbnail) with single unified wrapper: `w-full rounded-b-2xl overflow-hidden bg-primary-light/30` + `img w-full h-[140px] object-contain`; removed `v-if/else` distinction between uploaded/not-uploaded photos (both use same layout)
 - [x] **Prompt 2 Fix 3: Recipe limit 5→6** — changed `kitchen.vue` `dedupRecipes(recipeData).slice(0, 5)` → `slice(0, 6)`; `index.vue` already had 6
 - [x] **Prompt 2 Fix 4: Modal swipe dismiss** — added `e.stopPropagation()` to all 3 touch handlers in `useSwipeDismiss.ts`; added `touch-action: pan-y` via inline style to modal panel and drag handle; added `transition-transform duration-250` class to modal panel
