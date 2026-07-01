@@ -4,15 +4,18 @@
 
 | Skill | Когда говорить агенту |
 |---|---|
+| `using-agent-skills` | Meta-скилл — автозагрузка в начале каждой сессии |
 | `session-start` | Начало сессии — прочитай progress.md и roadmap, выдай сводку |
 | `brainstorming` | Перед новой фичей — сначала задай вопросы, потом код |
 | `grill-with-docs` | Перед новой фичей — пусть задаст вопросы, обновит CONTEXT.md |
 | `grill-me` | Стресс-тест идеи или плана — допрос без записи в доки |
+| `interview-me` | Требования размытые — пусть вытянет из меня что реально нужно |
 | `incremental-implementation` | Реализуй пошагово, маленькими шагами |
 | `planning-and-task-breakdown` | Разбей задачу на шаги перед началом |
 | `writing-plans` | Разбей задачу на шаги по 2-5 минут с точными путями файлов |
 | `handoff` | Сессия длинная — упакуй контекст для новой сессии |
 | `diagnose` | Что-то не работает — иди по циклу диагностики |
+| `find-skills` | Найди скилл для конкретной задачи |
 | `nuxt` | Работаем с Nuxt — применяй nuxt паттерны |
 | `nuxt-ui` | Используй Nuxt UI компоненты, не пиши свои |
 | `vue` | Применяй Vue 3 / script setup / composables паттерны |
@@ -26,6 +29,8 @@
 | `zoom-out` | Объясни этот код в контексте всей системы |
 | `improve-codebase-architecture` | Найди что улучшить в архитектуре |
 | `spec-driven-development` | Сначала напиши спеку, потом код |
+| `documentation-and-adrs` | Задокументируй архитектурное решение — ADR, CONTEXT.md, specs |
+| `source-driven-development` | Проверь по официальной документации перед реализацией |
 | `to-prd` | Оформи наш разговор как PRD |
 | `to-issues` | Разбей PRD на отдельные задачи |
 | `prototype` | Быстрый throwaway прототип для проверки идеи — UI варианты или логика |
@@ -45,6 +50,9 @@
 | `systematic-debugging` | Исправляй баги по 8-шаговому циклу: воспроизведи → минимизируй → гипотеза → фикс |
 | `debugging-and-error-recovery` | Дебажь системно: reproduce → minimise → fix |
 | `triage` | Разбери накопившиеся баги по приоритетам |
+| `doubt-driven-development` | Адверсариал-ревью перед критическими изменениями (prod, security, irreversible) |
+| `browser-testing-with-devtools` | Дебаг/тест в браузере — консоль, network, DOM, скриншоты через Chrome DevTools |
+| `receiving-code-review` | Получил код-ревью — проверь замечания технически, не соглашайся вслепую |
 
 ---
 
@@ -77,3 +85,6 @@
 | `write-a-skill` | Хочу создать новый кастомный скилл |
 | `teach` | Объясни мне эту концепцию пошагово |
 | `docker-expert` | Проблемы с Docker / docker-compose |
+| `finishing-a-development-branch` | Имплементация готова, тесты проходят — реши что делать: merge, PR, cleanup |
+| `using-git-worktrees` | Хочу изолировать новую фичу от текущей рабочей директории |
+| `subagent-driven-development` | Есть готовый план с независимыми шагами — запусти суб-агентов параллельно |

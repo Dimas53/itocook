@@ -473,6 +473,7 @@
 - [x] **docker-compose.yml indentation fix** — frontend service was at indent 0 (broken yaml); fixed to indent 2 under services. Allows `docker compose restart directus` without yaml parse errors.
 
 ## Git log
+- `4aa3bc2` — docs: add retroactive specs, update harness, rewrite AGENTS.md
 - `fceb844` — chore: remove outdated docs/deployment.md (superseded by docs-site/overview/deployment.md)
 - `4ae6e14` — docs(docs-site): add notifications + deployment pages, update roadmap, status, schema, data-flows, system-overview, tech-stack, nav, index
 - `10a916b` — chore: remove old superseded server-pwa-deploy draft

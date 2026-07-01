@@ -75,13 +75,16 @@ Understand current state, known issues, and next steps.
 **Step 5 — Sync check**
 Compare git log with progress.md. If they are out of sync — update progress.md FIRST before doing anything else.
 
-**Step 6 — Read roadmap**
+**Step 6 — Verify skills-cheatsheet is complete**
+Read `docs/skills-cheatsheet.md`. Compare listed skills against all available skills in system prompt's `available_skills`. If any skill is missing from the cheatsheet — add it before proceeding.
+
+**Step 7 — Read roadmap** (renumbered from old Step 6)
 ```
 Read docs/roadmap.md
 ```
 Understand which Phase is currently active.
 
-**Step 7 — Load task-specific context**
+**Step 8 — Load task-specific context**
 Based on what you are about to work on:
 
 | Task area | Read before starting |
@@ -98,10 +101,10 @@ Based on what you are about to work on:
 | Overall architecture or new feature | `docs/ARCHITECTURE.md` |
 | Backend / Directus schema | Run Directus MCP `schema` tool before creating anything |
 
-**Step 8 — Load task-specific skills**
+**Step 9 — Load task-specific skills**
 Check `docs/skills-cheatsheet.md` and load relevant skills per global AGENTS.md triggers.
 
-**Step 9 — Report session start**
+**Step 10 — Report session start**
 Before writing any code, output:
 ```
 ✓ Session initialized.

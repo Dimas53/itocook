@@ -502,3 +502,102 @@ E2E:      8 Playwright setup → 9 cook flow   → 10 join flow
 CI/CD:    11 GitHub Actions
 Финал:    Запуск всех
 ```
+
+
+
+# ItoCook — Testing Plan
+
+> Добавить ниже существующих промптов в notes/tests-prompt.md
+
+---
+
+https://habr.com/ru/companies/otus/articles/925916/
+
+---
+
+## Что установлено
+- `@playwright/mcp` — установлен глобально, браузеры скачаны, MCP entry добавлен в opencode config
+- Папка для тестов: `frontend/tests/e2e/`
+
+---
+
+## Два подхода — оба нужны
+
+| Подход | Когда использовать |
+|--------|-------------------|
+| Ручные промпты (существующие 10 штук) | Когда знаешь что тестировать — unit, API, конкретные сценарии |
+| Playwright MCP explore mode | Когда хочешь найти что пропустил — агент сам ходит по сайту |
+
+---
+
+## Playwright MCP Explore Mode — как запускать
+
+### Промпт для агента:
+```
+Dev server must be running at http://localhost:3000
+
+Use Playwright MCP to explore the app as a real user.
+Focus on ONE flow: [auth / cook-queue / recipe / finance — выбери]
+
+Steps:
+1. Navigate to http://localhost:3000
+2. Explore the chosen flow end-to-end as a real user would
+3. Note any bugs or unexpected behavior
+4. Generate a .spec.ts test file in frontend/tests/e2e/
+5. Run the test: cd frontend && npx playwright test tests/e2e/[file]
+6. Iterate until the test passes
+7. Report: what was tested, what bugs found
+
+Use role-based locators, auto-retry assertions, no manual timeouts.
+```
+
+### Порядок explore сессий (по сложности):
+1. `auth.spec.ts` — login/logout (самый простой, начать отсюда)
+2. `cook-flow.spec.ts` — become cook, cook panel
+3. `recipe.spec.ts` — browse, fork, like
+4. `finance.spec.ts` — balance widget, deduction
+5. `join-flow.spec.ts` — join meal, participant counter
+
+---
+
+## Что сделать (по порядку)
+
+- [ ] Первая explore сессия: auth flow — посмотреть что получится
+- [ ] На основе результата написать skill `~/.config/opencode/skills/testing/SKILL.md`
+- [ ] Skill должен содержать: когда explore vs ручные промпты, best practices, структура папок
+- [ ] Skill заменит notes/tests-prompt.md как основной источник правил по тестам
+- [ ] После написания всех 5 тестов — добавить GitHub Actions workflow: `.github/workflows/test.yml`
+
+---
+
+## Структура папок тестов
+
+```
+frontend/
+└── tests/
+    ├── e2e/              ← Playwright (explore mode + ручные)
+    │   ├── auth.spec.ts
+    │   ├── cook-flow.spec.ts
+    │   ├── recipe.spec.ts
+    │   ├── finance.spec.ts
+    │   └── join-flow.spec.ts
+    ├── unit/             ← Vitest
+    │   ├── dedupRecipes.test.ts
+    │   ├── useBalanceCheck.test.ts
+    │   └── deduction.test.ts
+    └── api/              ← Vitest server routes
+        ├── auth-routes.test.ts
+        └── permissions.test.ts
+```
+
+---
+
+## В AGENTS.md — добавить позже (после первой сессии)
+
+В проектный AGENTS.md в секцию MCP добавить:
+```
+| `playwright` | E2E тесты, explore mode, автогенерация тестов, скриншоты |
+```
+
+В глобальный AGENTS.md триггер уже есть (TDD/Tests секция).
+После написания skill testing/ — добавить его туда же.
