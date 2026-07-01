@@ -251,6 +251,8 @@ docker logs itocook-api --tail 50
 | Открываются лишние окна DevTools | Vue.js DevTools расширение Chrome | Удалить расширение |
 | Сайт недоступен (ERR_NAME_NOT_RESOLVED) | DuckDNS не обновился | Запустить `/opt/duckdns/duck.sh` вручную |
 | Docker берёт кеш при автодеплое | `up -d` без `--build` | Добавлен `--build` флаг в deploy.yml |
+| user field missing in push_subscriptions | Directus Field Preset `$CURRENT_USER` alone is not enough — must pass `user: user.value?.id` explicitly in POST body | Fixed in usePushNotifications.ts |
+| Read permission missing on push_subscriptions | User Policy had only Create, not Read — dedup check was returning 403 | Added Read permission in Directus |
 
 ---
 
@@ -272,7 +274,7 @@ docker logs itocook-api --tail 50
 - `@vite-pwa/nuxt` установлен, `generateSW` стратегия
 - Иконки: `frontend/public/icons/icon-192.png` и `icon-512.png`
 
-### Push-уведомления ⚠️ ЧАСТИЧНО
+### Push-уведомления ✅ РАБОТАЕТ (iPhone + Firefox)
 
 | Компонент | Статус |
 |-----------|--------|
@@ -282,9 +284,9 @@ docker logs itocook-api --tail 50
 | `push-handler.js` в `frontend/app/public/` | ✅ |
 | `usePushNotifications.ts` | ✅ |
 | Firefox desktop | ✅ работает |
-| Chrome desktop | ❌ `push service error` |
-| iPhone Safari / PWA | ❌ не проверялось после починки |
-| Directus Flows → `/api/send-push` | ✅ все 6 флоу отправляют |
+| iPhone Safari PWA | ✅ работает |
+| Chrome desktop | ❌ push service error (FCM, low priority) |
+| Directus Flows → `/api/send-push` | ✅ все 8 флоу отправляют |
 
 ---
 
@@ -322,6 +324,11 @@ docker logs itocook-api --tail 50
 ⚠️ НЕ МЕНЯЙ стратегию SW (injectManifest/generateSW) без понимания — каждая смена оставляет мусор в кеше браузера.
 ⚠️ SW с scope `/` перехватывает ВСЕ запросы — тестируй на чистом профиле браузера.
 
+### Уроки сессии 27.06.2026
+⚠️ НЕ ИСПОЛЬЗУЙ `navigateFallback` в Workbox конфиге — он перехватывает все навигационные запросы включая /cms/ и ломает Directus.
+⚠️ `user` field must be passed explicitly when POSTing to push_subscriptions — `$CURRENT_USER` preset is for Directus UI forms only, not API calls.
+⚠️ `push_subscriptions` Read permission required — usePushNotifications checks for duplicates before saving.
+
 ---
 
 ## Чеклист
@@ -342,6 +349,30 @@ docker logs itocook-api --tail 50
 [x] 12. Directus админка работает ✅
 [x] 13. PWA — установка на iPhone ✅
 [x] 14. In-app уведомления ✅
-[ ] 15. Push уведомления на iPhone — не завершено
-[ ] 16. Chrome push — не работает (низкий приоритет)
+[x] 15. Push notifications on iPhone ✅
+[ ] 16. Chrome push — not working (FCM, low priority)
 ```
+
+---
+
+## Push Notifications — Browser Support (27.06.2026)
+
+- **iPhone Safari / PWA**: ✅ работает
+- **Firefox desktop**: ✅ работает
+- **Chrome desktop**: ❌ `push service error` (низкий приоритет, FCM)
+
+### Уроки сессии 27.06.2026
+
+- `user` field must be passed explicitly when creating `push_subscriptions` — одного `$CURRENT_USER` preset в Directus permissions недостаточно для корректной фильтрации подписок по ID пользователя в FastAPI `/send-push`
+- `navigateFallback: null` в workbox обязателен — без него SW перехватывает все навигационные запросы
+
+### Что сделано (27.06.2026)
+
+- [x] Добавлен `<link rel="manifest">` в `app.head` в `nuxt.config.ts`
+- [x] Исправлен `usePushNotifications.ts` — передаётся `user: user.value?.id` при сохранении подписки
+- [x] Добавлено Read permission для `push_subscriptions` в Directus User policy
+- [x] Добавлен `navigateFallback: null` в workbox конфиг
+- [x] Закоммичено и запущено: fix(pwa): disable navigateFallback in workbox
+- [x] iPhone push — протестировано и работает
+- [x] Cook Cancelled Flow — уведомляет всех пользователей при отмене готовки
+- [x] Nightly Notification Cleanup Flow — удаляет уведомления старше 7 дней в 3:00
