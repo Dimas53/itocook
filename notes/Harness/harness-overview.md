@@ -1,6 +1,6 @@
 # Harness Overview — Самодиагностика агентной системы
 
-> **Дата:** 2026-06-28
+> **Дата:** 2026-07-01
 > **Агент:** OpenCode (deepseek-v4-flash-free)
 > **Проект:** ItoCook
 > **Цель:** Полная картина того, как устроена обвязка (harness) вокруг LLM, какие инструменты и навыки доступны, как принимаются решения и что защищает от ошибок.
@@ -16,13 +16,13 @@
 ```
 1. INSTRUCTION  — AGENTS.md, правила, запреты
 2. CONTEXT      — progress.md, roadmap.md, design.md (что видит модель)
-3. TOOLS        — MCP серверы (filesystem, git, Directus, Chrome DevTools)
+3. TOOLS        — MCP серверы (filesystem, git, Directus, Chrome DevTools, Playwright)
 4. LOOP         — Think → Do → Verify (дисциплина выполнения)
-5. MEMORY       — progress.md, architecture.md, .planning/, git log
+5. MEMORY       — progress.md, architecture.md, docs/specs/, git log
 6. SUBAGENTS    — context7, sequential-thinking, task (дочерние агенты)
 7. VERIFICATION — TypeScript, DevTools, код-ревью
 8. SANDBOX      — что можно и что нельзя без подтверждения
-9. SKILLS       — 41+ навыков, загружаемых по требованию
+9. SKILLS       — 52 навыков, загружаемых по требованию
 ```
 
 Схема слоев визуализирована в `notes/Harness/harness-diagram.html`.
@@ -40,18 +40,21 @@
 - **Запреты без разрешения:** `.env`, `nuxt.config.ts`, `docker-compose.yml`, миграции БД
 - **English-Only Policy:** русский запрещен в коде, комментариях, документации (кроме `notes/`)
 - **CSS/Layout:** Tailwind, flexbox/grid, никаких inline-стилей, px для мобильных
-- **Auto-loading skills:** правила загрузки скиллов по триггерам (security → auth/nginx, debugging → баги и т.д.)
+- **Skills Auto-Loading Rules:** 52 навыка, загружаемые по триггерам (security → auth/nginx, debugging → баги, UI → frontend и т.д.)
+- **Working in External / Client Projects:** режим пониженной активности — без комментариев, документации, рефакторинга, новых зависимостей
+- **Design System (Global Default):** читать `docs/design.md` перед UI-кодом, цветовые токены, Phosphor icons, `<script setup lang="ts">`
 
 ### 2.2 Проектный AGENTS.md (`/Users/DSAITO/Documents/BackEnd/itocook/AGENTS.md`)
 
 Определяет:
-- **Старт сессии:** git log → progress.md → roadmap.md → docs по фиче
-- **После каждого ответа:** обновить progress.md
-- **После коммита:** добавить в Git лог
+- **9-шаговый Session Start:** (1) загрузить `using-agent-skills`, (2) загрузить 4 скилла стека, (3) git log, (4) progress.md, (5) sync check, (6) roadmap.md, (7) task-specific контекст, (8) task-specific скиллы, (9) отчёт о начале сессии
+- **Definition of Done:** чеклист перед "готово" — progress.md обновлён, JSDoc добавлен, roadmap.md проверен, safety check пройден
+- **Documentation Session:** автоматическая проверка отставания docs от HEAD (более 5 коммитов или >1 недели) → предложение обновить docs
 - **Nuxt 4 структура:** все папки внутри `app/`
+- **MCP серверы:** 8 серверов: filesystem, git, context7, directus, chrome-devtools, fetch, sequential-thinking, playwright
 - **Directus permissions checklist:** проверять права перед новыми коллекциями
-- **Safety gates:** не трогать `docker-compose.yml`, `.env`, не удалять коллекции, не пушить
-- **Триггеры документации:** после завершения фазы, новой коллекции/композабла/роута/Flows
+- **Vue 3 / Nuxt Gotchas:** `useDirectus` на верхнем уровне, `reactive()` для plain-object composables, DELETE 204 crash, `generateSW` стратегия
+- **Операционные заметки:** Directus Flows не в git, CRON требует restart, `docs/specs/` для проектных спецификаций
 
 ### Что требует человеческого подтверждения
 
@@ -68,7 +71,7 @@
 
 ## 3. Skills — Знания по требованию
 
-Всего установлено **41+ навык** в `~/.config/opencode/skills/`. Агент загружает их перед каждой задачей.
+Всего установлено **52 навыка** в `~/.config/opencode/skills/`. Все директории содержат актуальные `SKILL.md`. Пустые папки удалены. Агент загружает их перед каждой задачей.
 
 ### 3.1 Кастомные навыки (созданы специально для ItoCook)
 
@@ -77,6 +80,7 @@
 | `security/` (5 файлов) | Безопасность: auth, API, frontend, стек, release checklist |
 | `session-start/` | Boot-последовательность: прочитать docs, выдать сводку |
 | `code-reviewer/` | Чеклист перед "готово": TS, Vue, Directus, Design |
+| `code-review-and-quality/` | 5-осевое код-ревью с quality gates |
 
 > **Security audit 2026-06-28** проведён через `security/` skill. Найдено: 3 CRITICAL (включая unrestricted `directus_users` read), 2 HIGH, 2 MEDIUM. Все исправлены. Полный отчёт: `docs/audits/security-audit.md`.
 
@@ -90,7 +94,7 @@
 | `incremental-implementation/` | Любая реализация | Маленькие шаги, каждый проверяем |
 | `debugging-and-error-recovery/` | Баги | Воспроизведи → локализуй → почини |
 | `diagnose/` | Баги | Цикл: reproduce → minimise → hypothesis → fix |
-| `codebase-health-check/` | Аудит архитектуры | Оценка кодовой базы, поиск углублений, 7 рекомендаций |
+| `codebase-health-check/` | Аудит архитектуры | Оценка кодовой базы, поиск углублений |
 | `code-review-and-quality/` | Код-ревью | 5 осей проверки |
 | `test-driven-development/` | Тесты | Red → Green → Refactor |
 | `git-workflow-and-versioning/` | Коммиты/ветки | Чистая история |
@@ -107,6 +111,18 @@
 | `context-engineering/` | Оптимизация контекста | Правильный контекст в нужное время |
 | `finishing-a-development-branch/` | Завершение ветки | Чистый merge/PR |
 | `executing-plans/` | Есть план | Выполнение с контрольными точками |
+| `triage/` | Приоритизация багов | Упорядочивание issue по весу |
+| `prototype/` | Быстрый прототип | Throwaway прототип для проверки идеи |
+| `teach/` | Обучение | Пошаговое объяснение концепции |
+| `write-a-skill/` | Создание навыка | Структура SKILL.md с bundled resources |
+| `writing-skills/` | Создание навыка (superpowers) | Создание, редактирование, верификация |
+| `receiving-code-review/` | Получение ревью | Техническая верификация feedback |
+| `requesting-code-review/` | Запрос ревью | Проверка перед мержем |
+| `using-superpowers/` | Мета-скилл | (загружен в начале сессии) |
+| `using-git-worktrees/` | Изоляция | Работа через git worktree |
+| `subagent-driven-development/` | Подзадачи | Исполнение через дочерних агентов |
+| `setup-matt-pocock-skills/` | Начальная настройка | Конфигурация репозитория |
+| `caveman/` | Экономия токенов | Ультра-краткий режим общения |
 
 ### 3.3 Скиллы стека (Nuxt / Vue / Tailwind / Directus)
 
@@ -114,11 +130,8 @@
 |-------|-------------------|
 | `nuxt/` | Любая Nuxt-работа |
 | `nuxt-ui/` | Использование Nuxt UI компонентов |
-| `nuxt-vue/` | Nuxt + Vue паттерны |
 | `vue/` | Vue 3, Composition API, composables |
 | `tailwind-design-system/` | Tailwind токены, дизайн-система |
-| `tailwind-nuxtui/` | Tailwind + Nuxt UI вместе |
-| `directus/` | Directus: схема, permissions, MCP |
 | `docker-expert/` | Docker, docker-compose проблемы |
 | `frontend-ui-engineering/` | Продакшн-UI верстка |
 | `api-and-interface-design/` | Дизайн API |
@@ -127,28 +140,19 @@
 | `ci-cd-and-automation/` | CI/CD пайплайны |
 | `shipping-and-launch/` | Прод-деплой чеклист |
 | `deprecation-and-migration/` | Удаление старых систем |
-| `caveman/` | Режим экономии токенов |
 | `browser-testing-with-devtools/` | DevTools MCP тесты |
 | `dispatching-parallel-agents/` | Параллельные независимые задачи |
 | `code-simplification/` | Упрощение кода без изменения поведения |
-| `receiving-code-review/` | Обработка feedback с код-ревью |
-| `requesting-code-review/` | Запрос ревью перед мержем |
 | `to-prd/` | Конвертация разговора в PRD |
 | `to-issues/` | Разбивка PRD на задачи |
-| `triage/` | Приоритизация багов |
-| `prototype/` | Быстрый прототип |
-| `teach/` | Обучение пользователя |
-| `write-a-skill/` | Создание нового навыка |
-| `writing-plans/` | Создание плана по шагам |
 | `find-skills/` | Поиск нужного навыка |
 | `verification-before-completion/` | Проверка перед "готово" |
-| `subagent-driven-development/` | Исполнение через подзадачи |
 | `customize-opencode/` | Настройка самого OpenCode |
-| `setup-matt-pocock-skills/` | Начальная настройка репозитория |
-| `using-git-worktrees/` | Изоляция через worktrees |
-| `using-superpowers/` | Мета-скилл (уже загружен в начале сессии) |
+| `writing-plans/` | Создание плана по шагам |
+| `security-and-hardening/` | Харденинг кода от уязвимостей |
+| `tdd/` | Test-driven development (красный-зеленый-рефакторинг) |
 
-**Итого: 41 установленный навык.**
+**Итого: 52 установленных навыка.**
 
 ---
 
@@ -166,7 +170,7 @@
 - **Пример:** `git_git_log({"repo_path": project, "max_count": 5})` — последние коммиты
 - **Пример:** `git_git_commit({"repo_path": project, "message": "fix(auth): ..."})`
 
-### 4.3 Web Fetch
+### 4.3 Web Fetch (fetch MCP + websearch)
 
 - Скачивание страниц по URL
 - **Пример:** `fetch_fetch({"url": "https://nuxt.com/docs/..."})` — актуальная документация
@@ -195,10 +199,19 @@
 - **Пример:** `chrome-devtools_list_console_messages()` — ошибки JS
 - **Пример:** `chrome-devtools_list_network_requests()` — 4xx/5xx
 
-### 4.7 Sequential Thinking
+### 4.7 Playwright (E2E тесты)
+
+- Полноценный браузерный тест-раннер
+- Навигация, клики, заполнение форм, скриншоты
+- Console message capture
+- **Пример:** `playwright_browser_navigate({"url": "http://localhost:3000"})`
+- **Пример:** `playwright_browser_snapshot()` — a11y-дерево страницы
+
+### 4.8 Sequential Thinking
 
 - Принудительное пошаговое рассуждение
 - Для сложных архитектурных решений
+- **Пример:** `sequential-thinking_sequentialthinking({"thought": "...", "nextThoughtNeeded": true})`
 
 ---
 
@@ -211,14 +224,17 @@
 | `docs/progress.md` | После каждого изменения | Статус, known issues, план на следующую сессию, git log |
 | `docs/roadmap.md` | При завершении фазы | High-level roadmap, checkboxes, даты завершения |
 | `docs/ARCHITECTURE.md` | Новый композабл/роут/паттерн | Структура, core-layer документация |
-| `docs/architecture/*.md` | Новая фича | 6 файлов: cook-queue, recipe-system, finance, duty, shopping-list, auth-flow |
-| `docs/CONTEXT.md` | Интервью с разработчиком | Глоссарий доменных терминов (30+ терминов) |
-| `.planning/` | Перед большой задачей | План выполнения |
+| `docs/architecture/*.md` | Новая фича | 8 файлов: cook-queue, recipe-system, finance, duty, shopping-list, auth-flow, notifications, deployment-pwa |
+| `docs/CONTEXT.md` | Интервью с разработчиком | Глоссарий доменных терминов (40+ терминов) |
+| `docs/specs/` | Новая фича без спецификации | Feature specs: purpose, inputs/outputs, edge cases |
 | `docs/audits/*.md` | После аудита | Security audit, UI polish audit, refactoring plan |
 | `docs/design.md` | При изменении дизайн-системы | Цвета, токены, шрифты, правила UI |
 | `docs/skills-cheatsheet.md` | Новый скилл | Таблица навыков для разработчика |
+| `docs-site/` | VitePress документация | 20+ страниц: архитектура, фичи, экраны, дизайн-система, roadmap |
 
 **Принцип:** документы обновляются только при событиях (завершение фазы, новый баг, новая фича), а не по расписанию. Git log служит поисковой историей решений.
+
+**.planning/** — удалён. Заменён на `docs/specs/` для хранения проектных спецификаций фич.
 
 ---
 
@@ -285,6 +301,8 @@
 | **PWA swSrc/swDest conflict** | `injectManifest` падал в Nuxt 4 из-за same-file conflict в `app/public/` | Переключение на `generateSW` |
 | **Fork pattern needed** | Shared `recipes.cook` PATCH нарушал авторские права | Fork-on-cook: копия с `forked_from`, owned by cook |
 | **Naming collision in composable** | `fetch()` внутри useTotalUsers вызывала сама себя | Внутренняя функция переименована в `fetchCount` |
+| **CRON changes require restart** | Изменение CRON в UI не применялось до перезапуска | `docker compose restart directus` после CRON-правок |
+| **Directus Flows not in git** | Flows в базе, не в git; production sync терялся | Заметка: Flows не version-controlled, нужен manual sync |
 
 ---
 
@@ -333,8 +351,62 @@
 
 ## Резюме
 
-Этот harness превращает сырую LLM в инженерного агента, способного работать над продакшн-проектом без постоянного присмотра. 9 слоев (от инструкций до sandbox), 41+ навыков для разных задач, 7 MCP-инструментов для файлов, git, БД, браузера и документации, trigger-based система памяти и safety gates, защищающие от катастрофических ошибок.
+Этот harness превращает сырую LLM в инженерного агента, способного работать над продакшн-проектом без постоянного присмотра. 9 слоев (от инструкций до sandbox), 52 навыков для разных задач, 8 MCP-инструментов для файлов, git, БД, браузера, E2E-тестов и документации, trigger-based система памяти и safety gates, защищающие от катастрофических ошибок.
 
-Без этой обвязки модель могла бы только генерировать текст. С ней она читает и пишет код, управляет схемой Directus, дебажит в Chrome DevTools, использует живую документацию фреймворков, создает Flows и автоматизации.
+Без этой обвязки модель могла бы только генерировать текст. С ней она читает и пишет код, управляет схемой Directus, дебажит в Chrome DevTools и Playwright, использует живую документацию фреймворков, создает Flows и автоматизации, и запускает E2E-тесты в реальном браузере.
 
 **Harness — это разница между "AI болталкой" и "AI инженером".**
+
+---
+
+## Заметка: Масштабирование Harness для проектов большего размера
+
+Текущий харнес оптимизирован для проекта с 1-2 разработчиками и одним VPS.
+Для команды 10+ человек и микросервисной архитектуры потребуются следующие улучшения:
+
+1. **AGENTS.md монолитный** — сейчас ~900 строк. Нужна модульная система:
+   один файл-роутинг → отдельные файлы на каждую доменную зону.
+
+2. **Память не масштабируется** — progress.md линейный, через год будет 2000+ строк.
+   Нужна БД или ротация по неделям/версиям.
+
+3. **Тесты не встроены в харнес жёстко** — тесты есть, но нет правила
+   "перед коммитом они обязаны пройти". AGENTS.md говорит "verify", но не принуждает.
+
+4. **Code review только мой** — я проверяю сам себя. Для команды нужен
+   второй человек (или агент) в цикле.
+
+5. **Нет deployment staging** — push → сразу продакшн. Нужны staging +
+   preview environments для команды.
+
+6. **Secrets management** — `.env` руками на сервере. Нужен Vault
+   или encrypted `.env` в репозитории.
+
+7. **Monitoring не подключён** — харнес узнаёт об ошибках только когда разработчик
+   скажет. Нужны алерты: упавшие тесты → авто-issue, 500-ки → срабатывание.
+
+**Вывод:** База (9 слоёв, safety gates, trigger-based docs, skills) останется той же.
+Эволюция потребуется в модульности, автоматизации проверок и инфраструктуре.
+
+
+По тестам — да, следующая сессия, там всё уже готово.
+По остальным пунктам честно:
+Можем закрыть сейчас (или скоро):
+
+"Тесты перед коммитом" — одна строка в Definition of Done: [ ] tests pass: npm run test. Добавить в глобальный файл.
+"AGENTS.md монолитный" — это как раз харнес-репо которое мы обсуждали. Там файлы разделятся естественно.
+
+Это уже не харнес, это инфраструктура проекта:
+
+Staging/preview environments — CI/CD задача
+Secrets management — Vault, отдельная тема
+Monitoring — отдельная тема
+
+Code review — у тебя пока один разработчик, не актуально.
+Memory/progress.md — это реально станет проблемой через полгода. Но решение простое: раз в фазу агент архивирует старые записи в docs/archive/progress-phase-N.md и оставляет только текущее. Одна строка в AGENTS.md.
+Из всего этого стоит добавить сейчас только две вещи:
+
+Тесты в Definition of Done
+Архивация progress.md по фазам
+
+Остальное — когда будет реальная необходимость. Добавить эти два пункта?

@@ -473,6 +473,12 @@
 - [x] **docker-compose.yml indentation fix** — frontend service was at indent 0 (broken yaml); fixed to indent 2 under services. Allows `docker compose restart directus` without yaml parse errors.
 
 ## Git log
+- `fceb844` — chore: remove outdated docs/deployment.md (superseded by docs-site/overview/deployment.md)
+- `4ae6e14` — docs(docs-site): add notifications + deployment pages, update roadmap, status, schema, data-flows, system-overview, tech-stack, nav, index
+- `10a916b` — chore: remove old superseded server-pwa-deploy draft
+- `56ef63c` — chore: move server-pwa-deploy.md from docs/ to notes/ (keep latest version in notes)
+- `d486da2` — docs: update architecture docs, glossary, roadmap, progress after Phase 6b
+- `6f4b546` — feat(flows): add Cook Stale Reminder, push notifications, TZ=Europe/Berlin fix
 - `eaab3b5` — feat(hero-block): add completed status badge and display
 - `a260c88` — fix(auth): block Join for ready/cancelled, add status badge to HeroBlock
 - `b0744ff` — docs(roadmap): add Phase 7a Testing, fix Phase 6/6b remaining statuses
