@@ -217,7 +217,7 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 - [x] Duty Assigned Flow (event on cleaning_schedule create)
 - [x] Cook Cancelled Flow — notifies all users when cook cancels
 - [x] Nightly Notification Cleanup Flow — deletes notifications older than 7 days at 3am
-- [x] All 6 flows call FastAPI `/send-push` for push delivery
+- [x] All 9 flows call FastAPI `/send-push` for push delivery
 - [ ] **Step 5:** Fix status choices in Directus (add `completed` to cook_queue, `left_late`/`pending_cook_approval` to orders)
 - [ ] **Step 6:** Ghost-participant logic
 - [ ] **Step 7:** Notification preferences in profile
@@ -254,7 +254,7 @@ No FastAPI, no email — only Directus Flows + `notifications` collection + Nuxt
 - [x] FastAPI `/send-push` endpoint
 - [x] `push-handler.js` in `frontend/app/public/`
 - [x] `usePushNotifications.ts` composable
-- [x] All 6 Directus Flows call `/api/send-push`
+- [x] All 8 Directus Flows call `/api/send-push` (all except Nightly Cleanup)
 - [x] Firefox desktop ✅ works
 - [x] **iPhone push** — tested and working on iPhone after PWA install
 - [x] **SW on server** — confirmed working (generateSW ships in Nuxt build; iPhone & Firefox push work)

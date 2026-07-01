@@ -87,15 +87,31 @@
 - [x] **Fix: naming collision in useTotalUsers.ts** — inner function named `fetch()` shadowed global `fetch`, causing `fetch('/api/users/count')` to call itself recursively → caught → `count.value = 0`. Renamed to `fetchCount`; callers unaffected (both destructure only `{ count: totalCount }`).
 - [x] **Task F: Recipe pasta/inventory field** — added `pasta_packages` (integer, nullable) to `recipes` collection; created `app_settings` singleton with `pasta_package_price` (decimal, default 1.00); added number input in recipe create/edit form; created Nuxt server route `GET /api/settings/pasta-price` (admin proxy); created `useMealCost()` composable for computation; integrated pasta cost into `confirmDeduction()` — added to total before split, displayed as separate line in receipt preview and deduction breakdown; kept generic enough for future inventory items.
 - [x] **Recipe photo upload** — replaced URL text input in `recipe/create.vue` with `RecipeImageUpload` component (file picker / drag & drop / paste from clipboard); client-side resize via canvas (max 1200px, JPEG quality 0.85, max 5MB); uploads to Directus Files (`recipe-photos` folder); stores file UUID in `recipes.photo` field. Added `uploadFile()` to `useDirectus.ts`. Refactored `useRecipeImage` to return `{ src, isUploaded }` object — UUIDs resolved to Directus asset URL. `RecipeCard.vue` and `HeroBlock.vue` show circular thumbnail (68–72px, rounded-full, border-white) for uploaded photos; demo category PNGs keep full-width display. Created `directus_files` create+read permissions for the User policy.
+- [x] **TZ fix: container TZ set to Europe/Berlin** — directus service gets `TZ: "Europe/Berlin"` in docker-compose.prod.yml; CRON expressions written in Berlin local time; DST handled automatically by OS
+- [x] **Cook Stale Reminder flow** — new Directus schedule flow (ID `9611f64f`) with push notifications; type `cook_reminder` added to notifications collection; full push chain (notify_users → push_ids → send_push) confirmed working E2E
+- [x] **Push fix: Cook Stale Reminder push chain** — copied `push_ids` exec + `send_push` request from Morning Reminder; E2E test returned `{"sent":1,"failed":0}`
+- [x] **CRON in Berlin local time** — all 3 schedule flows updated: Morning Reminder `0 */30 9-10 * * 1-5`, Cook Stale Reminder same, Duty Reminder `30 10 * * 1-5`. `check_time` blocks 10:30 for window 9:00–10:00.
+- [x] **Chrome push error suppressed** — changed `console.error` to `console.debug` in usePushNotifications.ts for known Chrome FCM AbortError
+- [x] **Manifest fix** — created `app/public/manifest.webmanifest` with valid JSON to prevent 404/parse errors in dev mode
+- [x] **Docs: docs/architecture/notifications.md updated** — 4 corrections (table count, type list, flow architecture section, known limitations)
+- [x] **Docs: docs/architecture/deployment-pwa.md created** — production deployment architecture, PWA setup, push notifications, nginx config, operational rules
+- [x] **Docs: CONTEXT.md updated** — added cook_reminder, Cook Stale Reminder, company_account, company_transactions, guests, TZ cron convention, Directus Flows not version-controlled
+- [x] **Docs: AGENTS.md updated** — added CRON restart rule and Flows-not-version-controlled rule
 
 ## Known issues
-- **Phase 4 screens** — AI Recipe, Duty, Common, Recipe Detail, Finance, Notifications all stubs or unfinished
+- **Phase 4 screens** — AI Recipe and Common screens still stubs/unfinished
 - **Cook Page balance deduction** — uses user token directly, may need Directus permissions or server proxy for /items/balances and /items/transactions on behalf of other users
 - **RecipeImageUpload paste on edit** — paste listener is not blocked when editing an existing recipe with a photo; paste triggers `processFile` which replaces the preview. Workaround: OK — the deferred pattern means nothing is uploaded until save, and old photo is cleaned up on save if replaced.
 - **Schedule trigger changes require container restart** — Directus v11 uses node-cron; cron config read at process start. Any UI/MCP cron edit needs `docker compose restart directus` to take effect.
-- **SSH deploy key not set up** — manual `git pull` required on server for deploys
-- **PWA push notifications** — `generateSW` strategy used (custom sw.js not compiled); push notification handling needs workbox config or switching back to `injectManifest`
-- **PWA build** — stuck on `injectManifest` where `swSrc` and `swDest` resolve to same file in Nuxt 4 `app/public/`; worked around with `generateSW`
+- **Chrome desktop push** — `AbortError: push service error` — Chrome uses FCM which has additional requirements. Low priority.
+- **Morning Reminder on production uses throw-based guard** — not migrated to Condition operation; works correctly either way, low priority cosmetic issue.
+- **`--build` does NOT `--force-recreate`** — env var changes (like TZ) require manual SSH step to recreate containers after deploy.
+
+## Next session — plan
+- Phase 6 Steps 5–7: status choices, ghost participants, notification preferences
+- Phase 5: AI Recipe screen, Common screen
+- Phase 7: ratings, receipt photo upload, estimated_price field, weekly vote
+- Phase 7a: Automated tests setup
 
 ## Current session — Deploy & PWA (2026-06-23)
 - [x] **frontend/Dockerfile.prod** — multi-stage build (`npm ci` → `npm run build` → `node output/server/index.mjs`)
@@ -255,10 +271,10 @@
 - [x] **Task 1: Schema + Department field + cleaning_schedule** — added `department` (string, nullable) to `directus_users` via Directus MCP; created `cleaning_schedule` collection (date, user→M2O, department, confirmed) with UUID PK; set User Policy permissions (read all, update own confirmed only); added `department` to User Policy `directus_users` read fields
 - [x] **Task 2: Department selector in profile.vue** — added `<select>` dropdown below name/email, above Preferences, with German department options; PATCH on change via `/users/me`; pre-selects from `user.value.department`
 - [x] **Task 3: Preferences bottom sheet** — Preferences card opens bottom sheet (fixed overlay + rounded-t-3xl), department selector moved inside, Done button, subtitle shows current department in primary color
-- [x] **Fix: PATCH /users/me CORS** — создан Nuxt server route `/api/users/update-me` для проксирования запроса
-- [x] **Seed: 6 test users + cleaning_schedule** — созданы Klaus, Anna, Thomas, Sabine, Michael, Laura с отделами; 9 записей cleaning_schedule на 16–27 июня (будни)
-- [x] **Fix: MCP user filter** — `_nstarts_with=MCP` в обоих server routes (list + count); причина: first_name = "MCP User"
-- [x] **Task 4: DutyWidget live data** — компонент сам запрашивает cleaning_schedule на неделю; top line (отдел / "You're next!"), middle (имя дежурного), bottom (статус); фон градиентами; декоративный SVG в левом верхнем углу
+- [x] **Fix: PATCH /users/me CORS** — created Nuxt server route `/api/users/update-me` for proxying the request
+- [x] **Seed: 6 test users + cleaning_schedule** — created Klaus, Anna, Thomas, Sabine, Michael, Laura with departments; 9 cleaning_schedule entries for Jun 16–27 (weekdays)
+- [x] **Fix: MCP user filter** — added `_nstarts_with=MCP` to both server routes (list + count); cause: first_name = "MCP User"
+- [x] **Task 4: DutyWidget live data** — component fetches cleaning_schedule for the week; top line (department / "You're next!"), middle (duty name), bottom (status); gradient background; decorative SVG in top-left corner
 - [x] **G3d: Shopping list polish** — added `cook_date` field to `shopping_list_items` (Directus); stored from queue entry when adding items; displayed next to recipe name in By Recipe view (e.g. "Wed, Jun 17"); tabs restyled with `bg-primary-pale`/`bg-primary text-white` and icons; weekly shopping comment added
 - [x] **G3d: Permission gate + recipe page UX** — "Add to Shopping List" button only shown when `isEntryCook`; photo header heart replaced with shopping cart when cook (links to `/shopping-list`); added-to-list toast includes a "View cart" shortcut button
 - [x] **G3d: Copy format fix** — changed clipboard format from `• 🐟 180 g Salmon fillet` to `• 🐟 Salmon fillet 180 g` (emoji → name → amount, matching page layout)
@@ -273,9 +289,9 @@
 - [x] **Phase 1: Create utils/dates.ts** — 7 shared date functions; 8+ files can import instead of redefining.
 - [x] **Phase 2, candidate 1: Create useDeduction.ts** — extracted `confirmDeduction`, `loadPastaCost`, `cleanupShoppingList` from `cook.vue` (~90 lines); parallelized transactions (`Promise.all`) + batch-fetch balances (`_in` filter); `cleanupShoppingList` shared with `cancelCooking`.
 - [x] **Fix: pasta-price PATCH 500** — `app_settings` is a singleton; PATCH `/items/app_settings/{id}` rejected by Directus ("Route doesn't exist"). Removed ID lookup, PATCH `/items/app_settings` directly.
-- [x] **Fix: cook→recipe navigation missing ?cq=** — recipe page не находил queue entry по dish_name; добавлен `?cq=${cookEntry.id}` во все ссылки на рецепт.
+- [x] **Fix: cook→recipe navigation missing ?cq=** — recipe page could not find queue entry by dish_name; added `?cq=${cookEntry.id}` to all recipe links.
 - [x] **Phase 2, candidate 2: useRecipeServings.ts** — extract all serving/scaling logic (~85 lines) from `recipe/[id].vue` into composable.
-- [x] **Fix: canAddToList restriction** — кнопка "Add to Shopping List" показывается только когда `isEntryCook` (повар очереди).
+- [x] **Fix: canAddToList restriction** — "Add to Shopping List" button only shown when `isEntryCook` (queue cook).
 - [x] **Phase 2, candidate 3: Template dedup** — extracted shared receipt info rows into `ReceiptSummary.vue`, used in ready state breakdown.
 - [x] **Phase 2, candidate 4: Finance template dedup** — extracted BalanceRow + TransactionRow components, replaced slider/expanded templates in finance.vue.
 - [ ] **Phase 2, candidate 5: useDateNavigation.ts** — extract date-nav from `recipe/[id].vue`, `finance.vue`, `cook.vue`.
@@ -349,8 +365,8 @@
 - [x] **FIX 2:** Icon mapping fix — replaced `PhTriangle` → `PhWarning` for `balance_low` type in notifications.vue (correct icon component now renders).
 - [x] **FIX 3:** Server route `read.patch.ts` — fixed batch PATCH body format: `{ keys: [...ids], data: { read: true } }` (was wrong `filter` format → 500). Added `console.error` logging.
 - [x] **FIX 4:** Removed tap-to-read from individual cards in `notifications.vue` — `handleTap` removed, `@click` removed, `cursor-pointer`/`active:scale` removed. Only "Mark all read" button remains functional.
-- [x] **FIX 5:** Removed auto markAllAsRead (`setTimeout` 3s) from notifications.vue — пользователь сам управляет прочитанным.
-- [x] **FIX 6:** Read cards opacity-70 → opacity-60. Polling interval 60000 → 20000 в useNotifications.ts.
+- [x] **FIX 5:** Removed auto markAllAsRead (`setTimeout` 3s) from notifications.vue — user controls read state manually.
+- [x] **FIX 6:** Read cards opacity-70 → opacity-60. Polling interval 60000 → 20000 in useNotifications.ts.
 
 ## Fixes — current session (2026-06-27)
 - [x] **Fix: add `<link rel=manifest>` to app.head in nuxt.config.ts so PWA manifest is discoverable by browser**
@@ -364,59 +380,59 @@
 - [x] **Chore: remove push debug panel** — debug panel removed from notifications.vue; `subscribe()` reverted to clean signature without `onLog`; console.log/console.error restored
 
 ## Fixes — current session (Cook Assigned flow)
-- [x] **Fix: Condition filter syntax** — точечная нотация `$trigger.payload.status` → вложенные объекты `$trigger > payload > status`
-- [x] **Fix: Transform-дубликат удалён** — transform `build_payloads` (8e42b084) лежал на одной клетке с exec — удалён
-- [x] **Fix: Exec code fetch_users.data** — `item-read` возвращает массив напрямую, не `{data: [...]}` — исправлено на `Array.isArray` guard
-- [x] **Fix: Child flow шаблоны** — `{{$trigger.body.*}}` → `{{$trigger.*}}` (operation-triggered flow кладёт данные на корень `$trigger`)
-- [x] **Fix: Trigger items.create → items.update** — нотификации теперь приходят только при обновлении `dish_name` (выбор блюда), не при создании пустой записи
-- [x] **Fix: Condition dish_name._nnull** — убрана проверка `status` (на `items.update` в payload только changed fields); добавлена проверка `$trigger.payload.dish_name._nnull`
-- [x] **Fix: Cook name "Someone"** — exec код теперь ищет UUID повара в массиве `fetch_users` через `users.find(u => u.id === cookId)`
-- [x] **Fix: Message format with date** — добавлена операция `fetch_entry` (`item-read` по `$trigger.keys[0]`) для получения полной записи; exec использует `fetch_entry.date` для форматирования "Jun 22"
-- [x] **Fix: Admin permissions on notifications** — созданы `read`+`update` permission записи для Admin policy (`50751c00`) с фильтром `user._eq = $CURRENT_USER`; также добавлен `filter[user][_eq]=$CURRENT_USER` в `useNotifications.ts` для фронта (admin_access bypass)
-- [x] **Tested:** update cook_queue с dish_name → 44 cook_assigned нотификации созданы, данные очищены
+- [x] **Fix: Condition filter syntax** — dot notation `$trigger.payload.status` → nested objects `$trigger > payload > status`
+- [x] **Fix: Transform duplicate removed** — transform `build_payloads` (8e42b084) was on the same grid cell as exec — removed
+- [x] **Fix: Exec code fetch_users.data** — `item-read` returns array directly, not `{data: [...]}` — fixed with `Array.isArray` guard
+- [x] **Fix: Child flow templates** — `{{$trigger.body.*}}` → `{{$trigger.*}}` (operation-triggered flow places data on root `$trigger`)
+- [x] **Fix: Trigger items.create → items.update** — notifications now fire only on `dish_name` update (dish selection), not on empty record creation
+- [x] **Fix: Condition dish_name._nnull** — removed `status` check (on `items.update` only changed fields are in payload); added `$trigger.payload.dish_name._nnull` check
+- [x] **Fix: Cook name "Someone"** — exec code now finds cook UUID in `fetch_users` array via `users.find(u => u.id === cookId)`
+- [x] **Fix: Message format with date** — added `fetch_entry` operation (`item-read` on `$trigger.keys[0]`) to get full record; exec uses `fetch_entry.date` for "Jun 22" formatting
+- [x] **Fix: Admin permissions on notifications** — created `read`+`update` permissions for Admin policy (`50751c00`) with filter `user._eq = $CURRENT_USER`; also added `filter[user][_eq]=$CURRENT_USER` in `useNotifications.ts` for frontend (admin_access bypass)
+- [x] **Tested:** update cook_queue with dish_name → 44 cook_assigned notifications created, data cleared
 - [x] **Fix (Lunch Ready flow):** Fetch Confirmed Orders filter `$trigger.key` → `$trigger.keys[0]`
-- [x] **Fix (Lunch Ready flow):** exec code `fetch_orders.data` → `Array.isArray` guard (тот же баг что и в Cook Assigned)
-- [x] **Tested:** update cook_queue status → ready → `lunch_ready` нотификация создана для пользователя с confirmed order
-- [x] **Fix (Balance Low flow):** exec код — DUMMY_USER → `fetch_balance.user` с Array.isArray guard
-- [x] **Fix (Balance Low flow):** переподключена цепочка — `check_amount` → `fetch_balance` → `exec_notify` → `do_create`
-- [x] **Fix (Balance Low flow):** точка входа с `exec_notify` → `check_amount`
-- [x] **Fix (Balance Low flow):** `$trigger.key` → `$trigger.keys[0]` в fetch_balance (как в Lunch Ready)
-- [x] **Fix (Balance Low flow):** позиции операций исправлены (перекрытие fetch_balance/exec_notify на 37,1)
-- [x] **Tested:** update balance 0 → -15 → `balance_low` нотификация для `a56ff53c`
-- [x] **Fix (Morning Reminder):** Condition `No cook today?` удалён, заменён на Run Script с `Array.isArray` guard + `throw Error` если повар есть
+- [x] **Fix (Lunch Ready flow):** exec code `fetch_orders.data` → `Array.isArray` guard (same bug as Cook Assigned)
+- [x] **Tested:** update cook_queue status → ready → `lunch_ready` notification created for user with confirmed order
+- [x] **Fix (Balance Low flow):** exec code — DUMMY_USER → `fetch_balance.user` with Array.isArray guard
+- [x] **Fix (Balance Low flow):** reconnected chain — `check_amount` → `fetch_balance` → `exec_notify` → `do_create`
+- [x] **Fix (Balance Low flow):** entry point changed from `exec_notify` → `check_amount`
+- [x] **Fix (Balance Low flow):** `$trigger.key` → `$trigger.keys[0]` in fetch_balance (same as Lunch Ready)
+- [x] **Fix (Balance Low flow):** operation positions fixed (fetch_balance/exec_notify overlap at 37,1)
+- [x] **Tested:** update balance 0 → -15 → `balance_low` notification for `a56ff53c`
+- [x] **Fix (Morning Reminder):** Condition `No cook today?` removed, replaced with Run Script with `Array.isArray` guard + `throw Error` if cook exists
 - [x] **Fix (Morning Reminder):** exec `build_payloads` — `fetch_users.data` → `Array.isArray` guard
-- [x] **Fix (Morning Reminder):** старая Condition операция удалена через REST API
-- [x] **Tested:** flow запущен вручную → 11 `morning_reminder` нотификаций для 11 active users, данные очищены
-- [x] **Fix (avatars):** Public policy на `directus_files` — добавлен `read` (все поля `*`, без фильтра). Аватары теперь доступны без сессии (инкогнито, другие браузеры)
-- [x] **Step 4: Duty Reminder Flow** — создан и протестирован. CRON `0 8 * * 1-5`. Цепочка с двумя ветками:
-  - **Manual** (ключи из UI): `check_mode`(exec, `body.keys`) → `route`(condition) → `fetch_entry`(item-read, key=`check_mode.key`) → `build_manual`(exec) → `notify_users`(trigger → Utility)
-  - **Schedule** (без ключей): → `get_today` → `fetch_all`(item-read date=check_mode.today, confirmed=false) → `build_schedule`(exec, Array.isArray guard) → `notify_schedule`(trigger → Utility)
-- **Bug found & fixed:** `$trigger.keys` не существует — ключи лежат в `$trigger.body.keys`. Все нотификации уходили Клаусу потому что exec не находил ключи и шёл по schedule-ветке (сегодня неподтверждён только Клаус).
-- [x] **Step 4b: Duty Assigned event flow** — `items.create` на `cleaning_schedule` → exec (`$trigger.payload.user` + `date`) → trigger (Utility flow). Создана и протестирована. Создание записи → нотификация назначенному юзеру "You have been assigned to kitchen duty on YYYY-MM-DD. Please confirm!"
+- [x] **Fix (Morning Reminder):** old Condition operation deleted via REST API
+- [x] **Tested:** flow triggered manually → 11 `morning_reminder` notifications for 11 active users, data cleared
+- [x] **Fix (avatars):** Public policy on `directus_files` — added `read` (all fields `*`, no filter). Avatars now accessible without session (incognito, other browsers)
+- [x] **Step 4: Duty Reminder Flow** — created and tested. CRON `0 8 * * 1-5`. Chain with two branches:
+  - **Manual** (keys from UI): `check_mode`(exec, `body.keys`) → `route`(condition) → `fetch_entry`(item-read, key=`check_mode.key`) → `build_manual`(exec) → `notify_users`(trigger → Utility)
+  - **Schedule** (no keys): → `get_today` → `fetch_all`(item-read date=check_mode.today, confirmed=false) → `build_schedule`(exec, Array.isArray guard) → `notify_schedule`(trigger → Utility)
+- **Bug found & fixed:** `$trigger.keys` does not exist — keys are in `$trigger.body.keys`. All notifications were going to Klaus because exec could not find keys and went through the schedule branch (today only Klaus is unconfirmed).
+- [x] **Step 4b: Duty Assigned event flow** — `items.create` on `cleaning_schedule` → exec (`$trigger.payload.user` + `date`) → trigger (Utility flow). Created and tested. Record creation → notification to assigned user "You have been assigned to kitchen duty on YYYY-MM-DD. Please confirm!"
 
 ## Web Push Notifications — implementation
-- [x] **STEP 1: .env + docker-compose** — VAPID vars уже были добавлены (предыдущая сессия). NUXT_PUBLIC_VAPID_PUBLIC_KEY также уже был в .env.
-- [x] **STEP 2: push_subscriptions collection** — коллекция уже существовала в Directus. Добавлены permissions: User policy (create + read own + delete own), Admin policy (full access).
-- [x] **STEP 3: FastAPI /send-push endpoint** — `api/requirements.txt` обновлён (pywebpush, requests). `api/app/main.py` — новый endpoint `POST /send-push`. Логика: логин в Directus как admin, получение подписок по user_id, отправка Web Push через pywebpush. Возвращает `{ sent, failed }`.
-- [x] **STEP 4: Service Worker** — создан `frontend/public/sw.js` (push event + notificationclick). Создан плейсхолдер иконки `frontend/public/images/icon-192.png`.
-- [x] **STEP 5: Nuxt composable + server route** — создан `usePushNotifications.ts` (register SW, subscribe, urlBase64ToUint8Array). Создан `server/api/push/vapid-key.get.ts`. `nuxt.config.ts` — добавлен `vapidPublicKey` в runtimeConfig.public.
-- [x] **STEP 6: subscribe() after login** — `useAuth.ts` login() вызывает `usePushNotifications().subscribe()` после fetchUser (non-blocking, catch silent).
-- [x] **STEP 7: Directus Flows — webhook step** — во все 6 flows добавлены exec + request операции для вызова `/send-push`:
-  - **Cook Assigned** — extract user IDs из fetch_users, вызывает API с user_ids + message
-  - **Lunch Ready** — extract user IDs из fetch_orders, вызывает API с user_ids
-  - **Balance Low** — вызывает API с `{{exec_notify.user}}`
-  - **Morning Reminder** — extract user IDs из fetch_users, вызывает API
-  - **Duty Reminder** — две ветки: manual (один user) + schedule (user_ids из fetch_all)
-  - **Duty Assigned** — вызывает API с `{{$trigger.payload.user}}`
-- [x] **Docker** — контейнер api пересоздан (новые env vars), pywebpush и requests установлены.
+- [x] **STEP 1: .env + docker-compose** — VAPID vars were already added (previous session). NUXT_PUBLIC_VAPID_PUBLIC_KEY was also already in .env.
+- [x] **STEP 2: push_subscriptions collection** — collection already existed in Directus. Added permissions: User policy (create + read own + delete own), Admin policy (full access).
+- [x] **STEP 3: FastAPI /send-push endpoint** — `api/requirements.txt` updated (pywebpush, requests). `api/app/main.py` — new endpoint `POST /send-push`. Logic: login to Directus as admin, fetch subscriptions by user_id, send Web Push via pywebpush. Returns `{ sent, failed }`.
+- [x] **STEP 4: Service Worker** — created `frontend/public/sw.js` (push event + notificationclick). Created placeholder icon `frontend/public/images/icon-192.png`.
+- [x] **STEP 5: Nuxt composable + server route** — created `usePushNotifications.ts` (register SW, subscribe, urlBase64ToUint8Array). Created `server/api/push/vapid-key.get.ts`. `nuxt.config.ts` — added `vapidPublicKey` to runtimeConfig.public.
+- [x] **STEP 6: subscribe() after login** — `useAuth.ts` login() calls `usePushNotifications().subscribe()` after fetchUser (non-blocking, catch silent).
+- [x] **STEP 7: Directus Flows — webhook step** — added exec + request operations to all 6 flows to call `/send-push`:
+  - **Cook Assigned** — extract user IDs from fetch_users, calls API with user_ids + message
+  - **Lunch Ready** — extract user IDs from fetch_orders, calls API with user_ids
+  - **Balance Low** — calls API with `{{exec_notify.user}}`
+  - **Morning Reminder** — extract user IDs from fetch_users, calls API
+  - **Duty Reminder** — two branches: manual (single user) + schedule (user_ids from fetch_all)
+  - **Duty Assigned** — calls API with `{{$trigger.payload.user}}`
+- [x] **Docker** — api container recreated (new env vars), pywebpush and requests installed.
 - [x] **Fix: push_subscriptions empty after login** — root cause 1: `create` permission (ID 78) for User policy had `presets: null`. Directus rejects POST because `user` field is `required: true`, but frontend's `subscribe()` doesn't send `user`. Fixed: `presets: { user: "$CURRENT_USER" }`.
-- [x] **Fix: push_subscriptions not created on page reload** — root cause 2: `subscribePush()` вызывался только внутри `login()`. При перезагрузке страницы с активной сессией подписка не создавалась. Fixed: добавлен `subscribePush().catch(() => {})` в `middleware/auth.global.ts` после `fetchUser()`.
-- [x] **Fix: push_subscriptions not created when subscription already exists** — root cause 3: `pushManager.subscribe()` падает с `DOMException` если подписка уже существует. Fixed: добавлена проверка `getSubscription()` — если есть, используем её; если нет — создаём новую.
-- [x] **Fix: Cook Assigned flow restored** — Directus condition `$trigger.payload.dish_name._nnull` падает с `Validation failed — Value is required` когда поля нет в payload. Решение: condition пропускает всегда (`$trigger.event._nnull`), проверка перенесена в `build_payloads` exec — `if (!$trigger.payload.dish_name) return []`. При пустом массиве trigger flow ничего не создаёт. Цепочка: `check_status (always pass) → fetch_users → fetch_entry → build_payloads (dish_name check) → notify_users → push_ids → send_push`.
-- [x] **Fix: Firefox duplicate pushes** — root cause: `subscribe()` на каждом reload делал POST в Directus, создавая копии подписки. `/send-push` отправлял на все копии → пользователь получал N уведомлений. Fix: `subscribe()` теперь GET по endpoint → если уже есть, пропускает (не PATCH — CORS).
-- [x] **Fix: push_ids sends on every cook_queue update** — `push_ids` exec посылал `user_ids: [...all...]` даже когда `build_payloads` пустой. Fix: `if (payloads.length === 0) return { user_ids: [], url: '/' }` — ничего не шлёт на не-dish_name обновления.
-- [x] **Feat: notification click → /kitchen?date=...** — клик по пушу Cook Assigned ведёт на `/kitchen?date=YYYY-MM-DD` вместо `/`. SW фокусирует существующую вкладку (focus + navigate), если её нет — открывает новую. FastAPI `PushRequest` + `send_push()` принимают `url: str = '/'`.
-- [x] **Chore: CORS origin 127.0.0.1** — добавлен `http://127.0.0.1:3000` в `CORS_ORIGIN` для Chrome Dev. Не решило проблему FCM — Chrome не может зарегистрировать пуш-подписку на localhost. Firefox работает стабильно.
+- [x] **Fix: push_subscriptions not created on page reload** — root cause 2: `subscribePush()` was only called inside `login()`. On page reload with active session, no subscription was created. Fixed: added `subscribePush().catch(() => {})` to `middleware/auth.global.ts` after `fetchUser()`.
+- [x] **Fix: push_subscriptions not created when subscription already exists** — root cause 3: `pushManager.subscribe()` throws `DOMException` if subscription already exists. Fixed: added `getSubscription()` check — reuse existing, create new if none.
+- [x] **Fix: Cook Assigned flow restored** — Directus condition `$trigger.payload.dish_name._nnull` throws `Validation failed — Value is required` when field is absent from payload. Solution: condition always passes (`$trigger.event._nnull`), check moved to `build_payloads` exec — `if (!$trigger.payload.dish_name) return []`. Empty array causes trigger flow to create nothing. Chain: `check_status (always pass) → fetch_users → fetch_entry → build_payloads (dish_name check) → notify_users → push_ids → send_push`.
+- [x] **Fix: Firefox duplicate pushes** — root cause: `subscribe()` POSTed to Directus on every reload, creating subscription copies. `/send-push` sent to all copies → user got N notifications. Fix: `subscribe()` now GETs by endpoint → skip if exists (no PATCH due to CORS).
+- [x] **Fix: push_ids sends on every cook_queue update** — `push_ids` exec was sending `user_ids: [...all...]` even when `build_payloads` was empty. Fix: `if (payloads.length === 0) return { user_ids: [], url: '/' }` — nothing sent on non-dish_name updates.
+- [x] **Feat: notification click → /kitchen?date=...** — click on Cook Assigned push navigates to `/kitchen?date=YYYY-MM-DD` instead of `/`. SW focuses existing tab (focus + navigate), opens new one if none exists. FastAPI `PushRequest` + `send_push()` accept `url: str = '/'`.
+- [x] **Chore: CORS origin 127.0.0.1** — added `http://127.0.0.1:3000` to `CORS_ORIGIN` for Chrome Dev. Did not solve FCM issue — Chrome cannot register push subscription on localhost. Firefox works stably.
 - [x] **iPhone push** — tested and working on iPhone after PWA install
 - [x] **Feat: Cook Cancelled Flow** — notifies all users when cook cancels via Directus Flow; adds `cook_cancelled` type to notifications collection
 - [x] **Feat: Nightly Notification Cleanup Flow** — deletes notifications older than 7 days at 3am (calc_cutoff → fetch_old → extract_ids → delete_old); created on local + production

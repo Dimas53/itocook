@@ -83,6 +83,38 @@ A Directus Flow triggered when `cook_queue.status` changes to `cancelled`. Notif
 - **Related:** Cook (person), Cook Panel, Notification
 - **Docs:** [notifications.md](architecture/notifications.md)
 
+### cook_reminder
+A notification type (`notifications.type` dropdown) used by the Cook Stale Reminder flow. Sent to a cook who has not started cooking by 9:00–10:00 on their scheduled day. Uses the same push chain as other notification types.
+
+- **Files:** Directus Flows → "Cook Stale Reminder"
+- **Collections:** `notifications` (type `cook_reminder`)
+- **Related:** Cook Stale Reminder, Notification
+- **Docs:** [notifications.md](architecture/notifications.md)
+
+### Cook Stale Reminder
+A Directus schedule flow (CRON `0 */30 9-10 * * 1-5` Berlin time) that reminds cooks who have not started cooking by 9:00–10:00 on their scheduled day. Created 2026-06-30. Sends `cook_reminder` type notifications with push. Chain: `check_time` → `get_today` → `fetch_queue` → `check_stale` → `has_stale` → `build_payloads` → `notify_users` → `push_ids` → `send_push`.
+
+- **Files:** Directus Flows → "Cook Stale Reminder" (ID `9611f64f`)
+- **Collections:** `notifications` (type `cook_reminder`), `cook_queue`
+- **Related:** cook_reminder, Notification, CRON, TZ
+- **Docs:** [notifications.md](architecture/notifications.md)
+
+### company_account
+A Directus **singleton** collection holding the company's meal budget. Fields: `balance` (decimal, default 0), `updated_at` (timestamp). Used by Company Pays All and Guest deduction features. Admin can top up via Finance page.
+
+- **Files:** `frontend/app/pages/finance.vue` (Company Account section), `frontend/server/api/deduction/confirm.post.ts` (`updateCompanyBalance`)
+- **Collections:** `company_account`
+- **Related:** company_transactions, guests, Deduction
+- **Docs:** [finance.md](architecture/finance.md)
+
+### company_transactions
+A Directus collection tracking deductions paid by the company account (via Company Pays All or Guest feature). Fields: `amount` (decimal), `description` (string), `date_created` (auto), `cook_queue` (M2O, nullable). User policy: read-only. Admin policy: full access.
+
+- **Files:** `frontend/app/pages/finance.vue`, `frontend/server/api/deduction/confirm.post.ts`
+- **Collections:** `company_transactions`
+- **Related:** company_account, guests, Deduction
+- **Docs:** [finance.md](architecture/finance.md)
+
 ### Cook Panel (Cook Page)
 The page at route `/cook`. A state-machine-driven UI for the assigned cook. States: `assign` → `dish` → `scheduled` → `cooking` → `ready` → `done`. Each state shows different controls (dish name entry, start cooking, mark ready, enter receipt, confirm deduction).
 
@@ -124,6 +156,12 @@ What the cook is preparing on a given day. Stored as `dish_name` on a `cook_queu
 - **Related:** Recipe, Cook (person), cook_queue
 - **Docs:** [cook-queue.md](architecture/cook-queue.md)
 
+### Directus Flow (version control)
+Directus Flow definitions live in the database, not in git. After modifying a flow locally (via Directus MCP), it must be manually synced to production by recreating the same changes on the production Directus instance. There is no export/import mechanism in use.
+
+- **Related:** CRON, notification flows
+- **Docs:** [notifications.md](architecture/notifications.md), [deployment-pwa.md](architecture/deployment-pwa.md)
+
 ### Duty
 A scheduled kitchen cleaning assignment. Stored in `cleaning_schedule` collection. Each entry has a `date`, `user`, `department`, and `confirmed` flag. Users can confirm their own duty. Admin can edit all entries.
 
@@ -160,6 +198,13 @@ A user who has joined a meal (has a `confirmed` order) but did not cancel before
 
 - **Files:** `docs/roadmap.md` (Task D), `docs/progress.md`
 - **Related:** Order, Participant, Deduction, Balance Gate
+
+### guests
+A JSON field (nullable) on the `orders` collection storing guest names who ate via the Company Pays feature. Each guest generates a `company_transactions` record when deduction is confirmed. Not linked to any real user — strings only.
+
+- **Files:** `frontend/app/pages/cook.vue` (ready state guest UI), `frontend/server/api/deduction/confirm.post.ts` (guest deduction logic)
+- **Collections:** `orders` → field `guests`, `company_transactions`
+- **Related:** company_account, company_transactions, Deduction
 
 ---
 
@@ -338,6 +383,13 @@ A financial record in the `transactions` collection. Created either by admin top
 - **Collections:** `transactions`
 - **Related:** Balance, Deduction, Finance Page
 - **Docs:** [finance.md](architecture/finance.md)
+
+### TZ / Europe.Berlin (cron convention)
+The `directus` container in production has `TZ: Europe/Berlin` set in `docker-compose.prod.yml`. All CRON expressions in Directus schedule flows should be written in Berlin local time (CET/CEST). DST is handled automatically by the OS. CRON changes in the Directus UI or via MCP require `docker compose restart directus` to take effect — node-cron caches schedules at process start.
+
+- **Files:** `docker-compose.prod.yml` (TZ env var on directus service)
+- **Related:** Cook Stale Reminder, Morning Reminder, Duty Reminder, Nightly Cleanup, Directus Flow
+- **Docs:** [deployment-pwa.md](architecture/deployment-pwa.md)
 
 ---
 

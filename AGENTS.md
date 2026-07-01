@@ -366,3 +366,16 @@ Before any of these actions STOP — ask the user first:
 - Updating `docs/progress.md` and `docs/roadmap.md`
 - Reading any project files
 - Creating new Directus collections or fields (but not deleting)
+
+---
+
+## Operational Rules
+
+### CRON changes require `docker compose restart directus`
+Directus uses node-cron, which registers schedule jobs at process start. Changing a CRON expression in the Directus UI or via MCP does NOT take effect until the container is restarted. After any schedule flow modification, run:
+```bash
+docker compose restart directus
+```
+
+### Directus Flows are NOT version controlled
+Flow definitions live in the database, not in git. After modifying a flow locally (via Directus MCP), it must be manually synced to production by recreating the same changes on the production Directus instance. There is no export/import mechanism in use. Always note this when creating or modifying flows so the production sync is not forgotten.
